@@ -33,7 +33,11 @@ def experience():
     assert comment is None or len(comment) < 10000
     name = data['username'] if re.match(r'^\w{1,32}$', data['username']) else None
     now = str(datetime.datetime.utcnow())
-    ip = request.remote_addr
+
+    if request.headers.getlist("X-Real-IP"):
+       ip = request.headers.getlist("X-Real-IP")[-1]
+    else:
+       ip = request.remote_addr
 
     lat, lon, dest_lat, dest_lon = map(float, data['coords'].split(','))
 

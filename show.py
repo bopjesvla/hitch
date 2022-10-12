@@ -4,6 +4,7 @@ import folium
 import json
 import folium.plugins
 import sqlite3
+import os
 
 points = pd.read_sql('select * from points where not banned', sqlite3.connect('prod-points.sqlite'))
 print(len(points))
@@ -13,7 +14,7 @@ groups = points.groupby(['lat', 'lon'])
 
 places = groups[['country']].first()
 places['rating'] = groups.rating.mean().round()
-places['rating_text'] = places.rating.replace({1: 'Very bad', 2: 'Bad', 3: 'Average', 4: 'Good', 5: 'Very good'})
+places['rating_text'] = places.rating.replace({1: 'Terrible', 2: 'Bad', 3: 'Average', 4: 'Good', 5: 'Excellent'})
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
 places['text'] = 'Rating: ' + places.rating_text.fillna('-') + '\nWaiting time in minutes: ' + places.wait.fillna('-').astype(str) + '\n\n'
 places.text = places.text + groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
@@ -63,7 +64,9 @@ window.onload = function() {
     document.body.insertAdjacentHTML('beforeend',
         '<div id="sidebar"></div><a href="#" id="sb-close">&times;</a><div id="topbar">')
 
-    $$('.leaflet-bottom.leaflet-left').insertAdjacentHTML('afterbegin', '<div id="add-spot" class="leaflet-bar leaflet-control"><a href="#">📍 Add a spot')
+    $$('.leaflet-top.leaflet-left').insertAdjacentHTML('beforeend', '<div id="add-spot" class="leaflet-bar leaflet-control"><a href="#">📍 Add a spot')
+    var zoom = $$('.leaflet-control-zoom')
+    zoom.parentNode.appendChild(zoom)
 
     $$('#sb-close').onclick = function() {
         $$('#sidebar').innerHTML = ''
@@ -146,7 +149,7 @@ console.log(points)
         $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
     }
     var c = $$('.leaflet-control-attribution')
-    c.innerHTML = '&copy; Bob de Ruiter | ' + c.innerHTML.slice(0, -1) + ', and HitchWiki'
+    c.innerHTML = '&copy; Bob de Ruiter | ' + c.innerHTML.split(',')[0].replace('© ', '') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
     if (window.location.hash == '#success') {
         $$('#sidebar').innerHTML = '<h3>Success!</h3>Your review will appear on the map within 10 minutes. Refreshing might be needed.'
         window.location.hash = '#'
