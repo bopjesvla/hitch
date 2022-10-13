@@ -6,22 +6,55 @@ import folium.plugins
 import sqlite3
 import os
 
-points = pd.read_sql('select * from points where not banned', sqlite3.connect('prod-points.sqlite'))
+def haversine_np(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+
+    All args must be of equal length.
+
+    """
+    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = np.sin(dlat/2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2.0)**2
+
+    c = 2 * np.arcsin(np.sqrt(a))
+    km = 6367 * c
+    return km
+
+fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
+points = pd.read_sql('select * from points where not banned', sqlite3.connect(fn))
 print(len(points))
+
 points.datetime = pd.to_datetime(points.datetime)
 points['text'] = points['comment'] + '\n\n―' + points['name'].fillna('Anonymous') + ', ' + points.datetime.dt.strftime('%B %Y')
+
+rads = points[['lat', 'lon', 'dest_lat', 'dest_lon']].values.T
+
+points['distance'] = haversine_np(*rads)
+
 groups = points.groupby(['lat', 'lon'])
 
 places = groups[['country']].first()
 places['rating'] = groups.rating.mean().round()
-places['rating_text'] = places.rating.replace({1: 'Terrible', 2: 'Bad', 3: 'Average', 4: 'Good', 5: 'Excellent'})
+places['rating_text'] = places.rating.replace({1: '1/5', 2: '2/5', 3: '3/5', 4: '4/5', 5: '5/5'})
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
-places['text'] = 'Rating: ' + places.rating_text.fillna('-') + '\nWaiting time in minutes: ' + places.wait.fillna('-').astype(str) + '\n\n'
+places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
+places['text'] = 'Rating: ' + places.rating_text.fillna('-') + '\nWaiting time in minutes: ' + places.wait.fillna('-').astype(str).str.split('.').str[0] + '\nRide distance in km: ' + places.distance.fillna('-').astype(str).str.split('.').str[0] + '\n\n'
 places.text = places.text + groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
+
+places['country_group'] = places.country.replace(['BE', 'NL', 'LU'], 'BNL')
+places.country_group = places.country_group.replace(['CH', 'AT', 'LI'], 'ALP')
+places.country_group = places.country_group.replace(['SI', 'HR', 'BA', 'ME', 'MK', 'AL', 'RS', 'TR'], 'BAL')
+places.country_group = places.country_group.replace(['SK', 'HU'], 'SKHU')
+places.country_group = places.country_group.replace('MC', 'FR')
 
 places.reset_index(inplace=True)
 
-m = folium.Map(prefer_canvas=True)
+m = folium.Map(prefer_canvas=True, control_scale=True)
 
 callback = """\
 function (row) {
@@ -44,7 +77,7 @@ function (row) {
 };
 """
 
-for country, group in places.groupby('country'):
+for country, group in places.groupby('country_group'):
     cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
@@ -58,7 +91,7 @@ html.add_child(folium.Element("""
 $$ = function(e) {return document.querySelector(e)}
 var points = [], spotMarker, destMarker
 
-window.onload = function() {
+document.addEventListener("DOMContentLoaded", function() {
     var map = window[$$('.folium-map').id]
     $$("input[placeholder^=Search]").placeholder = 'Jump to city'
     document.body.insertAdjacentHTML('beforeend',
@@ -99,7 +132,7 @@ console.log(points)
                                             <p>${points[0].lat.toFixed(5)}, ${points[0].lng.toFixed(5)} → ${points[1].lat.toFixed(5)}, ${points[1].lng.toFixed(5)}</p>
                                             <form id=spot-form action=experience method=post>
                                               <input type="hidden" name="coords" value='${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}' >
-                                              <label>How do you rate the spot for your intended destination?</label>
+                                              <label>How do you rate the spot?</label>
                                               <div class="clear"><div class="rate">
                                                   <input required type="radio" id="star5" name="rate" value="5" />
                                                   <label for="star5" title="5 stars">5 stars</label>
@@ -149,12 +182,12 @@ console.log(points)
         $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
     }
     var c = $$('.leaflet-control-attribution')
-    c.innerHTML = '&copy; Bob de Ruiter | ' + c.innerHTML.split(',')[0].replace('© ', '') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
+    c.innerHTML = '&copy; Bob de Ruiter | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
     if (window.location.hash == '#success') {
         $$('#sidebar').innerHTML = '<h3>Success!</h3>Your review will appear on the map within 10 minutes. Refreshing might be needed.'
         window.location.hash = '#'
     }
-}
+})
 </script>
 """))
 html.add_child(folium.Element("""
@@ -183,7 +216,7 @@ h3 {
     bottom: 0;
     width: 400px;
     max-width: 100%;
-    z-index: 999;
+    z-index: 1999;
     background: white;
     padding: 0 20px 20px 20px;
     box-shadow: 2px 0 10px;
@@ -203,7 +236,7 @@ h3 {
     padding: 0 10px;
     cursor: pointer;
     font-size: 45px;
-    z-index: 1000;
+    z-index: 2000;
 }
 #add-spot {
     padding: 5px 10px;
@@ -220,9 +253,9 @@ h3 {
     width: 100%;
     text-shadow: 0 0 3px #fff;
     font-size: 25px;
-    top: 0;
+    bottom: 0;
     padding: 20px;
-    z-index: 1002;
+    z-index: 2002;
     text-shadow: 0 0 2px #fff;
 }
 #topbar span {
@@ -233,15 +266,16 @@ h3 {
 #topbar button {
     pointer-events: auto;
     width: 220px;
+    max-width: 30%;
 }
 #topbar:not(:empty)::before {
     content: '';
     pointer-events: none;
     position: absolute;
     left: 50vw;
-    top: 50vh;
+    bottom: 50vh;
     margin-left: -30vmin;
-    margin-top: -30vmin;
+    margin-bottom: -30vmin;
     width: 60vmin;
     height: 60vmin;
     background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px));
@@ -291,6 +325,14 @@ h3 {
     content: '';
     display: block;
     clear: both;
+}
+@media only screen and (max-width: 700px) {
+    #topbar {
+        font-size: 1em !important;
+    }
+    #topbar button {
+        font-size: 12px !important;
+    }
 }
 </style>
 """))

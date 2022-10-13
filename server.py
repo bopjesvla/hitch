@@ -7,8 +7,9 @@ import requests
 import datetime
 import sqlite3
 import random
+import os
 
-DATABASE = 'prod-points.sqlite'
+DATABASE = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 
 def get_db():
     db = getattr(g, '_database', None)

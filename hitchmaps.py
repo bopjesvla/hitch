@@ -44,7 +44,9 @@ explode_df.datetime += '.000000'
 explode_df['reviewed'] = True
 explode_df['banned'] = explode_df.comment.isin(['Got a ride from the Pope of Dope.', 'Whoever added this spot is genius xD', 'After 4 hours a camel finally picked me up, he was very friendly.'])
 explode_df['ip'] = None
-explode_df['dest_lat'] = explode_df['dest_lon'] = None
+explode_df['dest_lat'] = explode_df['dest_lon'] = np.nan
+# so sqlite understands they are floats
+explode_df.loc[explode_df.comment=='Got a ride after 10 minutes withhout even bothering straight to Lure close to Switzerland which was where I needed to go. Lovely', ['dest_lat', 'dest_lon']] = [47.6864, 6.4943]
 
 cols = ['lat', 'lon', 'rating', 'country', 'wait', 'name', 'comment', 'datetime',
         'reviewed', 'banned', 'ip', 'dest_lat', 'dest_lon']
