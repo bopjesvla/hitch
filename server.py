@@ -23,6 +23,10 @@ app = Flask(__name__)
 def index():
     return send_file("index.html")
 
+@app.route("/light.html", methods=['GET'])
+def light():
+    return send_file("light.html")
+
 @app.route("/experience", methods=['POST'])
 def experience():
     data = request.form
@@ -49,9 +53,9 @@ def experience():
 
     res = requests.get('https://nominatim.openstreetmap.org/reverse', {'lat': lat, 'lon': lon, 'format': 'json', 'zoom': 3}).json()
     country = 'XZ' if 'error' in res else res['address']['country_code'].upper()
-    pid = random.randint(0,2**32)
+    pid = random.randint(0,2**63)
 
-    df = pd.DataFrame([{'rating': rating, 'wait': wait, 'comment': comment, 'name': name, 'datetime': now, 'ip': ip, 'reviewed': False, 'banned': False, 'lat': lat, 'dest_lat': lat, 'lon': lon, 'dest_lon': dest_lon, 'country': country}], index=[pid])
+    df = pd.DataFrame([{'rating': rating, 'wait': wait, 'comment': comment, 'name': name, 'datetime': now, 'ip': ip, 'reviewed': False, 'banned': False, 'lat': lat, 'dest_lat': dest_lat, 'lon': lon, 'dest_lon': dest_lon, 'country': country}], index=[pid])
 
     df.to_sql('points', get_db(), index_label='id', if_exists='append')
 

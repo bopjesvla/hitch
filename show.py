@@ -5,6 +5,9 @@ import json
 import folium.plugins
 import sqlite3
 import os
+import sys
+
+LIGHT = 'light' in sys.argv
 
 def haversine_np(lon1, lat1, lon2, lat2):
     """
@@ -40,11 +43,12 @@ groups = points.groupby(['lat', 'lon'])
 
 places = groups[['country']].first()
 places['rating'] = groups.rating.mean().round()
-places['rating_text'] = places.rating.replace({1: '1/5', 2: '2/5', 3: '3/5', 4: '4/5', 5: '5/5'})
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
 places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
-places['text'] = 'Rating: ' + places.rating_text.fillna('-') + '\nWaiting time in minutes: ' + places.wait.fillna('-').astype(str).str.split('.').str[0] + '\nRide distance in km: ' + places.distance.fillna('-').astype(str).str.split('.').str[0] + '\n\n'
-places.text = places.text + groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
+places['text'] = groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
+
+if LIGHT:
+    places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
 
 places['country_group'] = places.country.replace(['BE', 'NL', 'LU'], 'BNL')
 places.country_group = places.country_group.replace(['CH', 'AT', 'LI'], 'ALP')
@@ -53,6 +57,8 @@ places.country_group = places.country_group.replace(['SK', 'HU'], 'SKHU')
 places.country_group = places.country_group.replace('MC', 'FR')
 
 places.reset_index(inplace=True)
+# make sure high-rated are on top
+places.sort_values('rating', inplace=True, ascending=False)
 
 m = folium.Map(prefer_canvas=True, control_scale=True)
 
@@ -68,23 +74,33 @@ function (row) {
         if ($$('#topbar').innerHTML) return
         points = [point]
         var sidebar = document.querySelector('#sidebar')
-        sidebar.innerText = row[3];
+        sidebar.innerText = `Rating: ${row[2].toFixed(0)}/5
+Waiting time in minutes: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
+Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}
+
+${row[3]}
+`;
+        if (!row[3] && Number.isNaN(row[4])) sidebar.innerHTML += '<i>No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.</i>'
         sidebar.innerHTML = `<h3>${row[0].toFixed(5)}, ${row[1].toFixed(5)}</h3><div class="comments">${sidebar.innerHTML}</div><br><button>Review this spot</button>`
         L.DomEvent.stopPropagation(e)
     })
+
+    if(row[2] >= 4) marker.bringToFront()
 
     return marker;
 };
 """
 
 for country, group in places.groupby('country_group'):
-    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
+    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 
 m.fit_bounds([[-35, -40], [60, 40]])
 
 html = m.get_root().header
+
+html.add_child(folium.Element("<title>Hitchmap - Find hitchhiking spots on a map - Add your own spots</title>"))
 
 html.add_child(folium.Element("""
 <script>
@@ -107,6 +123,11 @@ document.addEventListener("DOMContentLoaded", function() {
         renderPoints()
     }
     $$('#add-spot').onclick = function() {
+        if (window.location.href.includes('light')) {
+            if (confirm('Do you want to be redirected to the full version where you can add spots?'))
+                 window.location = '/'
+            return;
+        }
         // document.body.classList.add('picker-mode')
         $$('#topbar').innerHTML = '<span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span><br><button>Done</button><button>Cancel'
         points = []
@@ -121,9 +142,10 @@ document.addEventListener("DOMContentLoaded", function() {
         renderPoints()
         if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
             if (points.length == 1) {
-                if(map.getZoom() > 8) map.setZoom(8);
-                $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/place you were dropped off.</span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
+                if(map.getZoom() > 13) map.setZoom(13);
+                $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/place you were dropped off when you used this spot.<sup><a href=# class=help>?</a></sup></span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
                 $$('#sidebar').innerHTML = ''
+                $$('a.help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
             }
             else if (points.length == 2) {
 console.log(points)
@@ -268,6 +290,9 @@ h3 {
     width: 220px;
     max-width: 30%;
 }
+#topbar a {
+    pointer-events: auto;
+}
 #topbar:not(:empty)::before {
     content: '';
     pointer-events: none;
@@ -337,4 +362,4 @@ h3 {
 </style>
 """))
 
-m.save('index.html')
+m.save('light.html' if LIGHT else 'index.html')
