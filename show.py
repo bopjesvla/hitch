@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function() {
         $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
     }
     var c = $$('.leaflet-control-attribution')
-    c.innerHTML = '&copy; Bob de Ruiter | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
+    c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
     if (window.location.hash == '#success') {
         $$('#sidebar').innerHTML = '<h3>Success!</h3>Your review will appear on the map within 10 minutes. Refreshing may be needed.'
         window.location.hash = '#'
