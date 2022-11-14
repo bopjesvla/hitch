@@ -6,6 +6,7 @@ import folium.plugins
 import sqlite3
 import os
 import sys
+from branca.element import Element
 
 LIGHT = 'light' in sys.argv
 
@@ -66,26 +67,30 @@ callback = """\
 function (row) {
     var marker;
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
-    var opacity = {1: 0, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
+    var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
     marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[2] == 5), fillOpacity: opacity, color: 'black', fillColor: color});
 
     marker.on('click', function(e) {
         if ($$('#topbar').innerHTML) return
+
         points = [point]
         var sidebar = document.querySelector('#sidebar')
-        sidebar.innerText = `Rating: ${row[2].toFixed(0)}/5
-Waiting time in minutes: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
-Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}
 
-${row[3]}
-`;
-        if (!row[3] && Number.isNaN(row[4])) sidebar.innerHTML += '<i>No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.</i>'
-        sidebar.innerHTML = `<h3>${row[0].toFixed(5)}, ${row[1].toFixed(5)}</h3><div class="comments">${sidebar.innerHTML}</div><br><button>Review this spot</button>`
+        setTimeout(() => {
+            sidebar.innerHTML = `<h3>${row[0].toFixed(5)}, ${row[1].toFixed(5)}</h3><div id='spot-summary'></div><h4>Comments</h4><div id='spot-text'></div><div><button>Review this spot</button></div>`
+            $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
+Waiting time in minutes: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
+Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
+
+            $$('#spot-text').innerText = row[3];
+            if (!row[3] && Number.isNaN(row[5])) sidebar.innerHTML += '<i>No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.</i>'
+        },100)
+
         L.DomEvent.stopPropagation(e)
     })
 
-    if(row[2] >= 4) marker.bringToFront()
+    // if(row[2] >= 4) marker.bringToFront()
 
     return marker;
 };
@@ -100,10 +105,13 @@ m.fit_bounds([[-35, -40], [60, 40]])
 
 html = m.get_root().header
 
-html.add_child(folium.Element("<title>Hitchmap - Find hitchhiking spots on a map - Add your own spots</title>"))
+html.add_child(folium.Element("<title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>"))
 
 html.add_child(folium.Element("""
 <script>
+var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
+
 $$ = function(e) {return document.querySelector(e)}
 var points = [], spotMarker, destMarker
 
@@ -113,23 +121,42 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.insertAdjacentHTML('beforeend',
         '<div id="sidebar"></div><a href="#" id="sb-close">&times;</a><div id="topbar">')
 
-    $$('.leaflet-top.leaflet-left').insertAdjacentHTML('beforeend', '<div id="add-spot" class="leaflet-bar leaflet-control"><a href="#">📍 Add a spot')
+    var customControl =  L.Control.extend({
+        options: {
+            position: 'topleft'
+        },
+        onAdd: function (map) {
+            var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
+            var container = L.DomUtil.create('a', '', controlDiv);
+            container.href="#";
+            container.innerText = "📍 Add a spot";
+
+            container.onclick = function() {
+                if (window.location.href.includes('light')) {
+                    if (confirm('Do you want to be redirected to the full version where you can add spots?'))
+                        window.location = '/'
+                    return;
+                }
+                // document.body.classList.add('picker-mode')
+                $$('#topbar').innerHTML = '<span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span><br><button>Done</button><button>Cancel'
+                points = []
+                renderPoints()
+            }
+
+            return controlDiv;
+        }
+    });
+
+    map.addControl(new customControl());
+
+    if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
+
+    // $$('.leaflet-top.leaflet-left').insertAdjacentHTML('beforeend', '<div id="add-spot" class="leaflet-bar leaflet-control"><a href="#">📍 Add a spot')
     var zoom = $$('.leaflet-control-zoom')
     zoom.parentNode.appendChild(zoom)
 
     $$('#sb-close').onclick = function() {
-        $$('#sidebar').innerHTML = ''
-        points = []
-        renderPoints()
-    }
-    $$('#add-spot').onclick = function() {
-        if (window.location.href.includes('light')) {
-            if (confirm('Do you want to be redirected to the full version where you can add spots?'))
-                 window.location = '/'
-            return;
-        }
-        // document.body.classList.add('picker-mode')
-        $$('#topbar').innerHTML = '<span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span><br><button>Done</button><button>Cancel'
+        $$('#sidebar').replaceChildren()
         points = []
         renderPoints()
     }
@@ -143,15 +170,17 @@ document.addEventListener("DOMContentLoaded", function() {
         if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
             if (points.length == 1) {
                 if(map.getZoom() > 13) map.setZoom(13);
-                $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/place you were dropped off when you used this spot.<sup><a href=# class=help>?</a></sup></span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
+                $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/area you were dropped off when you used this spot.<sup><a href=# class=help>?</a></sup></span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
                 $$('#sidebar').innerHTML = ''
                 $$('a.help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
             }
             else if (points.length == 2) {
-console.log(points)
+                var bounds = new L.LatLngBounds(points);
+                map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
+                // if(map.getZoom() > 13) map.setZoom(13);
                 $$('#topbar').innerHTML = '';
-                $$('#sidebar').innerHTML = `<h3>New Experience</h3>
-                                            <p>${points[0].lat.toFixed(5)}, ${points[0].lng.toFixed(5)} → ${points[1].lat.toFixed(5)}, ${points[1].lng.toFixed(5)}</p>
+                $$('#sidebar').innerHTML = `<h3>New Review</h3>
+                                            <p class=greyed>${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}</p>
                                             <form id=spot-form action=experience method=post>
                                               <input type="hidden" name="coords" value='${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}' >
                                               <label>How do you rate the spot?</label>
@@ -185,8 +214,20 @@ console.log(points)
     $$('#sidebar').onclick = addWizard
 
     map.on('click', e => {
-        if (!$$('#sidebar form'))
+        var added = false;
+
+        if (window.innerWidth < 780) {
+            var layerPoint = map.latLngToLayerPoint(e.latlng)
+            var circles = Object.values(map._layers).filter(x => x instanceof L.CircleMarker).sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
+            if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 200) {
+                added = true
+                circles[0].fire('click', e)
+            }
+        }
+        if (!added && !$$('#sidebar form'))
             $$('#sidebar').innerHTML = ''
+
+        L.DomEvent.stopPropagation(e)
     })
 
     function renderPoints() {
@@ -204,9 +245,9 @@ console.log(points)
         $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
     }
     var c = $$('.leaflet-control-attribution')
-    c.innerHTML = '&copy; Bob de Ruiter | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
+    c.innerHTML = '&copy; Bob de Ruiter | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
     if (window.location.hash == '#success') {
-        $$('#sidebar').innerHTML = '<h3>Success!</h3>Your review will appear on the map within 10 minutes. Refreshing might be needed.'
+        $$('#sidebar').innerHTML = '<h3>Success!</h3>Your review will appear on the map within 10 minutes. Refreshing may be needed.'
         window.location.hash = '#'
     }
 })
@@ -220,6 +261,10 @@ h3 {
     border-bottom: 1px #eee solid;
     margin-bottom: 20px !important;
 }
+h3, h4 {
+    font-weight: bold !important;
+    font-size: 1em !important;
+}
 #sidebar {
     line-height: 1.5;
     font-size: 16px;
@@ -230,6 +275,9 @@ h3 {
     text-rendering: optimizeLegibility;
     font-kerning: normal;
     overflow-y: auto;
+}
+#topbar:empty, #sidebar:empty {
+    display: none;
 }
 #sidebar:not(:empty) {
     position: absolute;
@@ -244,6 +292,7 @@ h3 {
     box-shadow: 2px 0 10px;
 }
 #sidebar button {
+    margin-top: 15px;
     margin-bottom: 30px;
     width: 100%;
 }
@@ -253,20 +302,20 @@ h3 {
 #sidebar:not(:empty) + #sb-close {
     display: inline-block;
     position: absolute;
-    top: -10px;
+    top: -13px;
     right: 0px;
     padding: 0 10px;
     cursor: pointer;
     font-size: 45px;
     z-index: 2000;
 }
-#add-spot {
+.add-spot {
     padding: 5px 10px;
     background: #fff !important;
     white-space: nowrap;
 }
-#add-spot a {
-    width: auto;
+.add-spot a {
+    width: auto !important;
 }
 #topbar:not(:empty) {
     pointer-events: none;
@@ -346,6 +395,10 @@ h3 {
 .rate > label:hover ~ input:checked ~ label {
     color: #c59b08;
 }
+.greyed {
+    background-color: #eee;
+    display: inline-block;
+}
 .clear::after {
     content: '';
     display: block;
@@ -362,4 +415,12 @@ h3 {
 </style>
 """))
 
-m.save('light.html' if LIGHT else 'index.html')
+outname = 'light.html' if LIGHT else 'index.html'
+
+m.save(outname)
+
+with open(outname) as f:
+    newText=f.read().replace('</body>', '')
+
+with open(outname, "w") as f:
+    f.write(newText + '\n</body>')
