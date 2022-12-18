@@ -36,7 +36,7 @@ print(len(points))
 points.datetime = pd.to_datetime(points.datetime)
 points['text'] = points['comment'] + '\n\n―' + points['name'].fillna('Anonymous') + ', ' + points.datetime.dt.strftime('%B %Y')
 
-rads = points[['lat', 'lon', 'dest_lat', 'dest_lon']].values.T
+rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 
 points['distance'] = haversine_np(*rads)
 
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
             if (points.length == 1) {
                 if(map.getZoom() > 13) map.setZoom(13);
-                $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/area you were dropped off when you used this spot.<sup><a href=# class=help>?</a></sup></span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
+                $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/area you were dropped off when you used this spot. This does not have to be precise.<sup><a href=# class=help>?</a></sup></span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
                 $$('#sidebar').innerHTML = ''
                 $$('a.help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
             }
