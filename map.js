@@ -193,4 +193,5 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if(!RestoreViewMixin.restoreView.apply(map))
         map.fitBounds([[-35, -40], [60, 40]])
+    if(map.getZoom() > 13) map.setZoom(13);
 })
