@@ -34,7 +34,7 @@ points = pd.read_sql('select * from points where not banned', sqlite3.connect(fn
 print(len(points))
 
 points.datetime = pd.to_datetime(points.datetime)
-points['text'] = points['comment'] + '\n\n―' + points['name'].fillna('Anonymous') + ', ' + points.datetime.dt.strftime('%B %Y')
+points['text'] = points['comment'] + '\n\n―' + points['name'].fillna('Anonymous') + points.datetime.dt.strftime(', %B %Y').fillna('')
 
 rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 

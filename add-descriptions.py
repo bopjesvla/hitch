@@ -9,7 +9,7 @@ import os
 import datetime
 
 fn = 'hw.sqlite'
-desc = pd.read_sql('select p.*, waitingtime wait, \'Anonymous\' name, pd.description comment from t_points p join t_points_descriptions pd where p.id = pd.fk_point', sqlite3.connect(fn))
+desc = pd.read_sql('select p.*, waitingtime wait, null name, pd.description comment from t_points p join t_points_descriptions pd where p.id = pd.fk_point', sqlite3.connect(fn))
 
 desc = desc.drop_duplicates('id')
 desc = desc[['id', 'lat', 'lon', 'rating', 'country', 'wait', 'name', 'comment', 'datetime']]
