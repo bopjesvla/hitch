@@ -33,6 +33,8 @@ fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.s
 points = pd.read_sql('select * from points where not banned', sqlite3.connect(fn))
 print(len(points))
 
+points.loc[points.id.isin(range(1000000,1040000)), 'comment'] = points.loc[points.id.isin(range(1000000,1040000)), 'comment'].str.encode("cp1252",errors='ignore').str.decode('utf-8', errors='ignore')
+
 points.datetime = pd.to_datetime(points.datetime)
 points['text'] = points['comment'] + '\n\n―' + points['name'].fillna('Anonymous') + points.datetime.dt.strftime(', %B %Y').fillna('')
 
