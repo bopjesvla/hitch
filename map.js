@@ -144,6 +144,12 @@ document.addEventListener("DOMContentLoaded", function() {
                                               <input name="username">
                                               <input type="submit" value="Submit">
 `;
+
+                if(storageAvailable('localStorage')) {
+                    var uname = $$('input[name=username]')
+                    uname.value = localStorage.getItem('nick')
+                    uname.onchange = e => localStorage.setItem('nick', uname.value)
+                }
             }
         }
         else if (e.target.innerText == 'Cancel') {
