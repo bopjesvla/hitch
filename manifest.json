@@ -1,0 +1,37 @@
+{
+  "background_color": "#ffffff",
+  "description": "Find hitchhiking spots and add new spots you discovered to the map. Over 20,000 spots were added already!",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Hitchmap",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Hitchmap",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "categories": [
+    "navigation",
+    "travel"
+  ],
+  "screenshots": [],
+  "icons": [
+      {
+          "src": "https://hitchmap.com/icon.png",
+          "sizes": "1024x1024 512x512 256x256 128x128 96x96 48x48"
+      }
+  ],
+  "shortcuts": [
+    {
+      "name": "Hitchmap",
+      "url": "https://hitchmap.com",
+      "icons": [
+        {
+            "src": "https://hitchmap.com/icon.png",
+            "sizes": "512x512 256x256 128x128 96x96 48x48"
+        }
+      ],
+      "description": "Hitchmap"
+    }
+  ],
+  "lang": "en"
+}

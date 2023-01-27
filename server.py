@@ -27,13 +27,29 @@ def index():
 def light():
     return send_file("light.html")
 
-@app.route("/favicon-no-car.ico", methods=['GET'])
+@app.route("/favicon.ico", methods=['GET'])
 def favicon():
-    return send_file("favicon-no-car.ico")
+    return send_file("favicon-flipped.ico")
+
+@app.route("/icon.png", methods=['GET'])
+def icon():
+    return send_file("hitchwiki-high-contrast-no-car-flipped.png")
 
 @app.route("/manifest.json", methods=['GET'])
 def manifest():
     return send_file("manifest.json")
+
+@app.route("/sw.js", methods=['GET'])
+def sw():
+    return send_file("sw.js")
+
+@app.route("/.well-known/assetlinks.json", methods=['GET'])
+def assetlinks():
+    return send_file("android/assetlinks.json")
+
+@app.route("/Hitchmap.apk", methods=['GET'])
+def android_app():
+    return send_file("android/Hitchmap.apk")
 
 @app.route("/experience", methods=['POST'])
 def experience():

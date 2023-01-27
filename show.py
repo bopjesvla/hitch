@@ -106,7 +106,8 @@ folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 html = m.get_root().header
 
 html.add_child(folium.Element("<title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>"))
-html.add_child(folium.Element('<link rel="icon" type="image/x-icon" href="favicon-no-car.ico">'))
+html.add_child(folium.Element('<link rel="icon" type="image/x-icon" href="favicon.ico">'))
+html.add_child(folium.Element('<link rel="manifest" href="/manifest.json">'))
 
 html.add_child(folium.Element(f"""
 <script>
