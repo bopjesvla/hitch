@@ -27,6 +27,14 @@ def index():
 def light():
     return send_file("light.html")
 
+@app.route("/favicon-no-car.ico", methods=['GET'])
+def favicon():
+    return send_file("favicon-no-car.ico")
+
+@app.route("/manifest.json", methods=['GET'])
+def manifest():
+    return send_file("manifest.json")
+
 @app.route("/experience", methods=['POST'])
 def experience():
     data = request.form
