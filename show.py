@@ -7,6 +7,7 @@ import sqlite3
 import os
 import sys
 from branca.element import Element
+from string import Template
 
 LIGHT = 'light' in sys.argv
 
@@ -103,29 +104,21 @@ for country, group in places.groupby('country_group'):
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 
-html = m.get_root().header
+m.get_root().render()
 
-html.add_child(folium.Element("<title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>"))
-html.add_child(folium.Element('<link rel="icon" type="image/x-icon" href="favicon.ico">'))
-html.add_child(folium.Element('<link rel="manifest" href="/manifest.json">'))
-
-html.add_child(folium.Element(f"""
-<script>
-{open('map.js').read()}
-</script>
-"""))
-html.add_child(folium.Element(f"""
-<style>
-{open('style.css').read()}
-</style>
-"""))
+header = m.get_root().header.render()
+body = m.get_root().html.render()
+script = m.get_root().script.render()
 
 outname = 'light.html' if LIGHT else 'index.html'
+template = open('src.html').read()
 
-m.save(outname)
+output = Template(template).substitute({
+    'folium_head': header,
+    'folium_body': body,
+    'folium_script': script,
+    'hitch_script': open('map.js').read(),
+    'hitch_style': open('style.css').read()
+})
 
-with open(outname) as f:
-    newText=f.read().replace('</body>', '')
-
-with open(outname, "w") as f:
-    f.write(newText + '\n</body>')
+open(outname, 'w').write(output)
