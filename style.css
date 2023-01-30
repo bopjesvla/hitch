@@ -8,7 +8,7 @@ h3, h4 {
     font-weight: bold !important;
     font-size: 1em !important;
 }
-#sidebar {
+.sidebar {
     line-height: 1.5;
     font-size: 16px;
     color: #1a1a1a;
@@ -19,10 +19,13 @@ h3, h4 {
     font-kerning: normal;
     overflow-y: auto;
 }
-#topbar:empty, #sidebar:empty {
+.topbar, .sidebar {
     display: none;
 }
-#sidebar:not(:empty) {
+.topbar.visible, .sidebar.visible {
+    display: block;
+}
+.sidebar {
     position: absolute;
     right: 0;
     top: 0;
@@ -34,7 +37,7 @@ h3, h4 {
     padding: 0 20px 20px 20px;
     box-shadow: 2px 0 10px;
 }
-#sidebar button {
+.sidebar button {
     margin-top: 15px;
     margin-bottom: 30px;
     width: 100%;
@@ -42,7 +45,7 @@ h3, h4 {
 #sb-close {
     display: none;
 }
-#sidebar:not(:empty) + #sb-close {
+.sidebar.visible ~ #sb-close {
     display: inline-block;
     position: absolute;
     top: -13px;
@@ -60,7 +63,7 @@ h3, h4 {
 .add-spot a {
     width: auto !important;
 }
-#topbar:not(:empty) {
+.topbar {
     pointer-events: none;
     text-align: center;
     position: absolute;
@@ -72,20 +75,20 @@ h3, h4 {
     z-index: 2002;
     text-shadow: 0 0 2px #fff;
 }
-#topbar span {
+.topbar span {
     background: rgba(255,255,255,1);
     display: inline-block;
     margin-bottom: 5px;
 }
-#topbar button {
+.topbar button {
     pointer-events: auto;
     width: 220px;
     max-width: 30%;
 }
-#topbar a {
+.topbar a {
     pointer-events: auto;
 }
-#topbar:not(:empty)::before {
+.topbar:not(:empty)::before {
     content: '';
     pointer-events: none;
     position: absolute;
@@ -148,10 +151,10 @@ h3, h4 {
     clear: both;
 }
 @media only screen and (max-width: 700px) {
-    #topbar {
+    .topbar {
         font-size: 1em !important;
     }
-    #topbar button {
+    .topbar button {
         font-size: 12px !important;
     }
 }

@@ -55,11 +55,19 @@ function storageAvailable(type) {
     }
 }
 
+var bars = document.querySelectorAll('.sidebar, .topbar')
+
+function bar(selector) {
+    bars.forEach(function(el) {
+        el.classList.remove('visible')
+    })
+    if(selector)
+        $$(selector).classList.add('visible')
+}
+
 var map = window[$$('.folium-map').id]
 
 $$("input[placeholder^=Search]").placeholder = 'Jump to city'
-document.body.insertAdjacentHTML('beforeend',
-    '<div id="sidebar"></div><a href="#" id="sb-close">&times;</a><div id="topbar">')
 
 var customControl =  L.Control.extend({
     options: {
@@ -77,8 +85,7 @@ var customControl =  L.Control.extend({
                     window.location = '/'
                 return;
             }
-            // document.body.classList.add('picker-mode')
-            $$('#topbar').innerHTML = '<span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span><br><button>Done</button><button>Cancel'
+            bar('.topbar.step1')
             points = []
             renderPoints()
         }
@@ -96,10 +103,13 @@ var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
 $$('#sb-close').onclick = function() {
-    $$('#sidebar').replaceChildren()
+    bar()
     points = []
     renderPoints()
 }
+
+$$('a.step2-help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
+
 var addWizard = function(e) {
     if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done')
@@ -110,42 +120,17 @@ var addWizard = function(e) {
     if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
         if (points.length == 1) {
             if(map.getZoom() > 13) map.setZoom(13);
-            $$('#topbar').innerHTML = "<span>Move the crosshairs to the city/area you were dropped off when you used this spot. This does not have to be precise.<sup><a href=# class=help>?</a></sup></span><br><button>Done</button><button>I didn't get a ride</button><button>Cancel"
-            $$('#sidebar').innerHTML = ''
-            $$('a.help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
+            bar('.topbar.step2')
         }
         else if (points.length == 2) {
             var bounds = new L.LatLngBounds(points);
             map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
             map.setZoom(map.getZoom() - 1)
-            $$('#topbar').innerHTML = '';
-            $$('#sidebar').innerHTML = `<h3>New Review</h3>
-                                        <p class=greyed>${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}</p>
-                                        <form id=spot-form action=experience method=post>
-                                            <input type="hidden" name="coords" value='${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}' >
-                                            <label>How do you rate the spot?</label>
-                                            <div class="clear"><div class="rate">
-                                                <input required type="radio" id="star5" name="rate" value="5" />
-                                                <label for="star5" title="5 stars">5 stars</label>
-                                                <input type="radio" id="star4" name="rate" value="4" />
-                                                <label for="star4" title="4 stars">4 stars</label>
-                                                <input type="radio" id="star3" name="rate" value="3" />
-                                                <label for="star3" title="3 stars">3 stars</label>
-                                                <input type="radio" id="star2" name="rate" value="2" />
-                                                <label for="star2" title="2 stars">2 stars</label>
-                                                <input type="radio" id="star1" name="rate" value="1" />
-                                                <label for="star1" title="1 star">1 star</label>
-                                            </div></div>
-                                            <label>How long did you wait? Leave blank if you don't remember.</label>
-                                            <input type="number" name="wait"> minutes
-                                            <label>Optional comment</label>
-                                            <div><textarea name=comment></textarea></div>
-                                            <label>Public nickname (alphanumeric)</label>
-                                            <input name="username">
-                                            <input type="submit" value="Submit">
-`;
+            bar('.sidebar.spot-form-container')
+            $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}`
+            $$('#spot-form input[name=coords]').innerText = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
-            if(storageAvailable('localStorage')) {
+            if (storageAvailable('localStorage')) {
                 var uname = $$('input[name=username]')
                 uname.value = localStorage.getItem('nick')
                 uname.onchange = e => localStorage.setItem('nick', uname.value)
@@ -153,11 +138,11 @@ var addWizard = function(e) {
         }
     }
     else if (e.target.innerText == 'Cancel') {
-        points = []; $$('#topbar').innerHTML = ''; renderPoints();
+        points = []; bar(); renderPoints();
     }
 }
-$$('#topbar').onclick = addWizard
-$$('#sidebar').onclick = addWizard
+
+bars.forEach(bar => bar.onclick = addWizard)
 
 map.on('click', e => {
     var added = false;
@@ -170,8 +155,8 @@ map.on('click', e => {
             circles[0].fire('click', e)
         }
     }
-    if (!added && !$$('#sidebar form'))
-        $$('#sidebar').innerHTML = ''
+    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible'))
+        bar()
 
     L.DomEvent.stopPropagation(e)
 })
@@ -193,7 +178,7 @@ function renderPoints() {
 var c = $$('.leaflet-control-attribution')
 c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {
-    $$('#sidebar').innerHTML = '<h3>Success!</h3>Your review will appear on the map within 10 minutes. Refreshing may be needed.'
+    bar('.sidebar.success')
     window.location.hash = '#'
 }
 

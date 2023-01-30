@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+
+    $folium_head
+    <style>
+     $hitch_style
+    </style>
+</head>
+<body>
+    $folium_body
+    <div class="sidebar spot-form-container">
+        <h3>New Review</h3>
+        <p class=greyed></p>
+        <form id=spot-form action=experience method=post>
+            <input type="hidden" name="coords">
+            <label>How do you rate the spot?</label>
+            <div class="clear"><div class="rate">
+                <input required type="radio" id="star5" name="rate" value="5" />
+                <label for="star5" title="5 stars">5 stars</label>
+                <input type="radio" id="star4" name="rate" value="4" />
+                <label for="star4" title="4 stars">4 stars</label>
+                <input type="radio" id="star3" name="rate" value="3" />
+                <label for="star3" title="3 stars">3 stars</label>
+                <input type="radio" id="star2" name="rate" value="2" />
+                <label for="star2" title="2 stars">2 stars</label>
+                <input type="radio" id="star1" name="rate" value="1" />
+                <label for="star1" title="1 star">1 star</label>
+            </div></div>
+            <label>How long did you wait? Leave blank if you don't remember.</label>
+            <input type="number" name="wait"> minutes
+            <label>Optional comment</label>
+            <div><textarea name=comment></textarea></div>
+            <label>Public nickname (alphanumeric)</label>
+            <input name="username">
+            <input type="submit" value="Submit">
+    </div>
+    <div class="sidebar show-spot">
+        <h3 id="spot-header"></h3>
+        <div id='spot-summary'></div>
+        <h4>Comments</h4>
+        <div id='spot-text'></div>
+        <div><button>Review this spot</button></div>
+        <i id="extra-text"></i>
+    </div>
+    <div class="sidebar success">
+        <h3>Success!</h3>
+
+        Your review will appear on the map within 10 minutes. Refreshing may be needed.
+    </div>
+    <a href="#" id="sb-close">&times;</a>
+    <div class="topbar step1">
+        <span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span>
+        <br><button>Done</button><button>Cancel</button>
+    </div>
+    <div class="topbar step2">
+        <span>
+            Move the crosshairs to the city/area you were dropped off when you used this spot.
+            This does not have to be precise.<sup><a href=# class=step2-help>?</a></sup>
+        </span>
+        <br><button>Done</button><button>I didn't get a ride</button><button>Cancel</button>
+    </div>
+        <script>
+         $folium_script
+        </script>
+    <script>
+     $hitch_script
+    </script>
+</body>
