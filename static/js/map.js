@@ -1,5 +1,5 @@
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js").catch(e => console.error(e));
+    navigator.serviceWorker.register("js/sw.js").catch(e => console.error(e));
 }
 
 var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;

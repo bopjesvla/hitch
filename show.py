@@ -112,14 +112,12 @@ body = m.get_root().html.render()
 script = m.get_root().script.render()
 
 outname = 'light.html' if LIGHT else 'index.html'
-template = open('src.html').read()
+template = open('templates/src.html').read()
 
 output = Template(template).substitute({
     'folium_head': header,
     'folium_body': body,
     'folium_script': script,
-    'hitch_script': open('map.js').read(),
-    'hitch_style': open('style.css').read()
 })
 
 open(outname, 'w').write(output)

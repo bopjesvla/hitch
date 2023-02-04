@@ -17,7 +17,9 @@ def get_db():
         db = g._database = sqlite3.connect(DATABASE)
     return db
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='',
+            static_folder='static')
 
 @app.route("/", methods=['GET'])
 def index():
@@ -26,22 +28,6 @@ def index():
 @app.route("/light.html", methods=['GET'])
 def light():
     return send_file("light.html")
-
-@app.route("/favicon.ico", methods=['GET'])
-def favicon():
-    return send_file("favicon-flipped.ico")
-
-@app.route("/icon.png", methods=['GET'])
-def icon():
-    return send_file("hitchwiki-high-contrast-no-car-flipped.png")
-
-@app.route("/manifest.json", methods=['GET'])
-def manifest():
-    return send_file("manifest.json")
-
-@app.route("/sw.js", methods=['GET'])
-def sw():
-    return send_file("sw.js")
 
 @app.route("/.well-known/assetlinks.json", methods=['GET'])
 def assetlinks():
