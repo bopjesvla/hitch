@@ -18,18 +18,20 @@
         <form id=spot-form action=experience method=post>
             <input type="hidden" name="coords">
             <label>How do you rate the spot?</label>
-            <div class="clear"><div class="rate">
-                <input required type="radio" id="star5" name="rate" value="5" />
-                <label for="star5" title="5 stars">5 stars</label>
-                <input type="radio" id="star4" name="rate" value="4" />
-                <label for="star4" title="4 stars">4 stars</label>
-                <input type="radio" id="star3" name="rate" value="3" />
-                <label for="star3" title="3 stars">3 stars</label>
-                <input type="radio" id="star2" name="rate" value="2" />
-                <label for="star2" title="2 stars">2 stars</label>
-                <input type="radio" id="star1" name="rate" value="1" />
-                <label for="star1" title="1 star">1 star</label>
-            </div></div>
+            <div class="clear">
+                <div class="rate">
+                    <input required type="radio" id="star5" name="rate" value="5" />
+                    <label for="star5" title="5 stars">5 stars</label>
+                    <input type="radio" id="star4" name="rate" value="4" />
+                    <label for="star4" title="4 stars">4 stars</label>
+                    <input type="radio" id="star3" name="rate" value="3" />
+                    <label for="star3" title="3 stars">3 stars</label>
+                    <input type="radio" id="star2" name="rate" value="2" />
+                    <label for="star2" title="2 stars">2 stars</label>
+                    <input type="radio" id="star1" name="rate" value="1" />
+                    <label for="star1" title="1 star">1 star</label>
+                </div>
+            </div>
             <label>How long did you wait? Leave blank if you don't remember.</label>
             <input type="number" name="wait"> minutes
             <label>Optional comment</label>
@@ -37,6 +39,7 @@
             <label>Public nickname (alphanumeric)</label>
             <input name="username">
             <input type="submit" value="Submit">
+        </form>
     </div>
     <div class="sidebar show-spot">
         <h3 id="spot-header"></h3>
@@ -59,7 +62,7 @@
     <div class="topbar step2">
         <span>
             Move the crosshairs to the city/area you were dropped off when you used this spot.
-            This does not have to be precise.<sup><a href=# class=step2-help>?</a></sup>
+            This does not have to be precise.<sup><a href=# title="This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
         <br><button>Done</button><button>I didn't get a ride</button><button>Cancel</button>
     </div>

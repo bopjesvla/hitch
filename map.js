@@ -8,53 +8,6 @@ var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 $$ = function(e) {return document.querySelector(e)}
 var points = [], spotMarker, destMarker
 
-var RestoreViewMixin = {
-    restoreView: function () {
-        if (!storageAvailable('localStorage')) {
-            return false;
-        }
-        var storage = window.localStorage;
-        if (!this.__initRestore) {
-            this.on('moveend', function (e) {
-                if (!this._loaded)
-                    return;  // Never access map bounds if view is not set.
-
-                var view = {
-                    lat: this.getCenter().lat,
-                    lng: this.getCenter().lng,
-                    zoom: this.getZoom()
-                };
-                storage['mapView'] = JSON.stringify(view);
-            }, this);
-            this.__initRestore = true;
-        }
-
-        var view = storage['mapView'];
-        try {
-            view = JSON.parse(view || '');
-            this.setView(L.latLng(view.lat, view.lng), view.zoom, true);
-            return true;
-        }
-        catch (err) {
-            return false;
-        }
-    }
-};
-
-function storageAvailable(type) {
-    try {
-        var storage = window[type],
-            x = '__storage_test__';
-        storage.setItem(x, x);
-        storage.removeItem(x);
-        return true;
-    }
-    catch(e) {
-        console.warn("Your browser blocks access to " + type);
-        return false;
-    }
-}
-
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
 function bar(selector) {
@@ -69,7 +22,7 @@ var map = window[$$('.folium-map').id]
 
 $$("input[placeholder^=Search]").placeholder = 'Jump to city'
 
-var customControl =  L.Control.extend({
+var AddSpotButton =  L.Control.extend({
     options: {
         position: 'topleft'
     },
@@ -94,7 +47,7 @@ var customControl =  L.Control.extend({
     }
 });
 
-map.addControl(new customControl());
+map.addControl(new AddSpotButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
@@ -108,7 +61,7 @@ $$('#sb-close').onclick = function() {
     renderPoints()
 }
 
-$$('a.step2-help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
+$$('a.step2-help').onclick = _ => alert(e.target.title)
 
 var addWizard = function(e) {
     if (e.target.tagName != 'BUTTON') return
@@ -128,7 +81,7 @@ var addWizard = function(e) {
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}`
-            $$('#spot-form input[name=coords]').innerText = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
+            $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
                 var uname = $$('input[name=username]')
@@ -182,6 +135,53 @@ if (window.location.hash == '#success') {
     window.location.hash = '#'
 }
 
-if(!RestoreViewMixin.restoreView.apply(map))
+function restoreView () {
+    if (!storageAvailable('localStorage')) {
+        return false;
+    }
+    var storage = window.localStorage;
+    if (!this.__initRestore) {
+        this.on('moveend', function (e) {
+            if (!this._loaded)
+                return;  // Never access map bounds if view is not set.
+
+            var view = {
+                lat: this.getCenter().lat,
+                lng: this.getCenter().lng,
+                zoom: this.getZoom()
+            };
+            storage['mapView'] = JSON.stringify(view);
+        }, this);
+        this.__initRestore = true;
+    }
+
+    var view = storage['mapView'];
+    try {
+        view = JSON.parse(view || '');
+        this.setView(L.latLng(view.lat, view.lng), view.zoom, true);
+        return true;
+    }
+    catch (err) {
+        return false;
+    }
+}
+
+function storageAvailable(type) {
+    try {
+        var storage = window[type],
+            x = '__storage_test__';
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return true;
+    }
+    catch(e) {
+        console.warn("Your browser blocks access to " + type);
+        return false;
+    }
+}
+
+if(!restoreView.apply(map))
     map.fitBounds([[-35, -40], [60, 40]])
 if(map.getZoom() > 13) map.setZoom(13);
+
+$$('.folium.map').focus()

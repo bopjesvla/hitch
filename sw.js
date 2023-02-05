@@ -15,6 +15,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
     console.log(event.request.url)
+    console.log(event.request.method)
+    if (event.request.method != 'GET')
+        return
     if (event.request.destination === 'image') {
         event.respondWith(caches.open(cacheName).then((cache) => {
             // Go to the cache first
@@ -39,7 +42,7 @@ self.addEventListener('fetch', (event) => {
         // Open the cache
         event.respondWith(caches.open(cacheName).then((cache) => {
             // Go to the network first
-            return fetch(event.request.url).then((fetchedResponse) => {
+            return fetch(event.request).then((fetchedResponse) => {
                 cache.put(event.request, fetchedResponse.clone());
 
                 return fetchedResponse;
