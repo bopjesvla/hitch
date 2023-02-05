@@ -51,7 +51,6 @@ map.addControl(new AddSpotButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
-// $$('.leaflet-top.leaflet-left').insertAdjacentHTML('beforeend', '<div id="add-spot" class="leaflet-bar leaflet-control"><a href="#">📍 Add a spot')
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
@@ -63,7 +62,7 @@ $$('#sb-close').onclick = function() {
 
 $$('a.step2-help').onclick = _ => alert(e.target.title)
 
-var addWizard = function(e) {
+var addSpotStep = function(e) {
     if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done')
         points.push(map.getCenter())
@@ -95,7 +94,7 @@ var addWizard = function(e) {
     }
 }
 
-bars.forEach(bar => bar.onclick = addWizard)
+bars.forEach(bar => bar.onclick = addSpotStep)
 
 map.on('click', e => {
     var added = false;
