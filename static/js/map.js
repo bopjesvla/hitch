@@ -5,9 +5,11 @@ if ("serviceWorker" in navigator) {
 var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
-$$ = function(e) {return document.querySelector(e)}
-var points = [], spotMarker, destMarker
+$$ = function(e) {return document.querySelector(e)};
+var sidebarVisible = false,
+    topbarVisible = false;
 
+// Used to save/restore current map position
 var RestoreViewMixin = {
     restoreView: function () {
         if (!storageAvailable('localStorage')) {
@@ -55,19 +57,9 @@ function storageAvailable(type) {
     }
 }
 
-var bars = document.querySelectorAll('.sidebar, .topbar')
+var map = window[$$('.folium-map').id];
 
-function bar(selector) {
-    bars.forEach(function(el) {
-        el.classList.remove('visible')
-    })
-    if(selector)
-        $$(selector).classList.add('visible')
-}
-
-var map = window[$$('.folium-map').id]
-
-$$("input[placeholder^=Search]").placeholder = 'Jump to city'
+$$("input[placeholder^=Search]").placeholder = 'Jump to city';
 
 var customControl =  L.Control.extend({
     options: {
@@ -85,8 +77,11 @@ var customControl =  L.Control.extend({
                     window.location = '/'
                 return;
             }
-            bar('.topbar.step1')
-            points = []
+
+            store.topbarVisible = true;
+            store.topbarStep = 1;
+
+            store.points = []
             renderPoints()
         }
 
@@ -102,21 +97,54 @@ if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder')
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
-$$('#sb-close').onclick = function() {
-    bar()
-    points = []
-    renderPoints()
+//$$('a.step2-help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
+
+function handleReviewClick(e) {
+  store.topbarVisible = true;
+  store.topbarStep = 2;
+  store.points = [map.getCenter()];
+  renderPoints();
 }
 
-$$('a.step2-help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
+function handleAdd(e) {
+  store.points.push(map.getCenter());
+  store.topbarStep = 2;
+  renderPoints();
+}
+
+function handleDone(gotRide = false) {
+  if (!gotRide) {
+    store.points.push(points[0]);
+  } else {
+    store.points.push(map.getCenter());
+  }
+
+  var bounds = new L.LatLngBounds(points);
+  map.fitBounds(bounds, { paddingBottomRight: [0, 400] });
+  map.setZoom(map.getZoom() - 1);
+
+  store.topbarVisible = false;
+
+  store.sidebarVisible = true;
+  store.sidebarSection = 'review';
+  renderPoints();
+}
+
+function handleCancel(e) {
+  store.topbarVisible = false;
+  store.points = [];
+  renderPoints();
+}
 
 var addWizard = function(e) {
-    if (e.target.tagName != 'BUTTON') return
+    /**if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done')
         points.push(map.getCenter())
     if (e.target.innerText.includes("didn't get"))
         points.push(points[0])
-    renderPoints()
+
+    renderPoints();
+
     if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
         if (points.length == 1) {
             if(map.getZoom() > 13) map.setZoom(13);
@@ -138,50 +166,71 @@ var addWizard = function(e) {
         }
     }
     else if (e.target.innerText == 'Cancel') {
-        points = []; bar(); renderPoints();
-    }
+        points = []; renderPoints();
+    }*/
 }
-
-bars.forEach(bar => bar.onclick = addWizard)
 
 map.on('click', e => {
-    var added = false;
+  var added = false;
 
-    if (window.innerWidth < 780) {
-        var layerPoint = map.latLngToLayerPoint(e.latlng)
-        var circles = Object.values(map._layers).filter(x => x instanceof L.CircleMarker).sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
-        if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 200) {
-            added = true
-            circles[0].fire('click', e)
-        }
-    }
-    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible'))
-        bar()
+  if (window.innerWidth < 780) {
+      var layerPoint = map.latLngToLayerPoint(e.latlng)
+      var circles = Object.values(map._layers).filter(x => x instanceof L.CircleMarker).sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
+      if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 200) {
+          added = true
+          circles[0].fire('click', e)
+      }
+  }
 
-    L.DomEvent.stopPropagation(e)
-})
+  if (!added && store.sidebarVisible) {
+    store.sidebarVisible = false;
+    handleCancel();
+  }
+
+  L.DomEvent.stopPropagation(e)
+});
 
 function renderPoints() {
-    if (spotMarker) map.removeLayer(spotMarker)
-    if (destMarker) map.removeLayer(destMarker)
-    spotMarker = destMarker = null
-    if (points[0]) {
-        spotMarker = L.marker(points[0])
-        spotMarker.addTo(map)
+    if (store.spotMarker) map.removeLayer(store.spotMarker);
+    if (store.destMarker) map.removeLayer(store.destMarker);
+
+    store.spotMarker = store.destMarker = null;
+
+    if (store.points[0]) {
+        store.spotMarker = L.marker(store.points[0]);
+        store.spotMarker.addTo(map);
     }
-    if (points[1]) {
-        destMarker = L.marker(points[1], {color: 'red'})
-        destMarker.addTo(map)
+
+    if (store.points[1]) {
+        store.destMarker = L.marker(store.points[1], { color: 'red' });
+        store.destMarker.addTo(map);
     }
-    $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
+
+    $$('.leaflet-overlay-pane').style.opacity = store.points.length ? 0.3 : 1
 }
+
+function handleMarkerClick(e, point) {
+  if (store.topbarVisible) return;
+
+  setTimeout(() => {
+    store.selectedSpot = point;
+    store.sidebarVisible = true;
+    store.sidebarSection = 'spotDetail';
+  }, 100);
+
+  L.DomEvent.stopPropagation(e)
+}
+
+// Copyright
 var c = $$('.leaflet-control-attribution')
 c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {
-    bar('.sidebar.success')
+    store.sidebarSection = 'reviewSuccess';
+    store.sidebarVisible = true;
     window.location.hash = '#'
 }
 
+// Default map view
 if(!RestoreViewMixin.restoreView.apply(map))
     map.fitBounds([[-35, -40], [60, 40]])
 if(map.getZoom() > 13) map.setZoom(13);

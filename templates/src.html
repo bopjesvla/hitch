@@ -1,19 +1,43 @@
 <!DOCTYPE html>
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="manifest" href="manifest.json">
+<html>
+  <head>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+      <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
+      <link rel="icon" type="image/x-icon" href="favicon.ico">
+      <link rel="manifest" href="manifest.json">
 
-    $folium_head
+      $folium_head
 
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+      <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body id="app">
     $folium_body
-    <div class="sidebar spot-form-container">
-        <h3>New Review</h3>
-        <p class=greyed></p>
+
+    <div class="Sidebar" v-if="store.sidebarVisible">
+      {{ store.selectedSpot }}
+      <h2 class="SidebarTitle">{{ store.selectedSpot[0].toFixed(5) }}, {{ store.selectedSpot[1].toFixed(5) }}</h2>
+
+      <!-- Show details about a spot -->
+      <div class="SidebarContent" id="Sidebar__Spot" v-if="store.sidebarSection === 'spotDetail'">
+        <div class="SidebarContentSection">
+          <b>Hitchability:</b> {{ store.selectedSpot[2].toFixed(0) }}/5</br>
+          <b>Waiting time:</b> {{ Number.isNaN(store.selectedSpot[4]) ? '-' : store.selectedSpot[4].toFixed(0) }}mins</br>
+          <b>Ride distance:</b> {{ Number.isNaN(store.selectedSpot[5]) ? '-' : store.selectedSpot[5].toFixed(0) }}kms</span>
+        </div>
+        <div class="SidebarContentSection">
+          <h4>Comments</h4>
+
+        </div>
+        <div>
+          <button @click="handleReviewClick">Review this spot</button>
+        </div>
+        <i id="extra-text" v-if="!store.selectedSpot[3] && Number.isNaN(store.selectedSpot[5])">
+          No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.
+        </i>
+      </div>
+
+      <!-- Show review form -->
+      <div class="SidebarContent" id="Sidebar__Review" v-if="store.sidebarSection === 'review'">
         <form id=spot-form action=experience method=post>
             <input type="hidden" name="coords">
             <label>How do you rate the spot?</label>
@@ -36,34 +60,39 @@
             <label>Public nickname (alphanumeric)</label>
             <input name="username">
             <input type="submit" value="Submit">
-    </div>
-    <div class="sidebar show-spot">
-        <h3 id="spot-header"></h3>
-        <div id='spot-summary'></div>
-        <h4>Comments</h4>
-        <div id='spot-text'></div>
-        <div><button>Review this spot</button></div>
-        <i id="extra-text"></i>
-    </div>
-    <div class="sidebar success">
-        <h3>Success!</h3>
+          </form>
+      </div>
 
-        Your review will appear on the map within 10 minutes. Refreshing may be needed.
+      <!-- Show review success -->
+      <div class="SidebarContent" id="Sidebar__ReviewSuccess" v-if="store.sidebarSection === 'reviewSuccess'">
+        <p>Your review will appear on the map within 10 minutes. Refreshing may be needed.</p>
+      </div>
     </div>
-    <a href="#" id="sb-close">&times;</a>
-    <div class="topbar step1">
-        <span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span>
-        <br><button>Done</button><button>Cancel</button>
+
+    <!-- Topbar (adding spots) -->
+    <div class="Topbar" v-if="store.topbarVisible">
+      <div class="topbar step1" v-if="store.topbarStep === 1">
+          <span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span>
+          <br>
+          <button @click="handleAdd">Done</button>
+          <button @click="handleCancel">Cancel</button>
+      </div>
+      <div class="topbar step2" v-if="store.topbarStep === 2">
+          <span>
+              Move the crosshairs to the city/area you were dropped off when you used this spot.
+              This does not have to be precise.<sup><a href=# class=step2-help>?</a></sup>
+          </span>
+          <br>
+          <button @click="handleDone(true)">Done</button>
+          <button @click="handleDone(false)">I didn't get a ride</button>
+          <button @click="handleCancel">Cancel</button>
+      </div>
     </div>
-    <div class="topbar step2">
-        <span>
-            Move the crosshairs to the city/area you were dropped off when you used this spot.
-            This does not have to be precise.<sup><a href=# class=step2-help>?</a></sup>
-        </span>
-        <br><button>Done</button><button>I didn't get a ride</button><button>Cancel</button>
-    </div>
-        <script>
-         $folium_script
-        </script>
+    <script src="https://unpkg.com/petite-vue"></script>
+    <script src="js/main.js" type="module" defer></script>
+    <script>
+    $folium_script
+    </script>
     <script src="js/map.js"></script>
-</body>
+  </body>
+</html>
