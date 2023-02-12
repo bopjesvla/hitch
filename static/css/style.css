@@ -1,47 +1,49 @@
+[v-cloak] { display: none }
+
 h3 {
-    text-align: center;
     padding-bottom: 20px;
-    border-bottom: 1px #eee solid;
-    margin-bottom: 20px !important;
 }
+
 h3, h4 {
     font-weight: bold !important;
     font-size: 1em !important;
 }
-.sidebar {
-    line-height: 1.5;
-    font-size: 16px;
-    color: #1a1a1a;
-    background-color: #fdfdfd;
-    hyphens: auto;
-    overflow-wrap: break-word;
-    text-rendering: optimizeLegibility;
-    font-kerning: normal;
-    overflow-y: auto;
+
+.Sidebar {
+  position: absolute;
+  z-index: 1000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 100%;
+  width: 25%;
+  max-width: 400px;
+
+  padding: 12px;
+
+  background-color: #faf9f3;
+  box-shadow: 0 0 15px 0px rgba(0, 0, 0, 0.5);
 }
-.topbar, .sidebar {
-    display: none;
+
+.Sidebar button {
+  width: 100%;
 }
-.topbar.visible, .sidebar.visible {
-    display: block;
+
+.SidebarTitle h2 {
+  margin: 0;
 }
-.sidebar {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 400px;
-    max-width: 100%;
-    z-index: 1999;
-    background: white;
-    padding: 0 20px 20px 20px;
-    box-shadow: 2px 0 10px;
+
+.SidebarTitle,
+.SidebarContentSection {
+  padding: 12px 0;
+  border-bottom: 1px solid #ccc4a0;
 }
-.sidebar button {
-    margin-top: 15px;
-    margin-bottom: 30px;
-    width: 100%;
+
+.SidebarContentSection:last-of-type {
+  border-bottom: none;
 }
+
 #sb-close {
     display: none;
 }
@@ -128,11 +130,11 @@ h3, h4 {
     content: '★ ';
 }
 .rate > input:checked ~ label {
-    color: #ffc700;    
+    color: #ffc700;
 }
 .rate:not(:checked) > label:hover,
 .rate:not(:checked) > label:hover ~ label {
-    color: #deb217;  
+    color: #deb217;
 }
 .rate > input:checked + label:hover,
 .rate > input:checked + label:hover ~ label,

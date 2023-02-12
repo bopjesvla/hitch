@@ -5,63 +5,14 @@ if ("serviceWorker" in navigator) {
 var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
-$$ = function(e) {return document.querySelector(e)};
-var sidebarVisible = false,
-    topbarVisible = false;
+$$ = function(e) {return document.querySelector(e)}
 
-// Used to save/restore current map position
-var RestoreViewMixin = {
-    restoreView: function () {
-        if (!storageAvailable('localStorage')) {
-            return false;
-        }
-        var storage = window.localStorage;
-        if (!this.__initRestore) {
-            this.on('moveend', function (e) {
-                if (!this._loaded)
-                    return;  // Never access map bounds if view is not set.
+var map = window[$$('.folium-map').id]
 
-                var view = {
-                    lat: this.getCenter().lat,
-                    lng: this.getCenter().lng,
-                    zoom: this.getZoom()
-                };
-                storage['mapView'] = JSON.stringify(view);
-            }, this);
-            this.__initRestore = true;
-        }
+// Custom Controls
+$$("input[placeholder^=Search]").placeholder = 'Jump to city'
 
-        var view = storage['mapView'];
-        try {
-            view = JSON.parse(view || '');
-            this.setView(L.latLng(view.lat, view.lng), view.zoom, true);
-            return true;
-        }
-        catch (err) {
-            return false;
-        }
-    }
-};
-
-function storageAvailable(type) {
-    try {
-        var storage = window[type],
-            x = '__storage_test__';
-        storage.setItem(x, x);
-        storage.removeItem(x);
-        return true;
-    }
-    catch(e) {
-        console.warn("Your browser blocks access to " + type);
-        return false;
-    }
-}
-
-var map = window[$$('.folium-map').id];
-
-$$("input[placeholder^=Search]").placeholder = 'Jump to city';
-
-var customControl =  L.Control.extend({
+var AddSpotButton =  L.Control.extend({
     options: {
         position: 'topleft'
     },
@@ -80,8 +31,7 @@ var customControl =  L.Control.extend({
 
             store.topbarVisible = true;
             store.topbarStep = 1;
-
-            store.points = []
+            store.points = [];
             renderPoints()
         }
 
@@ -89,20 +39,33 @@ var customControl =  L.Control.extend({
     }
 });
 
-map.addControl(new customControl());
+map.addControl(new AddSpotButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
-// $$('.leaflet-top.leaflet-left').insertAdjacentHTML('beforeend', '<div id="add-spot" class="leaflet-bar leaflet-control"><a href="#">📍 Add a spot')
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
-//$$('a.step2-help').onclick = _ => alert('This is mostly used for distance and direction statistics, so it does not have to precise. If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews.')
+$$('a.step2-help').onclick = _ => alert(e.target.title)
 
+// When a point is clicked on the map
+function handleMarkerClick(e, point) {
+  if (store.topbarVisible) return;
+
+  setTimeout(() => {
+    store.points = [new L.LatLng(point[0], point[1])];
+    store.selectedSpot = point;
+    store.sidebarVisible = true;
+    store.sidebarSection = 'spotDetail';
+  }, 100);
+
+  L.DomEvent.stopPropagation(e)
+}
+
+// addSpotStep
 function handleReviewClick(e) {
   store.topbarVisible = true;
   store.topbarStep = 2;
-  store.points = [map.getCenter()];
   renderPoints();
 }
 
@@ -114,12 +77,12 @@ function handleAdd(e) {
 
 function handleDone(gotRide = false) {
   if (!gotRide) {
-    store.points.push(points[0]);
+    store.points.push(store.points[0]);
   } else {
     store.points.push(map.getCenter());
   }
 
-  var bounds = new L.LatLngBounds(points);
+  var bounds = new L.LatLngBounds(store.points);
   map.fitBounds(bounds, { paddingBottomRight: [0, 400] });
   map.setZoom(map.getZoom() - 1);
 
@@ -127,6 +90,7 @@ function handleDone(gotRide = false) {
 
   store.sidebarVisible = true;
   store.sidebarSection = 'review';
+
   renderPoints();
 }
 
@@ -136,40 +100,7 @@ function handleCancel(e) {
   renderPoints();
 }
 
-var addWizard = function(e) {
-    /**if (e.target.tagName != 'BUTTON') return
-    if (e.target.innerText == 'Done')
-        points.push(map.getCenter())
-    if (e.target.innerText.includes("didn't get"))
-        points.push(points[0])
-
-    renderPoints();
-
-    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
-        if (points.length == 1) {
-            if(map.getZoom() > 13) map.setZoom(13);
-            bar('.topbar.step2')
-        }
-        else if (points.length == 2) {
-            var bounds = new L.LatLngBounds(points);
-            map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
-            map.setZoom(map.getZoom() - 1)
-            bar('.sidebar.spot-form-container')
-            $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}`
-            $$('#spot-form input[name=coords]').innerText = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
-
-            if (storageAvailable('localStorage')) {
-                var uname = $$('input[name=username]')
-                uname.value = localStorage.getItem('nick')
-                uname.onchange = e => localStorage.setItem('nick', uname.value)
-            }
-        }
-    }
-    else if (e.target.innerText == 'Cancel') {
-        points = []; renderPoints();
-    }*/
-}
-
+// Reset Map on Click
 map.on('click', e => {
   var added = false;
 
@@ -190,6 +121,7 @@ map.on('click', e => {
   L.DomEvent.stopPropagation(e)
 });
 
+// Renders the points when reviewing / adding
 function renderPoints() {
     if (store.spotMarker) map.removeLayer(store.spotMarker);
     if (store.destMarker) map.removeLayer(store.destMarker);
@@ -209,28 +141,60 @@ function renderPoints() {
     $$('.leaflet-overlay-pane').style.opacity = store.points.length ? 0.3 : 1
 }
 
-function handleMarkerClick(e, point) {
-  if (store.topbarVisible) return;
-
-  setTimeout(() => {
-    store.selectedSpot = point;
-    store.sidebarVisible = true;
-    store.sidebarSection = 'spotDetail';
-  }, 100);
-
-  L.DomEvent.stopPropagation(e)
-}
-
-// Copyright
+// Copyright Marker
 var c = $$('.leaflet-control-attribution')
+
 c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
-if (window.location.hash == '#success') {
-    store.sidebarSection = 'reviewSuccess';
-    store.sidebarVisible = true;
-    window.location.hash = '#'
+
+// Check if browser supports localStorage
+function storageAvailable(type) {
+  try {
+    var storage = window[type],
+      x = '__storage_test__';
+    storage.setItem(x, x);
+    storage.removeItem(x);
+    return true;
+  } catch(e) {
+    console.warn("Your browser blocks access to " + type);
+    return false;
+  }
 }
 
-// Default map view
-if(!RestoreViewMixin.restoreView.apply(map))
-    map.fitBounds([[-35, -40], [60, 40]])
-if(map.getZoom() > 13) map.setZoom(13);
+// RestoreViewMixin
+function restoreView() {
+  if (!storageAvailable('localStorage')) return false;
+
+  var storage = window.localStorage;
+
+  if (!this.__initRestore) {
+    this.on('moveend', function (e) {
+      if (!this._loaded)
+        return;  // Never access map bounds if view is not set.
+
+      var view = {
+        lat: this.getCenter().lat,
+        lng: this.getCenter().lng,
+        zoom: this.getZoom()
+      };
+
+      storage['mapView'] = JSON.stringify(view);
+    }, this);
+
+    this.__initRestore = true;
+  }
+
+  var view = storage['mapView'];
+
+  try {
+    view = JSON.parse(view || '');
+    this.setView(L.latLng(view.lat, view.lng), view.zoom, true);
+
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+// Initialize map
+if (!restoreView.apply(map)) map.fitBounds([[-35, -40], [60, 40]]);
+if (map.getZoom() > 13) map.setZoom(13);

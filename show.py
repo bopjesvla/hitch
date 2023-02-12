@@ -74,25 +74,9 @@ function (row) {
     var point = new L.LatLng(row[0], row[1])
     marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[2] == 5), fillOpacity: opacity, color: 'black', fillColor: color});
 
-    marker.on('click', function(e) {
-        if ($$('.topbar.visible')) return
+    points = [point]
 
-        points = [point]
-
-        setTimeout(() => {
-            bar('.sidebar.show-spot')
-            $$('#spot-header').innerText = `${row[0].toFixed(5)}, ${row[1].toFixed(5)}`
-            $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
-Waiting time in minutes: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
-Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
-
-            $$('#spot-text').innerText = row[3];
-            if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'
-            else $$('#extra-text').innerHTML = ''
-        },100)
-
-        L.DomEvent.stopPropagation(e)
-    })
+    marker.on('click', e => handleMarkerClick(e, row));
 
     // if(row[2] >= 4) marker.bringToFront()
 
