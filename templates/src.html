@@ -19,9 +19,9 @@
       <!-- Show details about a spot -->
       <div class="SidebarContent" id="Sidebar__Spot" v-if="store.sidebarSection === 'spotDetail'">
         <div class="SidebarContentSection">
-          <b>Hitchability:</b> {{ store.selectedSpot[2].toFixed(0) }}/5</br>
-          <b>Waiting time:</b> {{ Number.isNaN(store.selectedSpot[4]) ? '-' : store.selectedSpot[4].toFixed(0) }}mins</br>
-          <b>Ride distance:</b> {{ Number.isNaN(store.selectedSpot[5]) ? '-' : store.selectedSpot[5].toFixed(0) }}kms</span>
+          <b>Rating:</b> {{ store.selectedSpot[2].toFixed(0) }}/5</br>
+          <b>Waiting time:</b> {{ Number.isNaN(store.selectedSpot[4]) ? '-' : store.selectedSpot[4].toFixed(0) }} min</br>
+          <b>Ride distance:</b> {{ Number.isNaN(store.selectedSpot[5]) ? '-' : store.selectedSpot[5].toFixed(0) }} km</span>
         </div>
         <div class="SidebarContentSection">
           <h4>Comments</h4>
