@@ -58,6 +58,8 @@ $$('#sb-close').onclick = function() {
     bar()
     points = []
     renderPoints()
+    if (window.location.hash)
+        history.pushState(null, null, ' ')
 }
 
 $$('a.step2-help').onclick = _ => alert(e.target.title)
@@ -131,7 +133,7 @@ var c = $$('.leaflet-control-attribution')
 c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {
     bar('.sidebar.success')
-    window.location.hash = '#'
+    history.replaceState(null, null, ' ')
 }
 
 function restoreView () {
@@ -179,8 +181,9 @@ function storageAvailable(type) {
     }
 }
 
-if(!restoreView.apply(map))
-    map.fitBounds([[-35, -40], [60, 40]])
+if (!window.location.hash.includes(',')) // we'll center on coord
+    if(!restoreView.apply(map))
+        map.fitBounds([[-35, -40], [60, 40]])
 if(map.getZoom() > 13) map.setZoom(13);
 
-$$('.folium.map').focus()
+$$('.folium-map').focus()

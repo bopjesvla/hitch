@@ -89,10 +89,19 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
             $$('#spot-text').innerText = row[3];
             if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'
             else $$('#extra-text').innerHTML = ''
+
+            window.location.hash = `${row[0]},${row[1]}`
         },100)
 
         L.DomEvent.stopPropagation(e)
     })
+
+    if (window.location.hash == `#${row[0]},${row[1]}`)
+        addEventListener("DOMContentLoaded", e => {
+            marker.fire('click', {})
+            map.setView(marker.getLatLng(), 16)
+        });
+
 
     // if(row[2] >= 4) marker.bringToFront()
 
