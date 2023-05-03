@@ -16,6 +16,8 @@ function bar(selector) {
     })
     if(selector)
         $$(selector).classList.add('visible')
+    if (window.location.hash)
+        history.pushState(null, null, ' ')
 }
 
 var map = window[$$('.folium-map').id]
@@ -29,7 +31,7 @@ var AddSpotButton =  L.Control.extend({
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
         var container = L.DomUtil.create('a', '', controlDiv);
-        container.href="#";
+        container.href="javascrip:void(0);";
         container.innerText = "📍 Add a spot";
 
         container.onclick = function() {
@@ -58,8 +60,6 @@ $$('#sb-close').onclick = function() {
     bar()
     points = []
     renderPoints()
-    if (window.location.hash)
-        history.pushState(null, null, ' ')
 }
 
 $$('a.step2-help').onclick = _ => alert(e.target.title)
