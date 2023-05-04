@@ -50,6 +50,7 @@ places['rating'] = groups.rating.mean().round()
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
 places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
 places['text'] = groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
+places['review_count'] = groups.size()
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
@@ -72,7 +73,7 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[2] == 5), fillOpacity: opacity, color: 'black', fillColor: color});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color});
 
     marker.on('click', function(e) {
         if ($$('.topbar.visible')) return
@@ -110,7 +111,7 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
 """
 
 for country, group in places.groupby('country_group'):
-    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
+    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 

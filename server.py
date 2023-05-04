@@ -29,7 +29,7 @@ def light():
 
 @app.route("/favicon.ico", methods=['GET'])
 def favicon():
-    return send_file("favicon-flipped.ico")
+    return send_file("favicon.ico")
 
 @app.route("/icon.png", methods=['GET'])
 def icon():
