@@ -28,7 +28,7 @@ def light():
     return send_file("light.html")
 
 @app.route("/recent.html", methods=['GET'])
-def light():
+def recent():
     return send_file("recent.html")
 
 @app.route("/favicon.ico", methods=['GET'])
