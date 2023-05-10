@@ -27,6 +27,10 @@ def index():
 def light():
     return send_file("light.html")
 
+@app.route("/recent.html", methods=['GET'])
+def light():
+    return send_file("recent.html")
+
 @app.route("/favicon.ico", methods=['GET'])
 def favicon():
     return send_file("favicon.ico")
