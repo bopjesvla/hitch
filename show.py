@@ -136,6 +136,6 @@ open(outname, 'w').write(output)
 
 recent = points.dropna(subset=['datetime']).sort_values('datetime',ascending=False).iloc[:1000]
 recent['url'] = 'https://hitchmap.com/#' + recent.lat.astype(str) + ',' + recent.lon.astype(str)
-recent['text'] = recent.text.str.replace('://', '', regex=False)
+recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
 recent['name'] = recent.name.str.replace('://', '', regex=False)
 recent[['url', 'country', 'datetime', 'name', 'text']].to_html('recent.html', render_links=True, index=False)
