@@ -31,7 +31,7 @@ def haversine_np(lon1, lat1, lon2, lat2):
     return km
 
 fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
-points = pd.read_sql('select * from points where not banned', sqlite3.connect(fn))
+points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
 print(len(points))
 
 points.loc[points.id.isin(range(1000000,1040000)), 'comment'] = points.loc[points.id.isin(range(1000000,1040000)), 'comment'].str.encode("cp1252",errors='ignore').str.decode('utf-8', errors='ignore')
@@ -51,6 +51,8 @@ places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean
 places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
 places['text'] = groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
 places['review_count'] = groups.size()
+places['dest_lats'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lat.apply(list)
+places['dest_lons'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lon.apply(list)
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
@@ -94,6 +96,16 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
             window.location.hash = `${row[0]},${row[1]}`
         },100)
 
+        for (let d of destLines)
+            d.remove()
+        destLines = []
+
+        if (row[7] != null) {
+            for (let i in row[7]) {
+                destLines.push(L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
+            }
+        }
+
         L.DomEvent.stopPropagation(e)
     })
 
@@ -111,7 +123,7 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
 """
 
 for country, group in places.groupby('country_group'):
-    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
+    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 
@@ -134,8 +146,9 @@ output = Template(template).substitute({
 
 open(outname, 'w').write(output)
 
-recent = points.dropna(subset=['datetime']).sort_values('datetime',ascending=False).iloc[:1000]
-recent['url'] = 'https://hitchmap.com/#' + recent.lat.astype(str) + ',' + recent.lon.astype(str)
-recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
-recent['name'] = recent.name.str.replace('://', '', regex=False)
-recent[['url', 'country', 'datetime', 'name', 'text']].to_html('recent.html', render_links=True, index=False)
+if not LIGHT:
+    recent = points.dropna(subset=['datetime']).sort_values('datetime',ascending=False).iloc[:1000]
+    recent['url'] = 'https://hitchmap.com/#' + recent.lat.astype(str) + ',' + recent.lon.astype(str)
+    recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
+    recent['name'] = recent.name.str.replace('://', '', regex=False)
+    recent[['url', 'country', 'datetime', 'name', 'text']].to_html('recent.html', render_links=True, index=False)

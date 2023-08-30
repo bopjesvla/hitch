@@ -6,7 +6,7 @@ var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
 $$ = function(e) {return document.querySelector(e)}
-var points = [], spotMarker, destMarker
+var points = [], destLines = [], spotMarker, destMarker
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
@@ -62,7 +62,7 @@ $$('#sb-close').onclick = function() {
     renderPoints()
 }
 
-$$('a.step2-help').onclick = _ => alert(e.target.title)
+$$('a.step2-help').onclick = e => alert(e.target.title)
 
 var addSpotStep = function(e) {
     if (e.target.tagName != 'BUTTON') return
@@ -109,10 +109,19 @@ map.on('click', e => {
             circles[0].fire('click', e)
         }
     }
-    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible'))
+    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
+        points = []
+        renderPoints()
         bar()
+    }
 
     L.DomEvent.stopPropagation(e)
+})
+
+map.on('zoom', e => {
+    let currentOpacity = +window.getComputedStyle($$('.leaflet-overlay-pane')).getPropertyValue("opacity");
+    if (map.getZoom() < 9 && currentOpacity == 1) $$('.leaflet-overlay-pane').style.opacity = 0.5
+    if (map.getZoom() >= 9 && currentOpacity == 0.5) $$('.leaflet-overlay-pane').style.opacity = 1
 })
 
 function renderPoints() {
@@ -128,6 +137,12 @@ function renderPoints() {
         destMarker.addTo(map)
     }
     $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
+
+    if (!points[0]) {
+        for (let d of destLines)
+            d.remove()
+        destLines = []
+    }
 }
 var c = $$('.leaflet-control-attribution')
 c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'

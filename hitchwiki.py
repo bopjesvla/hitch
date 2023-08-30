@@ -52,3 +52,5 @@ cols = ['lat', 'lon', 'rating', 'country', 'wait', 'name', 'comment', 'datetime'
         'reviewed', 'banned', 'ip', 'dest_lat', 'dest_lon']
 
 explode_df[cols].to_sql('points', sqlite3.connect('points.sqlite'), index_label='id', if_exists='replace')
+
+# create unique index unique_comment on points(lat, lon, comment) where comment is not null;
