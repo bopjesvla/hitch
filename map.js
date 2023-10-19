@@ -49,12 +49,26 @@ var AddSpotButton =  L.Control.extend({
     }
 });
 
+var DonateButton =  L.Control.extend({
+    options: {
+        position: 'bottomright'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'donate-button');
+        controlDiv.innerHTML = '<a href="https://liberapay.com/Bob./donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>'
+
+        return controlDiv;
+    }
+});
+
 map.addControl(new AddSpotButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
+
+map.addControl(new DonateButton());
 
 $$('#sb-close').onclick = function() {
     bar()

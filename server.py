@@ -27,6 +27,14 @@ def index():
 def light():
     return send_file("light.html")
 
+@app.route("/heatmap.html", methods=['GET'])
+def light():
+    return send_file("heatmap.html")
+
+@app.route("/new.html", methods=['GET'])
+def new():
+    return send_file("new.html")
+
 @app.route("/recent.html", methods=['GET'])
 def recent():
     return send_file("recent.html")

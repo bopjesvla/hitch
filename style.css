@@ -158,3 +158,7 @@ h3, h4 {
         font-size: 12px !important;
     }
 }
+.donate-button img {
+    background-color: rgba(0,0,0,.1);
+    box-shadow: 0 0 5px rgba(0,0,0,.3);
+}

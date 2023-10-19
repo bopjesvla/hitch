@@ -10,6 +10,7 @@ from branca.element import Element
 from string import Template
 
 LIGHT = 'light' in sys.argv
+NEW = 'new' in sys.argv
 
 def haversine_np(lon1, lat1, lon2, lat2):
     """
@@ -56,6 +57,8 @@ places['dest_lons'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['l
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
+elif NEW:
+    places = places[~places.distance.isnull()]
 
 places['country_group'] = places.country.replace(['BE', 'NL', 'LU'], 'BNL')
 places.country_group = places.country_group.replace(['CH', 'AT', 'LI'], 'ALP')
@@ -133,7 +136,7 @@ header = m.get_root().header.render()
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
-outname = 'light.html' if LIGHT else 'index.html'
+outname = 'light.html' if LIGHT else 'new.html' if NEW else 'index.html'
 template = open('src.html').read()
 
 output = Template(template).substitute({
