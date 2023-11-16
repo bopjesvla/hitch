@@ -55,7 +55,7 @@ var DonateButton =  L.Control.extend({
     },
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'donate-button');
-        controlDiv.innerHTML = '<a href="https://liberapay.com/Bob./donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>'
+        controlDiv.innerHTML = '<a href="https://en.liberapay.com/Bob./donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>'
 
         return controlDiv;
     }
@@ -68,7 +68,7 @@ if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder')
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
-map.addControl(new DonateButton());
+// map.addControl(new DonateButton());
 
 $$('#sb-close').onclick = function() {
     bar()
@@ -84,18 +84,23 @@ var addSpotStep = function(e) {
         points.push(map.getCenter())
     if (e.target.innerText.includes("didn't get"))
         points.push(points[0])
+    if (e.target.innerText =="Skip")
+        points.push({lat: 'nan', lng: 'nan'})
     renderPoints()
-    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
+    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText =="Skip") {
         if (points.length == 1) {
-            if(map.getZoom() > 13) map.setZoom(13);
+            if(map.getZoom() > 9) map.setZoom(9);
             bar('.topbar.step2')
         }
         else if (points.length == 2) {
-            var bounds = new L.LatLngBounds(points);
-            map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
+            if (points[1].lat !== 'nan') {
+                var bounds = new L.LatLngBounds(points);
+                map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
+            }
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
-            $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}`
+            var dest = points[1].lat !== 'nan' ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
+            $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
@@ -146,7 +151,7 @@ function renderPoints() {
         spotMarker = L.marker(points[0])
         spotMarker.addTo(map)
     }
-    if (points[1]) {
+    if (points[1] && points[1].lat !== 'nan') {
         destMarker = L.marker(points[1], {color: 'red'})
         destMarker.addTo(map)
     }

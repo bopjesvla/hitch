@@ -44,6 +44,9 @@ rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 
 points['distance'] = haversine_np(*rads)
 
+points.loc[(points.distance<30)&(points.rating>3), 'dest_lat'] = None
+points.loc[(points.distance<30)&(points.rating>3), 'dest_lon'] = None
+
 groups = points.groupby(['lat', 'lon'])
 
 places = groups[['country']].first()
