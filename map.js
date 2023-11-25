@@ -49,22 +49,6 @@ var AddSpotButton =  L.Control.extend({
     }
 });
 
-var RecentButton =  L.Control.extend({
-    options: {
-        position: 'topleft'
-    },
-    onAdd: function (map) {
-        var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
-        var container = L.DomUtil.create('a', '', controlDiv);
-        container.href="recent.html";
-        container.target='_blank'
-        container.innerText = "View changes";
-        controlDiv.style.clear = 'none';
-
-        return controlDiv;
-    }
-});
-
 var DonateButton =  L.Control.extend({
     options: {
         position: 'bottomright'
@@ -78,7 +62,6 @@ var DonateButton =  L.Control.extend({
 });
 
 map.addControl(new AddSpotButton());
-map.addControl(new RecentButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
