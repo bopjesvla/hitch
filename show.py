@@ -44,8 +44,8 @@ rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 
 points['distance'] = haversine_np(*rads)
 
-points.loc[(points.distance<30)&(points.rating>3), 'dest_lat'] = None
-points.loc[(points.distance<30)&(points.rating>3), 'dest_lon'] = None
+# points.loc[(points.distance<30)&(points.rating>3), 'dest_lat'] = None
+# points.loc[(points.distance<30)&(points.rating>3), 'dest_lon'] = None
 
 groups = points.groupby(['lat', 'lon'])
 
@@ -84,7 +84,7 @@ function (row) {
     marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color});
 
     marker.on('click', function(e) {
-        if ($$('.topbar.visible')) return
+        if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
         points = [point]
 
@@ -105,6 +105,8 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
         for (let d of destLines)
             d.remove()
         destLines = []
+
+        console.log(row)
 
         if (row[7] != null) {
             for (let i in row[7]) {
@@ -157,4 +159,4 @@ if not LIGHT:
     recent['url'] = 'https://hitchmap.com/#' + recent.lat.astype(str) + ',' + recent.lon.astype(str)
     recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
     recent['name'] = recent.name.str.replace('://', '', regex=False)
-    recent[['url', 'country', 'datetime', 'name', 'text']].to_html('recent.html', render_links=True, index=False)
+    recent[['url', 'country', 'datetime', 'name', 'rating', 'distance', 'text']].to_html('recent.html', render_links=True, index=False)

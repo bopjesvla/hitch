@@ -88,7 +88,7 @@ h3, h4 {
 .topbar a {
     pointer-events: auto;
 }
-.topbar:not(:empty)::before {
+.topbar::before {
     content: '';
     pointer-events: none;
     position: absolute;

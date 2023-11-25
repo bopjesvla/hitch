@@ -31,7 +31,7 @@ var AddSpotButton =  L.Control.extend({
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
         var container = L.DomUtil.create('a', '', controlDiv);
-        container.href="javascrip:void(0);";
+        container.href="javascript:void(0);";
         container.innerText = "📍 Add a spot";
 
         container.onclick = function() {
@@ -44,6 +44,22 @@ var AddSpotButton =  L.Control.extend({
             points = []
             renderPoints()
         }
+
+        return controlDiv;
+    }
+});
+
+var RecentButton =  L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href="recent.html";
+        container.target='_blank'
+        container.innerText = "View changes";
+        controlDiv.style.clear = 'none';
 
         return controlDiv;
     }
@@ -62,6 +78,7 @@ var DonateButton =  L.Control.extend({
 });
 
 map.addControl(new AddSpotButton());
+map.addControl(new RecentButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
@@ -90,6 +107,7 @@ var addSpotStep = function(e) {
     if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText =="Skip") {
         if (points.length == 1) {
             if(map.getZoom() > 9) map.setZoom(9);
+            map.panTo(points[0])
             bar('.topbar.step2')
         }
         else if (points.length == 2) {
@@ -164,7 +182,7 @@ function renderPoints() {
     }
 }
 var c = $$('.leaflet-control-attribution')
-c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
+c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.hml>recent changes</a> <br> thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {
     bar('.sidebar.success')
     history.replaceState(null, null, ' ')
