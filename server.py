@@ -8,6 +8,7 @@ import datetime
 import sqlite3
 import random
 import os
+import math
 
 DATABASE = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 
@@ -27,9 +28,21 @@ def index():
 def light():
     return send_file("light.html")
 
+@app.route("/heatmap.html", methods=['GET'])
+def heatmap():
+    return send_file("heatmap.html")
+
+@app.route("/new.html", methods=['GET'])
+def new():
+    return send_file("new.html")
+
+@app.route("/recent.html", methods=['GET'])
+def recent():
+    return send_file("recent.html")
+
 @app.route("/favicon.ico", methods=['GET'])
 def favicon():
-    return send_file("favicon-flipped.ico")
+    return send_file("favicon.ico")
 
 @app.route("/icon.png", methods=['GET'])
 def icon():
@@ -71,9 +84,8 @@ def experience():
     lat, lon, dest_lat, dest_lon = map(float, data['coords'].split(','))
 
     assert -90 <= lat <= 90
-    assert -90 <= dest_lat <= 90
     assert -180 <= lon <= 180
-    assert -180 <= dest_lon <= 180
+    assert (-90 <= dest_lat <= 90 and -180 <= dest_lon <= 180) or (math.isnan(dest_lat) and math.isnan(dest_lon))
 
     res = requests.get('https://nominatim.openstreetmap.org/reverse', {'lat': lat, 'lon': lon, 'format': 'json', 'zoom': 3}).json()
     country = 'XZ' if 'error' in res else res['address']['country_code'].upper()

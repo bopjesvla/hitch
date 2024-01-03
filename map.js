@@ -6,7 +6,7 @@ var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
 $$ = function(e) {return document.querySelector(e)}
-var points = [], spotMarker, destMarker
+var points = [], destLines = [], spotMarker, destMarker
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
@@ -16,6 +16,8 @@ function bar(selector) {
     })
     if(selector)
         $$(selector).classList.add('visible')
+    if (window.location.hash)
+        history.pushState(null, null, ' ')
 }
 
 var map = window[$$('.folium-map').id]
@@ -29,7 +31,7 @@ var AddSpotButton =  L.Control.extend({
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
         var container = L.DomUtil.create('a', '', controlDiv);
-        container.href="#";
+        container.href="javascript:void(0);";
         container.innerText = "📍 Add a spot";
 
         container.onclick = function() {
@@ -47,6 +49,18 @@ var AddSpotButton =  L.Control.extend({
     }
 });
 
+var DonateButton =  L.Control.extend({
+    options: {
+        position: 'bottomright'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'donate-button');
+        controlDiv.innerHTML = '<a href="https://en.liberapay.com/Bob./donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>'
+
+        return controlDiv;
+    }
+});
+
 map.addControl(new AddSpotButton());
 
 if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
@@ -54,13 +68,15 @@ if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder')
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
+// map.addControl(new DonateButton());
+
 $$('#sb-close').onclick = function() {
     bar()
     points = []
     renderPoints()
 }
 
-$$('a.step2-help').onclick = _ => alert(e.target.title)
+$$('a.step2-help').onclick = e => alert(e.target.title)
 
 var addSpotStep = function(e) {
     if (e.target.tagName != 'BUTTON') return
@@ -68,18 +84,24 @@ var addSpotStep = function(e) {
         points.push(map.getCenter())
     if (e.target.innerText.includes("didn't get"))
         points.push(points[0])
+    if (e.target.innerText =="Skip")
+        points.push({lat: 'nan', lng: 'nan'})
     renderPoints()
-    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review')) {
+    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText =="Skip") {
         if (points.length == 1) {
-            if(map.getZoom() > 13) map.setZoom(13);
+            if(map.getZoom() > 9) map.setZoom(9);
+            map.panTo(points[0])
             bar('.topbar.step2')
         }
         else if (points.length == 2) {
-            var bounds = new L.LatLngBounds(points);
-            map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
+            if (points[1].lat !== 'nan') {
+                var bounds = new L.LatLngBounds(points);
+                map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
+            }
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
-            $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}`
+            var dest = points[1].lat !== 'nan' ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
+            $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
@@ -107,10 +129,19 @@ map.on('click', e => {
             circles[0].fire('click', e)
         }
     }
-    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible'))
+    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
+        points = []
+        renderPoints()
         bar()
+    }
 
     L.DomEvent.stopPropagation(e)
+})
+
+map.on('zoom', e => {
+    let currentOpacity = +window.getComputedStyle($$('.leaflet-overlay-pane')).getPropertyValue("opacity");
+    if (map.getZoom() < 9 && currentOpacity == 1) $$('.leaflet-overlay-pane').style.opacity = 0.5
+    if (map.getZoom() >= 9 && currentOpacity == 0.5) $$('.leaflet-overlay-pane').style.opacity = 1
 })
 
 function renderPoints() {
@@ -121,17 +152,23 @@ function renderPoints() {
         spotMarker = L.marker(points[0])
         spotMarker.addTo(map)
     }
-    if (points[1]) {
+    if (points[1] && points[1].lat !== 'nan') {
         destMarker = L.marker(points[1], {color: 'red'})
         destMarker.addTo(map)
     }
     $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
+
+    if (!points[0]) {
+        for (let d of destLines)
+            d.remove()
+        destLines = []
+    }
 }
 var c = $$('.leaflet-control-attribution')
-c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | ' + c.innerHTML.split(',')[0].replace('© ', '').replace('OpenStreetMap', 'OSM').replace('Leaflet', 'L') + ' and <a href=https://hitchwiki.org>HitchWiki</a>'
+c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.hml>recent changes</a> <br> thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {
     bar('.sidebar.success')
-    window.location.hash = '#'
+    history.replaceState(null, null, ' ')
 }
 
 function restoreView () {
@@ -179,8 +216,9 @@ function storageAvailable(type) {
     }
 }
 
-if(!restoreView.apply(map))
-    map.fitBounds([[-35, -40], [60, 40]])
+if (!window.location.hash.includes(',')) // we'll center on coord
+    if(!restoreView.apply(map))
+        map.fitBounds([[-35, -40], [60, 40]])
 if(map.getZoom() > 13) map.setZoom(13);
 
-$$('.folium.map').focus()
+$$('.folium-map').focus()

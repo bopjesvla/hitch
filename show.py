@@ -10,6 +10,7 @@ from branca.element import Element
 from string import Template
 
 LIGHT = 'light' in sys.argv
+NEW = 'new' in sys.argv
 
 def haversine_np(lon1, lat1, lon2, lat2):
     """
@@ -31,7 +32,7 @@ def haversine_np(lon1, lat1, lon2, lat2):
     return km
 
 fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
-points = pd.read_sql('select * from points where not banned', sqlite3.connect(fn))
+points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
 print(len(points))
 
 points.loc[points.id.isin(range(1000000,1040000)), 'comment'] = points.loc[points.id.isin(range(1000000,1040000)), 'comment'].str.encode("cp1252",errors='ignore').str.decode('utf-8', errors='ignore')
@@ -43,6 +44,9 @@ rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 
 points['distance'] = haversine_np(*rads)
 
+# points.loc[(points.distance<30)&(points.rating>3), 'dest_lat'] = None
+# points.loc[(points.distance<30)&(points.rating>3), 'dest_lon'] = None
+
 groups = points.groupby(['lat', 'lon'])
 
 places = groups[['country']].first()
@@ -50,9 +54,14 @@ places['rating'] = groups.rating.mean().round()
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
 places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
 places['text'] = groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
+places['review_count'] = groups.size()
+places['dest_lats'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lat.apply(list)
+places['dest_lons'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lon.apply(list)
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
+elif NEW:
+    places = places[~places.distance.isnull()]
 
 places['country_group'] = places.country.replace(['BE', 'NL', 'LU'], 'BNL')
 places.country_group = places.country_group.replace(['CH', 'AT', 'LI'], 'ALP')
@@ -72,10 +81,10 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[2] == 5), fillOpacity: opacity, color: 'black', fillColor: color});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color});
 
     marker.on('click', function(e) {
-        if ($$('.topbar.visible')) return
+        if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
         points = [point]
 
@@ -89,10 +98,31 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
             $$('#spot-text').innerText = row[3];
             if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'
             else $$('#extra-text').innerHTML = ''
+
+            window.location.hash = `${row[0]},${row[1]}`
         },100)
+
+        for (let d of destLines)
+            d.remove()
+        destLines = []
+
+        console.log(row)
+
+        if (row[7] != null) {
+            for (let i in row[7]) {
+                destLines.push(L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
+            }
+        }
 
         L.DomEvent.stopPropagation(e)
     })
+
+    if (window.location.hash == `#${row[0]},${row[1]}`)
+        addEventListener("DOMContentLoaded", e => {
+            marker.fire('click', {})
+            map.setView(marker.getLatLng(), 16)
+        });
+
 
     // if(row[2] >= 4) marker.bringToFront()
 
@@ -101,7 +131,7 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
 """
 
 for country, group in places.groupby('country_group'):
-    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
+    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 
@@ -111,7 +141,7 @@ header = m.get_root().header.render()
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
-outname = 'light.html' if LIGHT else 'index.html'
+outname = 'light.html' if LIGHT else 'new.html' if NEW else 'index.html'
 template = open('src.html').read()
 
 output = Template(template).substitute({
@@ -123,3 +153,10 @@ output = Template(template).substitute({
 })
 
 open(outname, 'w').write(output)
+
+if not LIGHT:
+    recent = points.dropna(subset=['datetime']).sort_values('datetime',ascending=False).iloc[:1000]
+    recent['url'] = 'https://hitchmap.com/#' + recent.lat.astype(str) + ',' + recent.lon.astype(str)
+    recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
+    recent['name'] = recent.name.str.replace('://', '', regex=False)
+    recent[['url', 'country', 'datetime', 'name', 'rating', 'distance', 'text']].to_html('recent.html', render_links=True, index=False)

@@ -88,7 +88,7 @@ h3, h4 {
 .topbar a {
     pointer-events: auto;
 }
-.topbar:not(:empty)::before {
+.topbar::before {
     content: '';
     pointer-events: none;
     position: absolute;
@@ -157,4 +157,8 @@ h3, h4 {
     .topbar button {
         font-size: 12px !important;
     }
+}
+.donate-button img {
+    background-color: rgba(0,0,0,.1);
+    box-shadow: 0 0 5px rgba(0,0,0,.3);
 }
