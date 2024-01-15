@@ -165,7 +165,13 @@ function renderPoints() {
     }
 }
 var c = $$('.leaflet-control-attribution')
-c.innerHTML = 'Contribute on <a href=https://github.com/bopjesvla/hitch>GitHub</a> <br> &copy; Bob de Ruiter | <a href=/dump.sqlite>⭳</a> | <a href=recent.hml>recent changes</a> <br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
+c.innerHTML = `
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<i class="fa fa-github"></i> Contribute on <a href=https://github.com/bopjesvla/hitch>GitHub</a><br>
+&copy; Bob de Ruiter | <a href=/dump.sqlite>Download data</a> | <a href=recent.hml>Recent changes</a><br>
+&hearts; Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>
+`
+
 if (window.location.hash == '#success') {
     bar('.sidebar.success')
     history.replaceState(null, null, ' ')
