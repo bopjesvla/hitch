@@ -105,7 +105,7 @@ var addSpotStep = function (e) {
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
-                var uname = $$('input[name=username]')
+                var uname = $$('input[name=name]')
                 uname.value = localStorage.getItem('nick')
                 uname.onchange = e => localStorage.setItem('nick', uname.value)
             }

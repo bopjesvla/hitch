@@ -100,22 +100,22 @@ h3, h4 {
     height: 60vmin;
     background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px));
 }
-#spot-form > label, #spot-form textarea, #spot-form input[type=submit], #spot-form input[name=username] {
+#spot-form > label, #spot-form textarea, #spot-form input[type=submit], #spot-form input[name=name] {
     display: block;
     width: 100%;
 }
 #spot-form > label, #spot-form input[type=submit] {
     margin-top: 15px;
 }
-.rate {
+.rating {
     float: left;
     height: 46px;
 }
-.rate:not(:checked) > input {
+.rating:not(:checked) > input {
     position:absolute;
     top:-9999px;
 }
-.rate:not(:checked) > label {
+.rating:not(:checked) > label {
     float:right;
     width:1em;
     overflow:hidden;
@@ -124,21 +124,21 @@ h3, h4 {
     font-size:30px;
     color:#ccc;
 }
-.rate:not(:checked) > label:before {
+.rating:not(:checked) > label:before {
     content: '★ ';
 }
-.rate > input:checked ~ label {
+.rating > input:checked ~ label {
     color: #ffc700;    
 }
-.rate:not(:checked) > label:hover,
-.rate:not(:checked) > label:hover ~ label {
+.rating:not(:checked) > label:hover,
+.rating:not(:checked) > label:hover ~ label {
     color: #deb217;  
 }
-.rate > input:checked + label:hover,
-.rate > input:checked + label:hover ~ label,
-.rate > input:checked ~ label:hover,
-.rate > input:checked ~ label:hover ~ label,
-.rate > label:hover ~ input:checked ~ label {
+.rating > input:checked + label:hover,
+.rating > input:checked + label:hover ~ label,
+.rating > input:checked ~ label:hover,
+.rating > input:checked ~ label:hover ~ label,
+.rating > label:hover ~ input:checked ~ label {
     color: #c59b08;
 }
 .greyed {
