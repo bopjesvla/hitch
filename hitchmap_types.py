@@ -11,7 +11,7 @@ UNKNOWN = "unknown"
 HITCH_SPOT_INDEX = 'id'
 
 class HitchhikeSpot(BaseModel):
-    id: float
+    id: NATURAL_NUM
     rating: conint(ge=MIN_RATING, le=MAX_RATING)
     wait: Optional[NATURAL_NUM]
     comment: Optional[constr(max_length=MAX_COMMENT_LENGTH)]
