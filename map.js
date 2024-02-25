@@ -10,6 +10,42 @@ var points = [], destLines = [], spotMarker, destMarker
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
+markerClick = function(e, row, point) {
+    if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
+
+    points = [point]
+
+    setTimeout(() => {
+        bar('.sidebar.show-spot')
+        $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
+        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)}`
+        $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
+Waiting time in min: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
+Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
+
+        $$('#spot-text').innerText = row[3];
+        if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'
+        else $$('#extra-text').innerHTML = ''
+
+        window.location.hash = `${row[0]},${row[1]}`
+    },100)
+
+    for (let d of destLines)
+        d.remove()
+    destLines = []
+
+    console.log(row)
+
+    if (row[7] != null) {
+        for (let i in row[7]) {
+            destLines.push(L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
+        }
+    }
+
+    L.DomEvent.stopPropagation(e)
+};
+
+
 function bar(selector) {
     bars.forEach(function(el) {
         el.classList.remove('visible')
@@ -80,8 +116,13 @@ $$('a.step2-help').onclick = e => alert(e.target.title)
 
 var addSpotStep = function(e) {
     if (e.target.tagName != 'BUTTON') return
-    if (e.target.innerText == 'Done')
-        points.push(map.getCenter())
+    if (e.target.innerText == 'Done') {
+        let center = map.getCenter()
+        if (points[0] && center.distanceTo(points[0]) < 1000 && !confirm("Are you sure this was where the car took you? It's less than 1 km away from the hitchhiking spot."))
+            return
+        else
+            points.push(center)
+    }
     if (e.target.innerText.includes("didn't get"))
         points.push(points[0])
     if (e.target.innerText =="Skip")
@@ -96,7 +137,8 @@ var addSpotStep = function(e) {
         else if (points.length == 2) {
             if (points[1].lat !== 'nan') {
                 var bounds = new L.LatLngBounds(points);
-                map.fitBounds(bounds, {paddingBottomRight: [0, 400]})
+                // map.fitBounds(bounds, {paddingBottomRight: [0, 300]})
+                map.fitBounds(bounds, {})
             }
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
@@ -165,7 +207,7 @@ function renderPoints() {
     }
 }
 var c = $$('.leaflet-control-attribution')
-c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.hml>recent changes</a> <br> thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
+c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.html>recent changes</a> <br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {
     bar('.sidebar.success')
     history.replaceState(null, null, ' ')

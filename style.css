@@ -37,6 +37,9 @@ h3, h4 {
     padding: 0 20px 20px 20px;
     box-shadow: 2px 0 10px;
 }
+.sidebar.show-spot {
+    max-width: 50%;
+}
 .sidebar button {
     margin-top: 15px;
     margin-bottom: 30px;
@@ -50,10 +53,11 @@ h3, h4 {
     position: absolute;
     top: -13px;
     right: 0px;
-    padding: 0 10px;
+    padding: 8px 10px;
     cursor: pointer;
     font-size: 45px;
     z-index: 2000;
+    line-height: 1;
 }
 .add-spot {
     padding: 5px 10px;
@@ -157,8 +161,20 @@ h3, h4 {
     .topbar button {
         font-size: 12px !important;
     }
+    .sidebar.show-spot {
+        font-size: 13px;
+    }
+    .sidebar.show-spot h3 {
+        /* text-align: left; */
+    }
+    .sidebar.visible ~ #sb-close {
+        /* font-size: 30px; */
+    }
 }
 .donate-button img {
     background-color: rgba(0,0,0,.1);
     box-shadow: 0 0 5px rgba(0,0,0,.3);
+}
+.leaflet-control-attribution {
+    text-align: right;
 }

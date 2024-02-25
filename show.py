@@ -44,8 +44,9 @@ rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 
 points['distance'] = haversine_np(*rads)
 
-# points.loc[(points.distance<30)&(points.rating>3), 'dest_lat'] = None
-# points.loc[(points.distance<30)&(points.rating>3), 'dest_lon'] = None
+points.loc[(points.distance<1), 'dest_lat'] = None
+points.loc[(points.distance<1), 'dest_lon'] = None
+points.loc[(points.distance<1), 'distance'] = None
 
 groups = points.groupby(['lat', 'lon'])
 
@@ -67,7 +68,9 @@ places['country_group'] = places.country.replace(['BE', 'NL', 'LU'], 'BNL')
 places.country_group = places.country_group.replace(['CH', 'AT', 'LI'], 'ALP')
 places.country_group = places.country_group.replace(['SI', 'HR', 'BA', 'ME', 'MK', 'AL', 'RS', 'TR'], 'BAL')
 places.country_group = places.country_group.replace(['SK', 'HU'], 'SKHU')
+places.country_group = places.country_group.replace(['SM', 'VA'], 'IT')
 places.country_group = places.country_group.replace('MC', 'FR')
+places.country_group = places.country_group.replace('XK', 'MK')
 
 places.reset_index(inplace=True)
 # make sure high-rated are on top
@@ -84,37 +87,7 @@ function (row) {
     marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color});
 
     marker.on('click', function(e) {
-        if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
-
-        points = [point]
-
-        setTimeout(() => {
-            bar('.sidebar.show-spot')
-            $$('#spot-header').innerText = `${row[0].toFixed(5)}, ${row[1].toFixed(5)}`
-            $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
-Waiting time in minutes: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
-Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
-
-            $$('#spot-text').innerText = row[3];
-            if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'
-            else $$('#extra-text').innerHTML = ''
-
-            window.location.hash = `${row[0]},${row[1]}`
-        },100)
-
-        for (let d of destLines)
-            d.remove()
-        destLines = []
-
-        console.log(row)
-
-        if (row[7] != null) {
-            for (let i in row[7]) {
-                destLines.push(L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
-            }
-        }
-
-        L.DomEvent.stopPropagation(e)
+        markerClick(e, row, point)
     })
 
     if (window.location.hash == `#${row[0]},${row[1]}`)
