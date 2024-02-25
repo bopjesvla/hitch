@@ -5,7 +5,7 @@ if ("serviceWorker" in navigator) {
 var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
-$$ = function(e) {return document.querySelector(e)}
+$$ = function (e) { return document.querySelector(e) }
 var points = [], destLines = [], spotMarker, destMarker
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
@@ -47,10 +47,10 @@ Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
 
 
 function bar(selector) {
-    bars.forEach(function(el) {
+    bars.forEach(function (el) {
         el.classList.remove('visible')
     })
-    if(selector)
+    if (selector)
         $$(selector).classList.add('visible')
     if (window.location.hash)
         history.pushState(null, null, ' ')
@@ -60,17 +60,17 @@ var map = window[$$('.folium-map').id]
 
 $$("input[placeholder^=Search]").placeholder = 'Jump to city'
 
-var AddSpotButton =  L.Control.extend({
+var AddSpotButton = L.Control.extend({
     options: {
         position: 'topleft'
     },
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
         var container = L.DomUtil.create('a', '', controlDiv);
-        container.href="javascript:void(0);";
+        container.href = "javascript:void(0);";
         container.innerText = "📍 Add a spot";
 
-        container.onclick = function() {
+        container.onclick = function () {
             if (window.location.href.includes('light')) {
                 if (confirm('Do you want to be redirected to the full version where you can add spots?'))
                     window.location = '/'
@@ -85,7 +85,7 @@ var AddSpotButton =  L.Control.extend({
     }
 });
 
-var DonateButton =  L.Control.extend({
+var DonateButton = L.Control.extend({
     options: {
         position: 'bottomright'
     },
@@ -99,14 +99,14 @@ var DonateButton =  L.Control.extend({
 
 map.addControl(new AddSpotButton());
 
-if(is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
+if (is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
 // map.addControl(new DonateButton());
 
-$$('#sb-close').onclick = function() {
+$$('#sb-close').onclick = function () {
     bar()
     points = []
     renderPoints()
@@ -114,7 +114,7 @@ $$('#sb-close').onclick = function() {
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
 
-var addSpotStep = function(e) {
+var addSpotStep = function (e) {
     if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done') {
         let center = map.getCenter()
@@ -125,19 +125,18 @@ var addSpotStep = function(e) {
     }
     if (e.target.innerText.includes("didn't get"))
         points.push(points[0])
-    if (e.target.innerText =="Skip")
-        points.push({lat: 'nan', lng: 'nan'})
+    if (e.target.innerText == "Skip")
+        points.push({ lat: 'nan', lng: 'nan' })
     renderPoints()
-    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText =="Skip") {
+    if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText == "Skip") {
         if (points.length == 1) {
-            if(map.getZoom() > 9) map.setZoom(9);
+            if (map.getZoom() > 9) map.setZoom(9);
             map.panTo(points[0])
             bar('.topbar.step2')
         }
         else if (points.length == 2) {
             if (points[1].lat !== 'nan') {
                 var bounds = new L.LatLngBounds(points);
-                // map.fitBounds(bounds, {paddingBottomRight: [0, 300]})
                 map.fitBounds(bounds, {})
             }
             map.setZoom(map.getZoom() - 1)
@@ -195,7 +194,7 @@ function renderPoints() {
         spotMarker.addTo(map)
     }
     if (points[1] && points[1].lat !== 'nan') {
-        destMarker = L.marker(points[1], {color: 'red'})
+        destMarker = L.marker(points[1], { color: 'red' })
         destMarker.addTo(map)
     }
     $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
@@ -213,7 +212,7 @@ if (window.location.hash == '#success') {
     history.replaceState(null, null, ' ')
 }
 
-function restoreView () {
+function restoreView() {
     if (!storageAvailable('localStorage')) {
         return false;
     }
@@ -252,15 +251,15 @@ function storageAvailable(type) {
         storage.removeItem(x);
         return true;
     }
-    catch(e) {
+    catch (e) {
         console.warn("Your browser blocks access to " + type);
         return false;
     }
 }
 
 if (!window.location.hash.includes(',')) // we'll center on coord
-    if(!restoreView.apply(map))
+    if (!restoreView.apply(map))
         map.fitBounds([[-35, -40], [60, 40]])
-if(map.getZoom() > 13) map.setZoom(13);
+if (map.getZoom() > 13) map.setZoom(13);
 
 $$('.folium-map').focus()
