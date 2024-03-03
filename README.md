@@ -13,13 +13,10 @@ The Map to Hitchhiking the World.
 ## Installation
 
 ```bash
-pip install numpy pandas folium
-curl https://hitchmap.com/dump.sqlite > points.sqlite
-
-OR
-
-conda install folium
-curl https://hitchmap.com/dump.sqlite > points.sqlite
+pip install numpy pandas folium pydantic flask        #Install packages
+curl https://hitchmap.com/dump.sqlite > points.sqlite #Get hitchspots
+python show.py                                        #Create index.html
+flask --app server run                                #Run server
 ```
 
 # Contributing

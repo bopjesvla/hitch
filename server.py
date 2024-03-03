@@ -1,14 +1,12 @@
 from flask import Flask
 from flask import send_file, request, redirect
-import re
 from flask import g
 import pandas as pd
-import requests
 import datetime
 import sqlite3
 import random
 import os
-import math
+from hitchmap_types import HitchhikeSpot, HITCH_SPOT_INDEX
 
 DATABASE = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 
@@ -66,34 +64,31 @@ def android_app():
 
 @app.route("/experience", methods=['POST'])
 def experience():
-    data = request.form
-    rating = int(data['rate'])
-    wait = int(data['wait']) if data['wait'] != '' else None
-    assert wait is None or wait >= 0
-    assert rating in range(1,6)
-    comment = None if data['comment'] == '' else data['comment']
-    assert comment is None or len(comment) < 10000
-    name = data['username'] if re.match(r'^\w{1,32}$', data['username']) else None
-    now = str(datetime.datetime.utcnow())
+    data = request.form.to_dict()
+
+    data['id'] = random.randint(0,2**63)
+
+    data['datetime'] = str(datetime.datetime.utcnow())
 
     if request.headers.getlist("X-Real-IP"):
-       ip = request.headers.getlist("X-Real-IP")[-1]
+        data['ip'] = request.headers.getlist("X-Real-IP")[-1]
     else:
-       ip = request.remote_addr
+        data['ip'] = request.remote_addr
 
     lat, lon, dest_lat, dest_lon = map(float, data['coords'].split(','))
 
-    assert -90 <= lat <= 90
-    assert -180 <= lon <= 180
-    assert (-90 <= dest_lat <= 90 and -180 <= dest_lon <= 180) or (math.isnan(dest_lat) and math.isnan(dest_lon))
+    data['lat'] = lat
+    data['lon'] = lon
+    data['dest_lat'] = dest_lat
+    data['dest_lon'] = dest_lon
+    data['country'] = (lat, lon)
 
-    res = requests.get('https://nominatim.openstreetmap.org/reverse', {'lat': lat, 'lon': lon, 'format': 'json', 'zoom': 3}).json()
-    country = 'XZ' if 'error' in res else res['address']['country_code'].upper()
-    pid = random.randint(0,2**63)
+    data['reviewed'] = False
+    data['banned'] = False
 
-    df = pd.DataFrame([{'rating': rating, 'wait': wait, 'comment': comment, 'name': name, 'datetime': now, 'ip': ip, 'reviewed': False, 'banned': False, 'lat': lat, 'dest_lat': dest_lat, 'lon': lon, 'dest_lon': dest_lon, 'country': country}], index=[pid])
-
-    df.to_sql('points', get_db(), index_label='id', if_exists='append')
+    hitch_spot = HitchhikeSpot(**data)
+    hitch_spot_df = pd.DataFrame(hitch_spot.model_dump(), index=[0]).set_index(HITCH_SPOT_INDEX)
+    hitch_spot_df.to_sql('points', get_db(), index_label=HITCH_SPOT_INDEX, if_exists='append')
 
     return redirect('/#success')
 
