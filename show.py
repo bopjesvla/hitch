@@ -64,19 +64,11 @@ if LIGHT:
 elif NEW:
     places = places[~places.distance.isnull()]
 
-places['country_group'] = places.country.replace(['BE', 'NL', 'LU'], 'BNL')
-places.country_group = places.country_group.replace(['CH', 'AT', 'LI'], 'ALP')
-places.country_group = places.country_group.replace(['SI', 'HR', 'BA', 'ME', 'MK', 'AL', 'RS', 'TR'], 'BAL')
-places.country_group = places.country_group.replace(['SK', 'HU'], 'SKHU')
-places.country_group = places.country_group.replace(['SM', 'VA'], 'IT')
-places.country_group = places.country_group.replace('MC', 'FR')
-places.country_group = places.country_group.replace('XK', 'MK')
-
 places.reset_index(inplace=True)
 # make sure high-rated are on top
 places.sort_values('rating', inplace=True, ascending=False)
 
-m = folium.Map(prefer_canvas=True, control_scale=True)
+m = folium.Map(prefer_canvas=True, control_scale=True, world_copy_jump=True, min_zoom=1)
 
 callback = """\
 function (row) {
@@ -103,8 +95,8 @@ function (row) {
 };
 """
 
-for country, group in places.groupby('country_group'):
-    cluster = folium.plugins.FastMarkerCluster(group[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
+# for country, group in places.groupby('country_group'):
+cluster = folium.plugins.FastMarkerCluster(places[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
 folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
 
