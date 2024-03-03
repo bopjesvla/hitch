@@ -1,5 +1,5 @@
 # Hitchmap
-The map to Hitchhiking the World.
+The Map to Hitchhiking the World.
 
 
 ## Description
