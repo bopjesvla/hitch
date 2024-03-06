@@ -1,5 +1,6 @@
 # Hitchmap
-The Map to Hitchhiking the World.
+
+The map to hitchhiking the world.
 
 
 ## Description
@@ -25,7 +26,7 @@ curl https://hitchmap.com/dump.sqlite > points.sqlite
 # Contributing
 Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhBPKVnUzWhl5khm5ybTWi9G).
 
-File an Issue if you think something should be changed.
+File an issue for feature requests/bug reports.
 
-Just do a Pull Request if you solved an Issue.
+Perform a pull request if you solved an issue.
 
