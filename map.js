@@ -165,7 +165,7 @@ map.on('click', e => {
     if (window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
         var circles = Object.values(map._layers).filter(x => x instanceof L.CircleMarker).sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
-        if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 200) {
+        if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 20) {
             added = true
             circles[0].fire('click', e)
         }
