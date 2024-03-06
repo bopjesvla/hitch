@@ -13,11 +13,11 @@ Join the conversation about a map for hitchhiking in our [Signal Chat](https://s
 ## Installation
 
 ```bash
-pip install numpy pandas folium
+pip install numpy pandas folium==0.13.0
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 
 OR
 
-conda install folium
+conda install folium==0.13.0
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 ```
