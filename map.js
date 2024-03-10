@@ -85,6 +85,7 @@ var AddSpotButton = L.Control.extend({
     }
 });
 
+
 var DonateButton = L.Control.extend({
     options: {
         position: 'bottomright'
@@ -157,6 +158,10 @@ var addSpotStep = function (e) {
     }
 }
 
+function setMarkerOpacity(opacity) {
+    $$('.leaflet-overlay-pane').style.opacity = $$('.leaflet-best-pane').style.opacity = opacity
+}
+
 bars.forEach(bar => bar.onclick = addSpotStep)
 
 map.on('click', e => {
@@ -181,8 +186,8 @@ map.on('click', e => {
 
 map.on('zoom', e => {
     let currentOpacity = +window.getComputedStyle($$('.leaflet-overlay-pane')).getPropertyValue("opacity");
-    if (map.getZoom() < 9 && currentOpacity == 1) $$('.leaflet-overlay-pane').style.opacity = 0.5
-    if (map.getZoom() >= 9 && currentOpacity == 0.5) $$('.leaflet-overlay-pane').style.opacity = 1
+    if (map.getZoom() < 9 && currentOpacity == 1) setMarkerOpacity(0.3)
+    if (map.getZoom() >= 9 && currentOpacity == 0.3) setMarkerOpacity(1)
 })
 
 function renderPoints() {
@@ -197,7 +202,7 @@ function renderPoints() {
         destMarker = L.marker(points[1], { color: 'red' })
         destMarker.addTo(map)
     }
-    $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
+    setMarkerOpacity(points.length ? 0.31 : 1)
 
     if (!points[0]) {
         for (let d of destLines)
