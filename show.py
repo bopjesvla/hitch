@@ -70,7 +70,7 @@ places.sort_values('rating', inplace=True, ascending=False)
 
 m = folium.Map(prefer_canvas=True, control_scale=True, world_copy_jump=True, min_zoom=1)
 
-folium.map.CustomPane('best').add_to(m)
+# folium.map.CustomPane('best', pointer_events=True).add_to(m)
 
 callback = """\
 function (row) {
@@ -78,7 +78,7 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), pane: (row[6] > 2 ? 'best' : 'overlayPane'), fillOpacity: opacity, color: 'black', fillColor: color});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color});
 
     marker.on('click', function(e) {
         markerClick(e, row, point)
@@ -90,6 +90,11 @@ function (row) {
             map.setView(marker.getLatLng(), 16)
         });
 
+    // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
+    if (row[6] > 2) {
+        marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
+        setTimeout(_ => marker.bringToFront(), 0)
+    }
 
     return marker;
 };
