@@ -182,8 +182,8 @@ map.on('click', e => {
 
 map.on('zoom', e => {
     let currentOpacity = +window.getComputedStyle($$('.leaflet-overlay-pane')).getPropertyValue("opacity");
-    if (map.getZoom() < 9 && currentOpacity == 1) $$('.leaflet-overlay-pane').style.opacity = 0.5
-    if (map.getZoom() >= 9 && currentOpacity == 0.5) $$('.leaflet-overlay-pane').style.opacity = 1
+    if (map.getZoom() < 9 && currentOpacity == 1) $$('.leaflet-overlay-pane').style.opacity = 0.31
+    if (map.getZoom() >= 9 && currentOpacity == 0.31) $$('.leaflet-overlay-pane').style.opacity = 1
 })
 
 function renderPoints() {
