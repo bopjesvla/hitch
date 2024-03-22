@@ -20,8 +20,8 @@ markerClick = function(e, row, point) {
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)}`
         $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
-Waiting time in min: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0)}
-Ride distance in km: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0)}`
+Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
+Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 
         $$('#spot-text').innerText = row[3];
         if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'

@@ -29,7 +29,8 @@ def haversine_np(lon1, lat1, lon2, lat2):
 
     c = 2 * np.arcsin(np.sqrt(a))
     km = 6367 * c
-    return km
+    # 1.25 because the road distance is, on average, 25% larger than a straight flight
+    return 1.25 * km
 
 fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
@@ -70,7 +71,7 @@ places.sort_values('rating', inplace=True, ascending=False)
 
 m = folium.Map(prefer_canvas=True, control_scale=True, world_copy_jump=True, min_zoom=1)
 
-# folium.map.CustomPane('best', pointer_events=True).add_to(m)
+# folium.map.CustomPane('back', pointer_events=False, z_index=50).add_to(m)
 
 callback = """\
 function (row) {
@@ -94,6 +95,14 @@ function (row) {
     if (row[6] > 2) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
         setTimeout(_ => marker.bringToFront(), 0)
+    }
+
+    if (window.location.pathname.includes('lines.html') && row[7] != null) {
+        setTimeout(_ => {
+            for (let i in row[7]) {
+                L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black', weight: 1}).addTo(map)
+            }
+        }, 0)
     }
 
     return marker;
@@ -125,6 +134,7 @@ output = Template(template).substitute({
 open(outname, 'w').write(output)
 
 if not LIGHT:
+    open('lines.html', 'w').write(output)
     recent = points.dropna(subset=['datetime']).sort_values('datetime',ascending=False).iloc[:1000]
     recent['url'] = 'https://hitchmap.com/#' + recent.lat.astype(str) + ',' + recent.lon.astype(str)
     recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
