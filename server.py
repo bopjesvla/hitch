@@ -28,6 +28,14 @@ def index():
 def light():
     return send_file("light.html")
 
+@app.route("/lines.html", methods=['GET'])
+def lines():
+    return send_file("lines.html")
+
+@app.route("/map.svg", methods=['GET'])
+def map():
+    return send_file("map.svg")
+
 @app.route("/heatmap.html", methods=['GET'])
 def heatmap():
     return send_file("heatmap.html")

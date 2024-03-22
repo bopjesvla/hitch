@@ -100,7 +100,7 @@ function (row) {
     if (window.location.pathname.includes('lines.html') && row[7] != null) {
         setTimeout(_ => {
             for (let i in row[7]) {
-                L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black', weight: 1}).addTo(map)
+                L.polyline([point, [row[7][i], row[8][i]]], {opacity: 1, dashArray: '5', color: 'black', weight: 1}).addTo(map)
             }
         }, 0)
     }
