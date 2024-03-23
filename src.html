@@ -33,11 +33,40 @@
                 </div>
             </div>
             <label>How long did you wait? Leave blank if you don't remember.</label>
-            <input type="number" name="wait" min="0" max="9999"> minutes
+            <input type="number" name="wait" min="0" max="9999" size="4"> minutes
             <label>Optional comment</label>
             <div><textarea name=comment></textarea></div>
-            <label>Public nickname (alphanumeric)</label>
-            <input name="username">
+            <label for="username">Public nickname (alphanumeric)</label>
+            <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
+            <label for="signal">Optionally, how you did you signal to drivers?</label>
+            <div>
+                <select name="signal" class="driver-signal">
+                    <option selected value="null" title="null"></option>
+                    <option value="sign" title="Sign">Sign</option>
+                    <option value="thumb" title="thumb">Thumb</option>
+                    <option value="ask" title="talk">Asked around</option>
+                    <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
+                </select>
+            </div>
+            <!-- <div class="driver-signal"> -->
+            <!-- <input required type="radio" id="comm-thumb" name="signal" value="thumb" /> -->
+            <!-- <label for="comm-thumb" title="thumb">Thumb</label> -->
+            <!-- <input required type="radio" id="comm-sign" name="signal" value="sign" /> -->
+            <!-- <label for="comm-sign" title="Sign">Sign</label> -->
+            <!-- <input required type="radio" id="comm-ask" name="signal" value="ask" /> -->
+            <!-- <label for="comm-ask" title="talk">Asked around</label> -->
+            <!-- <br/> -->
+            <!-- <input required type="radio" id="comm-ask-sign" name="signal" value="ask" /> -->
+            <!-- <label for="comm-ask-sign" title="talk">Asked around with a sign in hand</label> -->
+            <!-- <br/> -->
+            <!-- <input checked required type="radio" id="comm-null" name="signal" value="null" /> -->
+            <!-- <label for="comm-null" title="null">Prefer not to answer</label> -->
+            <!-- </div> -->
+            <!-- <label for="gender">Optionally, what genders were you and your co-hitchhikers?</label> -->
+            <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
+            <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
+            <!-- <input value="0" type="number" name="others" min="0" max="9" size="2"> others -->
+
             <input type="submit" value="Submit">
         </form>
     </div>
@@ -65,9 +94,12 @@
         </span>
         <br><button>Skip</button><button>Done</button><!--button>I didn't get a ride</button--><button>Cancel</button>
     </div>
-        <script>
-         $folium_script
-        </script>
+    <script>
+     var destinationMarkers = [], importantMarkers = []
+    </script>
+    <script>
+     $folium_script
+    </script>
     <script>
      $hitch_script
     </script>

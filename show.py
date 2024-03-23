@@ -94,10 +94,12 @@ function (row) {
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
     if (row[6] > 2) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
-        setTimeout(_ => marker.bringToFront(), 0)
+        importantMarkers.push(marker)
     }
 
-    if (window.location.pathname.includes('lines.html') && row[7] != null) {
+    if (row[7] != null && row[7].length) destinationMarkers.push(marker)
+
+    if (window.location.pathname.includes('lines.html') && row[7].length) {
         setTimeout(_ => {
             for (let i in row[7]) {
                 L.polyline([point, [row[7][i], row[8][i]]], {opacity: 1, dashArray: '5', color: 'black', weight: 1}).addTo(map)

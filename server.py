@@ -32,10 +32,6 @@ def light():
 def lines():
     return send_file("lines.html")
 
-@app.route("/map.svg", methods=['GET'])
-def map():
-    return send_file("map.svg")
-
 @app.route("/heatmap.html", methods=['GET'])
 def heatmap():
     return send_file("heatmap.html")
@@ -82,6 +78,18 @@ def experience():
     comment = None if data['comment'] == '' else data['comment']
     assert comment is None or len(comment) < 10000
     name = data['username'] if re.match(r'^\w{1,32}$', data['username']) else None
+
+    signal = data['signal'] if data['signal'] != 'null' else None
+    assert signal in ['thumb', 'sign', 'ask', 'ask-sign']
+
+    # genders = [data['males'], data['females'], data['others']]
+    # genders = [(int(g) if g != '' else 0) for g in genders]
+
+    # if sum(genders) == 0:
+    #     males = females = others = None
+    # else:
+    #     males, females, others = genders
+
     now = str(datetime.datetime.utcnow())
 
     if request.headers.getlist("X-Real-IP"):
@@ -99,7 +107,8 @@ def experience():
     country = 'XZ' if 'error' in res else res['address']['country_code'].upper()
     pid = random.randint(0,2**63)
 
-    df = pd.DataFrame([{'rating': rating, 'wait': wait, 'comment': comment, 'name': name, 'datetime': now, 'ip': ip, 'reviewed': False, 'banned': False, 'lat': lat, 'dest_lat': dest_lat, 'lon': lon, 'dest_lon': dest_lon, 'country': country}], index=[pid])
+    df = pd.DataFrame([{'rating': rating, 'wait': wait, 'comment': comment, 'name': name, 'datetime': now, 'ip': ip, 'reviewed': False, 'banned': False, 'lat': lat, 'dest_lat': dest_lat, 'lon': lon, 'dest_lon': dest_lon, 'country': country, 'signal': signal}], index=[pid])
+    # , 'males': males, 'females': females, 'others': others
 
     df.to_sql('points', get_db(), index_label='id', if_exists='append')
 

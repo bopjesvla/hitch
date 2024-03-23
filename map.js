@@ -100,6 +100,8 @@ var DonateButton = L.Control.extend({
 
 map.addControl(new AddSpotButton());
 
+// L.imageOverlay('map.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
+
 if (is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
 var zoom = $$('.leaflet-control-zoom')
@@ -150,6 +152,12 @@ var addSpotStep = function (e) {
                 var uname = $$('input[name=username]')
                 uname.value = localStorage.getItem('nick')
                 uname.onchange = e => localStorage.setItem('nick', uname.value)
+
+                // for (let field of ['males', 'females', 'others', 'signal']) {
+                //     let el = $$(`input[name=${field}]`)
+                //     el.value = localStorage.getItem(field) || el.value
+                //     el.onchange = e => localStorage.setItem(field, uname.value)
+                // }
             }
         }
     }
