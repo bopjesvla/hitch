@@ -32,6 +32,15 @@ def haversine_np(lon1, lat1, lon2, lat2):
     # 1.25 because the road distance is, on average, 25% larger than a straight flight
     return 1.25 * km
 
+def get_bearing(lon1, lat1, lon2, lat2):
+    dLon = lon2 - lon1
+    x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
+    y = np.cos(np.radians(lat1)) * np.sin(np.radians(lat2)) - np.sin(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.cos(np.radians(dLon))
+    brng = np.arctan2(x,y)
+    brng = np.degrees(brng)
+
+    return brng
+
 fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
 print(len(points))
@@ -39,15 +48,36 @@ print(len(points))
 points.loc[points.id.isin(range(1000000,1040000)), 'comment'] = points.loc[points.id.isin(range(1000000,1040000)), 'comment'].str.encode("cp1252",errors='ignore').str.decode('utf-8', errors='ignore')
 
 points.datetime = pd.to_datetime(points.datetime)
-points['text'] = points['comment'] + '\n\n―' + points['name'].fillna('Anonymous') + points.datetime.dt.strftime(', %B %Y').fillna('')
 
 rads = points[['lon', 'lat', 'dest_lon', 'dest_lat']].values.T
 
 points['distance'] = haversine_np(*rads)
+points['direction'] = get_bearing(*rads)
 
 points.loc[(points.distance<1), 'dest_lat'] = None
 points.loc[(points.distance<1), 'dest_lon'] = None
+points.loc[(points.distance<1), 'direction'] = None
 points.loc[(points.distance<1), 'distance'] = None
+
+rounded_dir = 45*np.round(points.direction/45)
+points['arrows'] = rounded_dir.replace({
+    -90: '←', 90: '→', 0: '↑', 180: '↓', -180: '↓', -45: '↖', 45: '↗', 135: '↘', -135: '↙'
+})
+
+rating_text = 'Rating: ' + points.rating.astype(int).astype(str) + '/5'
+destination_text = '\nRide: ' + np.round(points.distance).astype(str).str.rstrip('.0') + ' km ' + points.arrows
+
+points['wait_text'] = None
+has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
+points.loc[has_accurate_wait, 'wait_text'] = '\nWait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (', ' + points.signal[has_accurate_wait]).fillna('')
+
+extra_text = rating_text + points.wait_text.fillna('') + destination_text.fillna('')
+
+comment_nl = points['comment'] + '\n\n'
+
+comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ''
+
+points['text'] = comment_nl + extra_text + '\n\n―' + points['name'].fillna('Anonymous') + points.datetime.dt.strftime(', %B %Y').fillna('')
 
 groups = points.groupby(['lat', 'lon'])
 

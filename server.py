@@ -80,7 +80,7 @@ def experience():
     name = data['username'] if re.match(r'^\w{1,32}$', data['username']) else None
 
     signal = data['signal'] if data['signal'] != 'null' else None
-    assert signal in ['thumb', 'sign', 'ask', 'ask-sign']
+    assert signal in ['thumb', 'sign', 'ask', 'ask-sign', None]
 
     # genders = [data['males'], data['females'], data['others']]
     # genders = [(int(g) if g != '' else 0) for g in genders]
