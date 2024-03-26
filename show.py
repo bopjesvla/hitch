@@ -69,12 +69,12 @@ destination_text = ', ride: ' + np.round(points.distance).astype(str).str.replac
 
 points['wait_text'] = None
 has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
-points.loc[has_accurate_wait, 'wait_text'] = ', wait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (' (' + points.signal[has_accurate_wait].replace({
+points.loc[has_accurate_wait, 'wait_text'] = ', wait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (' ' + points.signal[has_accurate_wait].replace({
     'ask': '💬',
     'ask-sign': '💬+🪧',
     'sign': '🪧',
     'thumb': '👍'
-}) + ')').fillna('')
+})).fillna('')
 
 extra_text = rating_text + points.wait_text.fillna('') + destination_text.fillna('')
 
@@ -154,6 +154,9 @@ folium.plugins.Geocoder(position='topleft', add_marker=False, provider='photon')
 m.get_root().render()
 
 header = m.get_root().header.render()
+header= header.replace('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>', '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">')
+header= header.replace('<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>', '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">')
+print(header)
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
