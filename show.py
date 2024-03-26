@@ -65,11 +65,11 @@ points['arrows'] = rounded_dir.replace({
 })
 
 rating_text = 'Rating: ' + points.rating.astype(int).astype(str) + '/5'
-destination_text = '\nRide: ' + np.round(points.distance).astype(str).str.rstrip('.0') + ' km ' + points.arrows
+destination_text = ', ride: ' + np.round(points.distance).astype(str).str.replace('.0','', regex=False) + ' km ' + points.arrows
 
 points['wait_text'] = None
 has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
-points.loc[has_accurate_wait, 'wait_text'] = '\nWait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (', ' + points.signal[has_accurate_wait]).fillna('')
+points.loc[has_accurate_wait, 'wait_text'] = ', wait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (', ' + points.signal[has_accurate_wait]).fillna('')
 
 extra_text = rating_text + points.wait_text.fillna('') + destination_text.fillna('')
 
@@ -85,7 +85,7 @@ places = groups[['country']].first()
 places['rating'] = groups.rating.mean().round()
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
 places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
-places['text'] = groups.text.apply(lambda t: '\n\n'.join(t.dropna()))
+places['text'] = groups.text.apply(lambda t: '\n\n\n'.join(t.dropna()))
 places['review_count'] = groups.size()
 places['dest_lats'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lat.apply(list)
 places['dest_lons'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lon.apply(list)
@@ -144,7 +144,7 @@ function (row) {
 # for country, group in places.groupby('country_group'):
 cluster = folium.plugins.FastMarkerCluster(places[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
-folium.plugins.Geocoder(position='topleft', add_marker=False).add_to(m)
+folium.plugins.Geocoder(position='topleft', add_marker=False, provider='photon').add_to(m)
 
 m.get_root().render()
 

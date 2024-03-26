@@ -14,12 +14,12 @@ The map to hitchhiking the world.
 ## Installation
 
 ```bash
-pip install numpy pandas folium==0.13.0
+pip install numpy pandas folium==0.16.0
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 
 OR
 
-conda install folium==0.13.0
+conda install folium==0.16.0
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 ```
 
