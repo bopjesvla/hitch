@@ -69,7 +69,12 @@ destination_text = ', ride: ' + np.round(points.distance).astype(str).str.replac
 
 points['wait_text'] = None
 has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
-points.loc[has_accurate_wait, 'wait_text'] = ', wait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (', ' + points.signal[has_accurate_wait]).fillna('')
+points.loc[has_accurate_wait, 'wait_text'] = ', wait: ' + points.wait[has_accurate_wait].astype(int).astype(str) + ' min' + (' (' + points.signal[has_accurate_wait].replace({
+    'ask': '💬',
+    'ask-sign': '💬+🪧',
+    'sign': '🪧',
+    'thumb': '👍'
+}) + ')').fillna('')
 
 extra_text = rating_text + points.wait_text.fillna('') + destination_text.fillna('')
 
