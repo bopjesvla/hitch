@@ -85,7 +85,18 @@
 
         Your review will appear on the map within 10 minutes. Refreshing may be needed.
     </div>
-    <a href="javascript:void(0);" id="sb-close">&times;</a>
+    <a href="javascript:void(0);" id="sb-close">
+        <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <line x1="1" y1="13"
+                  x2="13" y2="1"
+                  stroke="black"
+                  stroke-width="2"/>
+            <line x1="1" y1="1"
+                  x2="13" y2="13"
+                  stroke="black"
+                  stroke-width="2"/>
+        </svg>
+    </a>
     <div class="topbar step1">
         <span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span>
         <br><button>Done</button><button>Cancel</button>
@@ -94,7 +105,7 @@
         <span>
             Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
-        <br><button>Skip</button><button>Done</button><!--button>I didn't get a ride</button--><button>Cancel</button>
+        <br><button>Skip</button><button>Done</button><button>Cancel</button>
     </div>
     <script>
      var destinationMarkers = [], importantMarkers = []
