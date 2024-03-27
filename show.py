@@ -114,7 +114,7 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _destination_lats: row[7], _destination_lons: row[8]});
 
     marker.on('click', function(e) {
         markerClick(e, row, point)
@@ -132,7 +132,7 @@ function (row) {
         importantMarkers.push(marker)
     }
 
-    if (row[7] != null && row[7].length) destinationMarkers.push(marker)
+    if (row[7].length) destinationMarkers.push(marker)
 
     if (window.location.pathname.includes('lines.html') && row[7].length) {
         setTimeout(_ => {
@@ -149,14 +149,13 @@ function (row) {
 # for country, group in places.groupby('country_group'):
 cluster = folium.plugins.FastMarkerCluster(places[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
 
-folium.plugins.Geocoder(position='topleft', add_marker=False, provider='photon').add_to(m)
+# folium.plugins.Geocoder(position='topleft', add_marker=False, provider='photon').add_to(m)
 
 m.get_root().render()
 
 header = m.get_root().header.render()
 header= header.replace('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>', '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">')
 header= header.replace('<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>', '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">')
-print(header)
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 

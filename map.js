@@ -6,14 +6,21 @@ var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
 $$ = function (e) { return document.querySelector(e) }
-var points = [], destLines = [], spotMarker, destMarker
+
+var points = [],
+    active = [],
+    destLines = [],
+    spotMarker,
+    destMarker
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
 markerClick = function(e, row, point) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
-    points = [point]
+    active = [e.target]
+    points = []
+    renderPoints()
 
     setTimeout(() => {
         bar('.sidebar.show-spot')
@@ -29,10 +36,6 @@ Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 
         window.location.hash = `${row[0]},${row[1]}`
     },100)
-
-    for (let d of destLines)
-        d.remove()
-    destLines = []
 
     console.log(row)
 
@@ -58,8 +61,6 @@ function bar(selector) {
 
 var map = window[$$('.folium-map').id]
 
-$$("input[placeholder^=Search]").placeholder = 'Jump to city'
-
 var AddSpotButton = L.Control.extend({
     options: {
         position: 'topleft'
@@ -76,9 +77,8 @@ var AddSpotButton = L.Control.extend({
                     window.location = '/'
                 return;
             }
+            clear()
             bar('.topbar.step1')
-            points = []
-            renderPoints()
         }
 
         return controlDiv;
@@ -98,11 +98,23 @@ var DonateButton = L.Control.extend({
     }
 });
 
-map.addControl(new AddSpotButton());
-
 // L.imageOverlay('map.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
 
 if (is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
+
+var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city", "zoom": 11};
+
+var customGeocoder = L.Control.Geocoder.photon();
+geocoderOpts["geocoder"] = customGeocoder;
+
+L.Control.geocoder(
+    geocoderOpts
+).on('markgeocode', function(e) {
+    var zoom = geocoderOpts['zoom'] || map.getZoom();
+    map.setView(e.geocode.center, zoom);
+}).addTo(map);
+
+map.addControl(new AddSpotButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
@@ -110,9 +122,7 @@ zoom.parentNode.appendChild(zoom)
 // map.addControl(new DonateButton());
 
 $$('#sb-close').onclick = function () {
-    bar()
-    points = []
-    renderPoints()
+    clear()
 }
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
@@ -130,7 +140,13 @@ var addSpotStep = function (e) {
         points.push(points[0])
     if (e.target.innerText == "Skip")
         points.push({ lat: 'nan', lng: 'nan' })
+    if (e.target.innerText.includes('Review')) {
+        points.push(active[0].getLatLng())
+        active = []
+    }
+
     renderPoints()
+
     if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText == "Skip") {
         if (points.length == 1) {
             if (map.getZoom() > 9) map.setZoom(9);
@@ -180,23 +196,26 @@ map.on('click', e => {
         }
     }
     if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
-        points = []
-        renderPoints()
-        bar()
+        clear()
     }
 
     L.DomEvent.stopPropagation(e)
 })
 
 map.on('zoom', e => {
-    let currentOpacity = +window.getComputedStyle($$('.leaflet-overlay-pane')).getPropertyValue("opacity");
-    if (map.getZoom() < 9 && currentOpacity == 1) $$('.leaflet-overlay-pane').style.opacity = 0.31
-    if (map.getZoom() >= 9 && currentOpacity == 0.31) $$('.leaflet-overlay-pane').style.opacity = 1
+    document.body.classList.toggle('zoomed-out', map.getZoom() < 9)
 })
+
+var oldActive = [];
 
 function renderPoints() {
     if (spotMarker) map.removeLayer(spotMarker)
     if (destMarker) map.removeLayer(destMarker)
+
+    for (let d of destLines)
+        d.remove()
+    destLines = []
+
     spotMarker = destMarker = null
     if (points[0]) {
         spotMarker = L.marker(points[0])
@@ -206,14 +225,27 @@ function renderPoints() {
         destMarker = L.marker(points[1], { color: 'red' })
         destMarker.addTo(map)
     }
-    $$('.leaflet-overlay-pane').style.opacity = points.length ? 0.3 : 1
-
-    if (!points[0]) {
-        for (let d of destLines)
-            d.remove()
-        destLines = []
+    document.body.classList.toggle('has-points', points.length)
+    for (let a of active) {
+        let lats = a.options._destination_lats
+        let lons = a.options._destination_lons
+        if (lats && lats.length) {
+            for (let i in lats) {
+                destLines.push(L.polyline([a.getLatLng(), [lats[i], lons[i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
+            }
+        }
     }
+
+    oldActive = active;
 }
+
+function clear() {
+    bar()
+    points = []
+    active = []
+    renderPoints()
+}
+
 var c = $$('.leaflet-control-attribution')
 c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.html>recent changes</a> <br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://leafletjs.com>Leaflet</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
 if (window.location.hash == '#success') {

@@ -165,6 +165,12 @@ input[type=radio] + label {
     display: block;
     clear: both;
 }
+body.zoomed-out .leaflet-overlay-pane {
+    opacity: 0.3;
+}
+body.has-points .leaflet-overlay-pane {
+    opacity: 0.3;
+}
 @media only screen and (max-width: 700px) {
     .topbar {
         font-size: 1em !important;
