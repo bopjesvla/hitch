@@ -66,10 +66,10 @@ var AddSpotButton = L.Control.extend({
         position: 'topleft'
     },
     onAdd: function (map) {
-        var controlDiv = L.DomUtil.create('div', 'leaflet-bar add-spot');
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button add-spot');
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "javascript:void(0);";
-        container.innerText = "📍 Add a spot";
+        container.innerText = "📍 Add spot";
 
         container.onclick = function () {
             if (window.location.href.includes('light')) {
@@ -85,6 +85,24 @@ var AddSpotButton = L.Control.extend({
     }
 });
 
+var RouteButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button plan-route');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerText = "↗️ Plan route";
+
+        container.onclick = function () {
+            clear()
+            bar('.topbar.step1')
+        }
+
+        return controlDiv;
+    }
+});
 
 var DonateButton = L.Control.extend({
     options: {
@@ -99,6 +117,60 @@ var DonateButton = L.Control.extend({
 });
 
 // L.imageOverlay('map.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
+
+// amsterdam to barcelona
+let Z = new L.LatLng(52.3051, 4.8371), A = new L.LatLng(41.3725, 2.1766)
+
+let routeDistance = A.distanceTo(Z)
+// TODO: get the real geographic center?
+let MIDPOINT = L.latLngBounds(A, Z).getCenter()
+
+let directionsLayers = []
+
+// create new pane, copy relevant points, hide/lower opacity of other points
+
+if (window.location.pathname.includes('lines.html')) {
+    let p = map.createPane('directions')
+    p.style.zIndex = 450
+    document.body.classList.add('directions')
+    // var directionsRenderer = L.canvas({pane:"directions"});
+
+    for (let spot of destinationMarkers) {
+        let B = spot.getLatLng()
+        //     AtoB = A.distanceTo(B), BtoZ = B.distanceTo(Z),
+        //     detour = AtoB + BtoZ,
+        //     stopScore = 2 * routeDistance - Math.abs(AtoB - BtoZ) - detour
+
+        if (MIDPOINT.distanceTo(B) > routeDistance / 2 + 10000) continue
+
+        let AtoB = A.distanceTo(B), BtoZ = B.distanceTo(Z)
+        let bestImprovement = 0
+
+        let lats = spot.options._destination_lats
+        let lons = spot.options._destination_lons
+
+        // loop over the spot's previous rides; don't show all; some have wildly different directions
+        for (let i in lats) {
+            let destCoord = new L.LatLng(lats[i], lons[i]),
+                improvement = BtoZ - destCoord.distanceTo(Z), // how much closer to Z would this ride have gotten us?
+                travel = B.distanceTo(destCoord), // how far was this ride?
+                retreat = AtoB - A.distanceTo(destCoord) // how much closer to A would this ride have gotten us?
+
+            if (improvement > 0 && retreat < 0.5 * travel) {
+                bestImprovement = Math.max(bestImprovement, improvement)
+
+                directionsLayers.push(L.polyline([spot.getLatLng(), destCoord], {opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false}).addTo(map))
+            }
+        }
+        if (bestImprovement > 0) {
+            let marker = new L.circleMarker(B, Object.assign({}, spot.options, {pane: 'directions', radius: 5 + (bestImprovement / 80000)}))
+            marker.on('click', e => spot.fire('click', e))
+            marker.addTo(map)
+            directionsLayers.push(marker)
+        }
+    }
+}
+
 
 if (is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 

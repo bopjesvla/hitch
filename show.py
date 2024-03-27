@@ -106,15 +106,13 @@ places.sort_values('rating', inplace=True, ascending=False)
 
 m = folium.Map(prefer_canvas=True, control_scale=True, world_copy_jump=True, min_zoom=1)
 
-# folium.map.CustomPane('back', pointer_events=False, z_index=50).add_to(m)
-
 callback = """\
 function (row) {
     var marker;
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + 1 * (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _destination_lats: row[7], _destination_lons: row[8]});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _destination_lats: row[7], _destination_lons: row[8]});
 
     marker.on('click', function(e) {
         markerClick(e, row, point)
@@ -134,20 +132,12 @@ function (row) {
 
     if (row[7].length) destinationMarkers.push(marker)
 
-    if (window.location.pathname.includes('lines.html') && row[7].length) {
-        setTimeout(_ => {
-            for (let i in row[7]) {
-                L.polyline([point, [row[7][i], row[8][i]]], {opacity: 1, dashArray: '5', color: 'black', weight: 1}).addTo(map)
-            }
-        }, 0)
-    }
-
     return marker;
 };
 """
 
 # for country, group in places.groupby('country_group'):
-cluster = folium.plugins.FastMarkerCluster(places[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback).add_to(m)
+cluster = folium.plugins.FastMarkerCluster(places[['lat', 'lon', 'rating', 'text', 'wait', 'distance', 'review_count', 'dest_lats', 'dest_lons']].values, disableClusteringAtZoom=7, spiderfyOnMaxZoom=False, bubblingMouseEvents=False, callback=callback, animate=False).add_to(m)
 
 # folium.plugins.Geocoder(position='topleft', add_marker=False, provider='photon').add_to(m)
 
