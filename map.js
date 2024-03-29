@@ -7,7 +7,9 @@ var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
 $$ = function (e) { return document.querySelector(e) }
 
-var points = [],
+var addSpotPoints = [],
+    planRoutePoints = [],
+    addSpotLine = null,
     active = [],
     destLines = [],
     spotMarker,
@@ -19,7 +21,7 @@ markerClick = function(e, row, point) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
     active = [e.target]
-    points = []
+    addSpotPoints = []
     renderPoints()
 
     setTimeout(() => {
@@ -31,10 +33,11 @@ Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
 Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 
         $$('#spot-text').innerText = row[3];
-        if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide points like this, check out the <a href=/light.html>lightweight map</a>.'
+        if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
         else $$('#extra-text').innerHTML = ''
 
-        window.location.hash = `${row[0]},${row[1]}`
+        if (!window.location.hash.includes('#route'))
+            window.location.hash = `${row[0]},${row[1]}`
     },100)
 
     console.log(row)
@@ -55,7 +58,7 @@ function bar(selector) {
     })
     if (selector)
         $$(selector).classList.add('visible')
-    if (window.location.hash)
+    if (window.location.hash && !window.location.hash.includes('#route'))
         history.pushState(null, null, ' ')
 }
 
@@ -119,21 +122,33 @@ var DonateButton = L.Control.extend({
 // L.imageOverlay('map.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
 
 // amsterdam to barcelona
-let Z = new L.LatLng(52.3051, 4.8371), A = new L.LatLng(41.3725, 2.1766)
+// route,52.3051,4.8371,41.3725,2.1766
 
-let routeDistance = A.distanceTo(Z)
-// TODO: get the real geographic center?
-let MIDPOINT = L.latLngBounds(A, Z).getCenter()
+// lux to metz
+// route,49.5429,6.1178,49.1792,6.1768
 
 let directionsLayers = []
 
-// create new pane, copy relevant points, hide/lower opacity of other points
+let toPoint = coord => L.point(coord.lng, coord.lat)
+let toCoord = point => L.latLng(point.y, point.x)
+let closest = (coord, segmentStart, segmentEnd) => {
+    return toCoord(L.LineUtil.closestPointOnSegment(toPoint(coord), toPoint(segmentStart), toPoint(segmentEnd)))
+}
 
-if (window.location.pathname.includes('lines.html')) {
+if (window.location.hash.includes('#route')) {
+    let route = window.location.hash.split(',')
+    let A = new L.LatLng(+route[1], +route[2]), Z = new L.LatLng(+route[3], +route[4])
+
+    let routeDistance = A.distanceTo(Z)
+    // TODO: get the real geographic center?
+    let MIDPOINT = L.latLngBounds(A, Z).getCenter()
+
     let p = map.createPane('directions')
     p.style.zIndex = 450
     document.body.classList.add('directions')
     // var directionsRenderer = L.canvas({pane:"directions"});
+
+    directionsLayers = [L.polyline([A, Z], {opacity: 0.1, weight: 5, dashArray: '1', color: 'red', pane: 'directions', interactive: false}).addTo(map)]
 
     for (let spot of destinationMarkers) {
         let B = spot.getLatLng()
@@ -151,24 +166,31 @@ if (window.location.pathname.includes('lines.html')) {
 
         // loop over the spot's previous rides; don't show all; some have wildly different directions
         for (let i in lats) {
-            let destCoord = new L.LatLng(lats[i], lons[i]),
-                improvement = BtoZ - destCoord.distanceTo(Z), // how much closer to Z would this ride have gotten us?
-                travel = B.distanceTo(destCoord), // how far was this ride?
-                retreat = AtoB - A.distanceTo(destCoord) // how much closer to A would this ride have gotten us?
+            let rideCoord = new L.LatLng(lats[i], lons[i]),
+                closestToZ = closest(Z, B, rideCoord), // what's the point on this ride that is closest to Z?
+                improvement = BtoZ - closestToZ.distanceTo(Z), // how much closer to Z would this ride have gotten us?
+                travel = B.distanceTo(rideCoord), // how far was this ride?
+                retreat = AtoB - A.distanceTo(rideCoord) // how far back to A would this ride have gotten us?
+
+            console.log(rideCoord)
+            console.log(closestToZ)
 
             if (improvement > 0 && retreat < 0.5 * travel) {
                 bestImprovement = Math.max(bestImprovement, improvement)
 
-                directionsLayers.push(L.polyline([spot.getLatLng(), destCoord], {opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false}).addTo(map))
+                directionsLayers.push(L.polyline([spot.getLatLng(), rideCoord], {opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false}).addTo(map))
             }
         }
         if (bestImprovement > 0) {
-            let marker = new L.circleMarker(B, Object.assign({}, spot.options, {pane: 'directions', radius: 5 + (bestImprovement / 80000)}))
+            let marker = new L.circleMarker(B, Object.assign({}, spot.options, {pane: 'directions', radius: 5 + Math.min(bestImprovement / 80000, 5)}))
             marker.on('click', e => spot.fire('click', e))
             marker.addTo(map)
             directionsLayers.push(marker)
         }
     }
+
+    var bounds = new L.LatLngBounds([A, Z]);
+    map.fitBounds(bounds, {})
 }
 
 
@@ -187,14 +209,17 @@ L.Control.geocoder(
 }).addTo(map);
 
 map.addControl(new AddSpotButton());
+// map.addControl(new RouteButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
 // map.addControl(new DonateButton());
 
-$$('#sb-close').onclick = function () {
+$$('#sb-close').onclick = function (e) {
     clear()
+    if (window.location.hash.includes('#route'))
+        e.preventDefault()
 }
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
@@ -203,35 +228,36 @@ var addSpotStep = function (e) {
     if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done') {
         let center = map.getCenter()
-        if (points[0] && center.distanceTo(points[0]) < 1000 && !confirm("Are you sure this was where the car took you? It's less than 1 km away from the hitchhiking spot."))
+        if (addSpotPoints[0] && center.distanceTo(addSpotPoints[0]) < 1000 && !confirm("Are you sure this was where the car took you? It's less than 1 km away from the hitchhiking spot."))
             return
         else
-            points.push(center)
+            addSpotPoints.push(center)
     }
     if (e.target.innerText.includes("didn't get"))
-        points.push(points[0])
+        addSpotPoints.push(addSpotPoints[0])
     if (e.target.innerText == "Skip")
-        points.push({ lat: 'nan', lng: 'nan' })
+        addSpotPoints.push({ lat: 'nan', lng: 'nan' })
     if (e.target.innerText.includes('Review')) {
-        points.push(active[0].getLatLng())
+        addSpotPoints.push(active[0].getLatLng())
         active = []
     }
 
     renderPoints()
 
     if (e.target.innerText == 'Done' || e.target.innerText.includes("didn't get") || e.target.innerText.includes('Review') || e.target.innerText == "Skip") {
-        if (points.length == 1) {
+        if (addSpotPoints.length == 1) {
             if (map.getZoom() > 9) map.setZoom(9);
-            map.panTo(points[0])
+            map.panTo(addSpotPoints[0])
             bar('.topbar.step2')
         }
-        else if (points.length == 2) {
-            if (points[1].lat !== 'nan') {
-                var bounds = new L.LatLngBounds(points);
+        else if (addSpotPoints.length == 2) {
+            if (addSpotPoints[1].lat !== 'nan') {
+                var bounds = new L.LatLngBounds(addSpotPoints);
                 map.fitBounds(bounds, {})
             }
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
+            let points = addSpotPoints
             var dest = points[1].lat !== 'nan' ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
@@ -250,7 +276,7 @@ var addSpotStep = function (e) {
         }
     }
     else if (e.target.innerText == 'Cancel') {
-        points = []; bar(); renderPoints();
+        clear()
     }
 }
 
@@ -289,15 +315,15 @@ function renderPoints() {
     destLines = []
 
     spotMarker = destMarker = null
-    if (points[0]) {
-        spotMarker = L.marker(points[0])
+    if (addSpotPoints[0]) {
+        spotMarker = L.marker(addSpotPoints[0])
         spotMarker.addTo(map)
     }
-    if (points[1] && points[1].lat !== 'nan') {
-        destMarker = L.marker(points[1], { color: 'red' })
+    if (addSpotPoints[1] && addSpotPoints[1].lat !== 'nan') {
+        destMarker = L.marker(addSpotPoints[1], { color: 'red' })
         destMarker.addTo(map)
     }
-    document.body.classList.toggle('has-points', points.length)
+    document.body.classList.toggle('has-points', addSpotPoints.length)
     for (let a of active) {
         let lats = a.options._destination_lats
         let lons = a.options._destination_lons
@@ -313,7 +339,7 @@ function renderPoints() {
 
 function clear() {
     bar()
-    points = []
+    addSpotPoints = []
     active = []
     renderPoints()
 }
