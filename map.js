@@ -224,6 +224,18 @@ $$('#sb-close').onclick = function (e) {
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
 
+function drawAddSpotLine() {
+    if (addSpotLine) {
+        map.removeLayer(addSpotLine)
+        addSpotLine = null
+    }
+    if (addSpotPoints.length == 1) {
+        addSpotLine = L.polyline([addSpotPoints[0], map.getCenter()], {opacity: 1, dashArray: '5', color: 'black'}).addTo(map)
+    }
+}
+
+map.on('move', drawAddSpotLine)
+
 var addSpotStep = function (e) {
     if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done') {
@@ -342,6 +354,7 @@ function clear() {
     addSpotPoints = []
     active = []
     renderPoints()
+    drawAddSpotLine()
 }
 
 var c = $$('.leaflet-control-attribution')
