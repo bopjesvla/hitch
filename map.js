@@ -208,12 +208,7 @@ zoom.parentNode.appendChild(zoom)
 // map.addControl(new DonateButton());
 
 $$('#sb-close').onclick = function (e) {
-    if (window.location.hash.includes('#route')) {
-        clear()
-    }
-    else {
-        clearAll()
-    }
+    clearAll()
 }
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
@@ -302,7 +297,7 @@ map.on('click', e => {
         }
     }
     if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
-        clear()
+        clearAll()
     }
 
     L.DomEvent.stopPropagation(e)
@@ -350,6 +345,7 @@ function clearAll() {
         window.history.pushState(null, null, ' ')
     }
     if (!window.location.hash) navigate() // clears rest
+    else clear()
 }
 function clear() {
     bar()
@@ -442,7 +438,8 @@ function navigate() {
         for (let m of allMarkers) {
             if (m._latlng.lat === lat && m._latlng.lng === lon) {
                 markerClick(m)
-                map.setView(m.getLatLng(), 16)
+                if (map.getZoom() < 3)
+                    map.setView(m.getLatLng(), 16)
                 return
             }
         }
