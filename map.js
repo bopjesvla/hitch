@@ -2,9 +2,6 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js").catch(e => console.error(e));
 }
 
-var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
-
 var $$ = function (e) { return document.querySelector(e) }
 
 var addSpotPoints = [],
@@ -189,9 +186,6 @@ function planRoute(lat1, lon1, lat2, lon2) {
     var bounds = new L.LatLngBounds([A, Z]);
     map.fitBounds(bounds, {})
 }
-
-
-if (is_firefox && is_android) document.querySelector('.leaflet-control-geocoder').style.display = 'none';
 
 var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city", "zoom": 11};
 
