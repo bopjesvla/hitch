@@ -448,6 +448,7 @@ function navigate() {
         for (let m of allMarkers) {
             if (m._latlng.lat === lat && m._latlng.lng === lon) {
                 markerClick(m)
+                map.setView(m.getLatLng(), 16)
                 return
             }
         }
