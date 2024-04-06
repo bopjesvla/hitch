@@ -70,6 +70,11 @@ input[type=radio] + label {
     z-index: 2000;
     line-height: 1;
 }
+body.adding-spot .horizontal-button,
+body.has-route .horizontal-button,
+body.picking-route .horizontal-button {
+    display: none;
+}
 .horizontal-button {
     padding: 5px 10px;
     background: #fff !important;
@@ -175,6 +180,9 @@ body.has-points .leaflet-overlay-pane {
     opacity: 0.3;
 }
 body.directions .leaflet-overlay-pane, body.directions .leaflet-marker-pane {
+    display: none;
+}
+body:not(.directions) .leaflet-directions-pane {
     display: none;
 }
 @media only screen and (max-width: 700px) {

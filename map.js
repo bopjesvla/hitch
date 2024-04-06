@@ -5,7 +5,7 @@ if ("serviceWorker" in navigator) {
 var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var is_android = navigator.userAgent.toLowerCase().indexOf("android") > -1;
 
-$$ = function (e) { return document.querySelector(e) }
+var $$ = function (e) { return document.querySelector(e) }
 
 var addSpotPoints = [],
     planRoutePoints = [],
@@ -17,12 +17,14 @@ var addSpotPoints = [],
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
-markerClick = function(e, row, point) {
+var markerClick = function(marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
-    active = [e.target]
+    active = [marker]
     addSpotPoints = []
     renderPoints()
+
+    var row = marker.options._row, point = marker.getLatLng()
 
     setTimeout(() => {
         bar('.sidebar.show-spot')
@@ -35,9 +37,6 @@ Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
         $$('#spot-text').innerText = row[3];
         if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
         else $$('#extra-text').innerHTML = ''
-
-        if (!window.location.hash.includes('#route'))
-            window.location.hash = `${row[0]},${row[1]}`
     },100)
 
     console.log(row)
@@ -47,8 +46,6 @@ Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
             destLines.push(L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
         }
     }
-
-    L.DomEvent.stopPropagation(e)
 };
 
 
@@ -58,8 +55,6 @@ function bar(selector) {
     })
     if (selector)
         $$(selector).classList.add('visible')
-    if (window.location.hash && !window.location.hash.includes('#route'))
-        history.pushState(null, null, ' ')
 }
 
 var map = window[$$('.folium-map').id]
@@ -80,7 +75,7 @@ var AddSpotButton = L.Control.extend({
                     window.location = '/'
                 return;
             }
-            clear()
+            clearAll()
             bar('.topbar.step1')
         }
 
@@ -99,7 +94,7 @@ var RouteButton = L.Control.extend({
         container.innerText = "↗️ Plan route";
 
         container.onclick = function () {
-            clear()
+            clearAll()
             bar('.topbar.step1')
         }
 
@@ -119,7 +114,8 @@ var DonateButton = L.Control.extend({
     }
 });
 
-// L.imageOverlay('map.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
+// let backpane = map.createPane('back')
+// L.imageOverlay('map2.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
 
 // amsterdam to barcelona
 // route,52.3051,4.8371,41.3725,2.1766
@@ -135,18 +131,19 @@ let closest = (coord, segmentStart, segmentEnd) => {
     return toCoord(L.LineUtil.closestPointOnSegment(toPoint(coord), toPoint(segmentStart), toPoint(segmentEnd)))
 }
 
-if (window.location.hash.includes('#route')) {
-    let route = window.location.hash.split(',')
-    let A = new L.LatLng(+route[1], +route[2]), Z = new L.LatLng(+route[3], +route[4])
+let dirpane = map.createPane('directions')
+dirpane.style.zIndex = 450
+
+function planRoute(lat1, lon1, lat2, lon2) {
+    let A = new L.LatLng(lat1, lon1), Z = new L.LatLng(lat2, lon2)
+    document.body.classList.add('directions')
 
     let routeDistance = A.distanceTo(Z)
     // TODO: get the real geographic center?
     let MIDPOINT = L.latLngBounds(A, Z).getCenter()
 
-    let p = map.createPane('directions')
-    p.style.zIndex = 450
-    document.body.classList.add('directions')
-    // var directionsRenderer = L.canvas({pane:"directions"});
+    for (let d of directionsLayers)
+        map.removeLayer(d)
 
     directionsLayers = [L.polyline([A, Z], {opacity: 0.1, weight: 5, dashArray: '1', color: 'red', pane: 'directions', interactive: false}).addTo(map)]
 
@@ -156,7 +153,7 @@ if (window.location.hash.includes('#route')) {
         //     detour = AtoB + BtoZ,
         //     stopScore = 2 * routeDistance - Math.abs(AtoB - BtoZ) - detour
 
-        if (MIDPOINT.distanceTo(B) > routeDistance / 2 + 10000) continue
+        if (MIDPOINT.distanceTo(B) > routeDistance / 1.95 + 10000) continue
 
         let AtoB = A.distanceTo(B), BtoZ = B.distanceTo(Z)
         let bestImprovement = 0
@@ -217,14 +214,17 @@ zoom.parentNode.appendChild(zoom)
 // map.addControl(new DonateButton());
 
 $$('#sb-close').onclick = function (e) {
-    clear()
-    if (window.location.hash.includes('#route'))
-        e.preventDefault()
+    if (window.location.hash.includes('#route')) {
+        clear()
+    }
+    else {
+        clearAll()
+    }
 }
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
 
-function drawAddSpotLine() {
+function updateAddSpotLine() {
     if (addSpotLine) {
         map.removeLayer(addSpotLine)
         addSpotLine = null
@@ -234,7 +234,7 @@ function drawAddSpotLine() {
     }
 }
 
-map.on('move', drawAddSpotLine)
+map.on('move', updateAddSpotLine)
 
 var addSpotStep = function (e) {
     if (e.target.tagName != 'BUTTON') return
@@ -288,8 +288,10 @@ var addSpotStep = function (e) {
         }
     }
     else if (e.target.innerText == 'Cancel') {
-        clear()
+        clearAll()
     }
+
+    document.body.classList.toggle('adding-spot', addSpotPoints.length > 0)
 }
 
 bars.forEach(bar => bar.onclick = addSpotStep)
@@ -349,12 +351,24 @@ function renderPoints() {
     oldActive = active;
 }
 
+function clearAll() {
+    if (window.location.hash && !window.location.hash.includes('#route')) {
+        window.history.pushState(null, null, ' ')
+    }
+    if (!window.location.hash) navigate() // clears rest
+}
 function clear() {
     bar()
     addSpotPoints = []
     active = []
     renderPoints()
-    drawAddSpotLine()
+    updateAddSpotLine()
+    document.body.classList.remove('adding-spot')
+}
+
+function clearRoute() {
+    document.body.classList.remove('planning-route', 'directions')
+    planRoutePoints = []
 }
 
 var c = $$('.leaflet-control-attribution')
@@ -415,3 +429,31 @@ if (!window.location.hash.includes(',')) // we'll center on coord
 if (map.getZoom() > 13) map.setZoom(13);
 
 $$('.folium-map').focus()
+
+function navigate() {
+    console.log(location.hash)
+    clear()
+    clearRoute()
+
+    if (!window.location.hash) {
+        return
+    }
+
+    let args = window.location.hash.split(',')
+    if (args[0] == '#route') {
+        planRoute(+args[1], +args[2], +args[3], +args[4])
+    }
+    else if (args.length == 2) {
+        let lat = +args[0].slice(1), lon = +args[1]
+        for (let m of allMarkers) {
+            if (m._latlng.lat === lat && m._latlng.lng === lon) {
+                markerClick(m)
+                return
+            }
+        }
+    }
+}
+
+window.onhashchange = navigate
+
+navigate()

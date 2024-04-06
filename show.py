@@ -83,6 +83,8 @@ comment_nl = points['comment'] + '\n\n'
 comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ''
 
 points['text'] = comment_nl + extra_text + '\n\n―' + points['name'].fillna('Anonymous') + points.datetime.dt.strftime(', %B %Y').fillna('')
+oldies = points.datetime.dt.year <= 2021
+points.loc[oldies, 'text'] = comment_nl[oldies] + '―' + points[oldies].name.fillna('Anonymous') + points[oldies].datetime.dt.strftime(', %B %Y').fillna('')
 
 groups = points.groupby(['lat', 'lon'])
 
@@ -112,25 +114,24 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _destination_lats: row[7], _destination_lons: row[8]});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
 
     marker.on('click', function(e) {
-        markerClick(e, row, point)
+        if (window.location.hash.includes('#route'))
+            markerClick(marker)
+        else
+            window.location.hash = `${point.lat},${point.lng}`
+        
+        L.DomEvent.stopPropagation(e)
     })
-
-    if (window.location.hash == `#${row[0]},${row[1]}`)
-        addEventListener("DOMContentLoaded", e => {
-            marker.fire('click', {})
-            map.setView(marker.getLatLng(), 16)
-        });
 
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
     if (row[6] > 2) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
-        importantMarkers.push(marker)
     }
 
     if (row[7].length) destinationMarkers.push(marker)
+    allMarkers.push(marker)
 
     return marker;
 };
