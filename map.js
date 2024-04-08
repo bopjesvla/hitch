@@ -284,6 +284,7 @@ var addSpotStep = function (e) {
         addSpotPoints.push({ lat: 'nan', lng: 'nan' })
     if (e.target.innerText.includes('Review')) {
         addSpotPoints.push(active[0].getLatLng())
+        document.body.classList.remove('directions')
         active = []
     }
 
