@@ -73,6 +73,7 @@ var AddSpotButton = L.Control.extend({
                 return;
             }
             clearAllButRoute()
+            document.body.classList.add('adding-spot')
             bar('.topbar.spot.step1')
         }
 
@@ -92,6 +93,7 @@ var RouteButton = L.Control.extend({
 
         container.onclick = function () {
             clearAllButRoute()
+            document.body.classList.add('planning-route')
             bar('.topbar.route.step1')
         }
 
@@ -332,7 +334,7 @@ function planRouteStep(e) {
         planRoutePoints.push(center)
 
         if (planRoutePoints.length == 1) {
-            if (map.getZoom() > 6) map.setZoom(6);
+            if (map.getZoom() > 7) map.setZoom(7);
             map.panTo(planRoutePoints[0])
             bar('.topbar.route.step2')
         }
