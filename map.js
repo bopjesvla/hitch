@@ -66,7 +66,7 @@ var AddSpotButton = L.Control.extend({
         container.href = "javascript:void(0);";
         container.innerText = "📍 Add spot";
 
-        container.onclick = function () {
+        container.onclick = function (e) {
             if (window.location.href.includes('light')) {
                 if (confirm('Do you want to be redirected to the full version where you can add spots?'))
                     window.location = '/'
@@ -75,6 +75,8 @@ var AddSpotButton = L.Control.extend({
             clearAllButRoute()
             document.body.classList.add('adding-spot')
             bar('.topbar.spot.step1')
+
+            L.DomEvent.stopPropagation(e)
         }
 
         return controlDiv;
@@ -91,10 +93,11 @@ var RouteButton = L.Control.extend({
         container.href = "javascript:void(0);";
         container.innerHTML = "↗️ Plan route";
 
-        container.onclick = function () {
+        container.onclick = function (e) {
             clearAllButRoute()
             document.body.classList.add('planning-route')
             bar('.topbar.route.step1')
+            L.DomEvent.stopPropagation(e)
         }
 
         return controlDiv;
@@ -111,8 +114,9 @@ var RouteViewButton = L.Control.extend({
         container.href = "javascript:void(0);";
         container.innerHTML = "<span class='route-view-toggle'></span> Route view";
 
-        container.onclick = function () {
+        container.onclick = function (e) {
             document.body.classList.toggle('directions')
+            L.DomEvent.stopPropagation(e)
         }
 
         return controlDiv;
@@ -129,8 +133,9 @@ var CancelRouteButton = L.Control.extend({
         container.href = "javascript:void(0);";
         container.innerHTML = "✖ Cancel Route";
 
-        container.onclick = function () {
+        container.onclick = function (e) {
             clearRoute()
+            L.DomEvent.stopPropagation(e)
         }
 
         return controlDiv;
