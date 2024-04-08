@@ -72,18 +72,18 @@ input[type=radio] + label {
 }
 body.adding-spot .horizontal-button,
 body.has-route .horizontal-button,
-body.picking-route .horizontal-button {
+body.planning-route .horizontal-button {
     display: none;
 }
-.horizontal-button {
+.horizontal-button, .replacement-button {
     padding: 5px 10px;
     background: #fff !important;
     white-space: nowrap;
 }
-.horizontal-button a {
+.horizontal-button a, .replacement-button a {
     width: auto !important;
 }
-.plan-route {
+.plan-route, .cancel-route {
     clear: none !important;
 }
 .topbar {
@@ -185,6 +185,9 @@ body.directions .leaflet-overlay-pane, body.directions .leaflet-marker-pane {
 body:not(.directions) .leaflet-directions-pane {
     display: none;
 }
+body:not(.has-route) .replacement-button {
+    display: none;
+}
 @media only screen and (max-width: 700px) {
     .topbar {
         font-size: 1em !important;
@@ -208,4 +211,38 @@ body:not(.directions) .leaflet-directions-pane {
 }
 .leaflet-control-attribution {
     text-align: right;
+}
+
+.route-view-toggle {
+	  cursor: pointer;
+	  text-indent: -9999px;
+	  width: 24px;
+	  height: 13px;
+	  background: grey;
+	  display: inline-block;
+	  border-radius: 100px;
+	  position: relative;
+    top: 2px;
+}
+.route-view-toggle:after {
+	  content: '';
+	  position: absolute;
+	  top: 1px;
+	  left: 1px;
+	  width: 11px;
+	  height: 11px;
+	  background: #fff;
+	  border-radius: 11px;
+	  transition: 0.1s;
+}
+body.directions .route-view-toggle {
+	  background: #bada55;
+}
+body.directions .route-view-toggle:after {
+	  left: calc(100% - 1px);
+	  transform: translateX(-100%);
+}
+a:hover {
+    background-color: none !important;
+    text-decoration: none;
 }

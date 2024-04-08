@@ -72,8 +72,8 @@ var AddSpotButton = L.Control.extend({
                     window.location = '/'
                 return;
             }
-            clearAll()
-            bar('.topbar.step1')
+            clearAllButRoute()
+            bar('.topbar.spot.step1')
         }
 
         return controlDiv;
@@ -88,11 +88,47 @@ var RouteButton = L.Control.extend({
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button plan-route');
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "javascript:void(0);";
-        container.innerText = "↗️ Plan route";
+        container.innerHTML = "↗️ Plan route";
 
         container.onclick = function () {
-            clearAll()
-            bar('.topbar.step1')
+            clearAllButRoute()
+            bar('.topbar.route.step1')
+        }
+
+        return controlDiv;
+    }
+});
+
+var RouteViewButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar replacement-button route-view');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "<span class='route-view-toggle'></span> Route view";
+
+        container.onclick = function () {
+            document.body.classList.toggle('directions')
+        }
+
+        return controlDiv;
+    }
+});
+
+var CancelRouteButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar replacement-button cancel-route');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "✖ Cancel Route";
+
+        container.onclick = function () {
+            clearRoute()
         }
 
         return controlDiv;
@@ -133,7 +169,8 @@ dirpane.style.zIndex = 450
 
 function planRoute(lat1, lon1, lat2, lon2) {
     let A = new L.LatLng(lat1, lon1), Z = new L.LatLng(lat2, lon2)
-    document.body.classList.add('directions')
+    planRoutePoints = [A, Z]
+    document.body.classList.add('directions', 'has-route')
 
     let routeDistance = A.distanceTo(Z)
     // TODO: get the real geographic center?
@@ -200,7 +237,9 @@ L.Control.geocoder(
 }).addTo(map);
 
 map.addControl(new AddSpotButton());
-// map.addControl(new RouteButton());
+map.addControl(new RouteButton());
+map.addControl(new RouteViewButton());
+map.addControl(new CancelRouteButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
@@ -208,7 +247,7 @@ zoom.parentNode.appendChild(zoom)
 // map.addControl(new DonateButton());
 
 $$('#sb-close').onclick = function (e) {
-    clearAll()
+    clearAllButRoute()
 }
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
@@ -220,6 +259,9 @@ function updateAddSpotLine() {
     }
     if (addSpotPoints.length == 1) {
         addSpotLine = L.polyline([addSpotPoints[0], map.getCenter()], {opacity: 1, dashArray: '5', color: 'black'}).addTo(map)
+    }
+    else if (planRoutePoints.length == 1) {
+        addSpotLine = L.polyline([planRoutePoints[0], map.getCenter()], {opacity: 1, dashArray: '5', color: 'black'}).addTo(map)
     }
 }
 
@@ -249,7 +291,7 @@ var addSpotStep = function (e) {
         if (addSpotPoints.length == 1) {
             if (map.getZoom() > 9) map.setZoom(9);
             map.panTo(addSpotPoints[0])
-            bar('.topbar.step2')
+            bar('.topbar.spot.step2')
         }
         else if (addSpotPoints.length == 2) {
             if (addSpotPoints[1].lat !== 'nan') {
@@ -277,13 +319,40 @@ var addSpotStep = function (e) {
         }
     }
     else if (e.target.innerText == 'Cancel') {
-        clearAll()
+        clearAllButRoute()
     }
 
     document.body.classList.toggle('adding-spot', addSpotPoints.length > 0)
 }
 
-bars.forEach(bar => bar.onclick = addSpotStep)
+function planRouteStep(e) {
+    if (e.target.tagName != 'BUTTON') return
+    if (e.target.innerText == 'Done') {
+        let center = map.getCenter()
+        planRoutePoints.push(center)
+
+        if (planRoutePoints.length == 1) {
+            if (map.getZoom() > 6) map.setZoom(6);
+            map.panTo(planRoutePoints[0])
+            bar('.topbar.route.step2')
+        }
+
+        if (planRoutePoints.length == 2) {
+            let pr = planRoutePoints
+            window.location.hash = `#route,${pr[0].lat},${pr[0].lng},${pr[1].lat},${pr[1].lng}`
+        }
+    }
+    else if (e.target.innerText == 'Cancel') {
+        clearRoute()
+        clearAllButRoute()
+    }
+    document.body.classList.toggle('planning-route', planRoutePoints.length > 0)
+}
+
+bars.forEach(bar => {
+    if (bar.classList.contains('spot')) bar.onclick = addSpotStep
+    else if (bar.classList.contains('route')) bar.onclick = planRouteStep
+})
 
 map.on('click', e => {
     var added = false;
@@ -297,7 +366,7 @@ map.on('click', e => {
         }
     }
     if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
-        clearAll()
+        clearAllButRoute()
     }
 
     L.DomEvent.stopPropagation(e)
@@ -340,7 +409,7 @@ function renderPoints() {
     oldActive = active;
 }
 
-function clearAll() {
+function clearAllButRoute() {
     if (window.location.hash && !window.location.hash.includes('#route')) {
         window.history.pushState(null, null, ' ')
     }
@@ -357,8 +426,10 @@ function clear() {
 }
 
 function clearRoute() {
-    document.body.classList.remove('planning-route', 'directions')
+    document.body.classList.remove('planning-route', 'directions', 'has-route')
     planRoutePoints = []
+    if (window.location.hash.includes('#route'))
+        window.history.pushState(null, null, ' ')
 }
 
 var c = $$('.leaflet-control-attribution')
@@ -422,18 +493,15 @@ $$('.folium-map').focus()
 
 function navigate() {
     console.log(location.hash)
-    clear()
-    clearRoute()
-
-    if (!window.location.hash) {
-        return
-    }
 
     let args = window.location.hash.split(',')
     if (args[0] == '#route') {
+        clear()
         planRoute(+args[1], +args[2], +args[3], +args[4])
     }
     else if (args.length == 2) {
+        clear()
+        clearRoute()
         let lat = +args[0].slice(1), lon = +args[1]
         for (let m of allMarkers) {
             if (m._latlng.lat === lat && m._latlng.lng === lon) {
@@ -443,6 +511,10 @@ function navigate() {
                 return
             }
         }
+    }
+    else {
+        clear()
+        clearRoute()
     }
 }
 

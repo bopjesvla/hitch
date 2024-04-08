@@ -14,7 +14,7 @@
 </head>
 <body>
     $folium_body
-    <div class="sidebar spot-form-container">
+    <div class="sidebar spot spot-form-container">
         <h3>New Review</h3>
         <p class=greyed></p>
         <form id=spot-form action=experience method=post>
@@ -97,15 +97,25 @@
                   stroke-width="2"/>
         </svg>
     </a>
-    <div class="topbar step1">
+    <div class="topbar spot step1">
         <span>Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!</span>
         <br><button>Done</button><button>Cancel</button>
     </div>
-    <div class="topbar step2">
+    <div class="topbar spot step2">
         <span>
             Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
+    </div>
+    <div class="topbar route step1">
+        <span>Zoom the crosshairs into your starting point.</span>
+        <br>
+        <span>The route planner works best for long-distance travel. Coverage is best in Europe.</span>
+        <br><button>Done</button><button>Cancel</button>
+    </div>
+    <div class="topbar route step2">
+        <span>Move the crosshairs to your destination.</span>
+        <br><button>Done</button><button>Cancel</button>
     </div>
     <script>
      var allMarkers = [], destinationMarkers = []
