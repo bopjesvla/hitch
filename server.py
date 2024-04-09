@@ -36,6 +36,14 @@ def lines():
 def heatmap():
     return send_file("heatmap.html")
 
+@app.route("/heatmap-wait.html", methods=['GET'])
+def heatmapwait():
+    return send_file("heatmap-wait.html")
+
+@app.route("/heatmap-distance.html", methods=['GET'])
+def heatmapwait():
+    return send_file("heatmap-distance.html")
+
 @app.route("/new.html", methods=['GET'])
 def new():
     return send_file("new.html")
