@@ -41,7 +41,7 @@ def heatmapwait():
     return send_file("heatmap-wait.html")
 
 @app.route("/heatmap-distance.html", methods=['GET'])
-def heatmapwait():
+def heatmapdistance():
     return send_file("heatmap-distance.html")
 
 @app.route("/new.html", methods=['GET'])
