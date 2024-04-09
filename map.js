@@ -210,9 +210,6 @@ function planRoute(lat1, lon1, lat2, lon2) {
                 travel = B.distanceTo(rideCoord), // how far was this ride?
                 retreat = AtoB - A.distanceTo(rideCoord) // how far back to A would this ride have gotten us?
 
-            console.log(rideCoord)
-            console.log(closestToZ)
-
             if (improvement > 0 && retreat < 0.5 * travel) {
                 bestImprovement = Math.max(bestImprovement, improvement)
 
@@ -367,7 +364,8 @@ map.on('click', e => {
 
     if (window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
-        var circles = Object.values(map._layers).filter(x => x instanceof L.CircleMarker).sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
+        let markers = document.body.classList.contains('directions') ? directionsLayers.filter(x => x instanceof L.CircleMarker) : allMarkers
+        var circles = markers.sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
         if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 20) {
             added = true
             circles[0].fire('click', e)
