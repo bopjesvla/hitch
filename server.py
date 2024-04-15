@@ -36,6 +36,11 @@ def lines():
 def heatmap():
     return send_file("heatmap.html")
 
+@app.route("/tiny-world-map.json", methods=['GET'])
+def tinyworldmap():
+    return send_file("tiny-world-map.json")
+
+
 @app.route("/heatmap-wait.html", methods=['GET'])
 def heatmapwait():
     return send_file("heatmap-wait.html")
@@ -123,4 +128,4 @@ def experience():
     return redirect('/#success')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

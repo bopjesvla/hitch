@@ -246,3 +246,6 @@ a:hover {
     background-color: none !important;
     text-decoration: none;
 }
+.leaflet-back-pane {
+    z-index: 50;
+}

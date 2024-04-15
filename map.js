@@ -527,3 +527,4 @@ function navigate() {
 window.onhashchange = navigate
 
 navigate()
+
