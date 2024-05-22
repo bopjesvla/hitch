@@ -43,7 +43,7 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
 fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
-print(len(points))
+print(f"{len(points)} points currently")
 
 points.loc[points.id.isin(range(1000000,1040000)), 'comment'] = points.loc[points.id.isin(range(1000000,1040000)), 'comment'].str.encode("cp1252",errors='ignore').str.decode('utf-8', errors='ignore')
 
