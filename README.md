@@ -24,7 +24,7 @@ curl https://hitchmap.com/dump.sqlite > points.sqlite
 ```
 
 # Contributing
-Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhBPKVnUzWhl5khm5ybTWi9G).
+Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhCtydy3DOOCKEAE_tsR6g9s).
 
 File an issue for feature requests/bug reports.
 
