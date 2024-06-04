@@ -7,12 +7,15 @@ html {
 h3 {
     text-align: center;
     padding-bottom: 20px;
-    border-bottom: 1px #eee solid;
+    border-bottom: 2px #eee solid;
     margin-bottom: 20px !important;
 }
 h3, h4 {
     font-weight: bold !important;
     font-size: 1em !important;
+}
+h4 {
+    padding-top: 20px;
 }
 input[type=radio] + label {
     font-weight: normal;
@@ -242,10 +245,27 @@ body.directions .route-view-toggle:after {
 	  left: calc(100% - 1px);
 	  transform: translateX(-100%);
 }
+body.reporting-duplicate .sidebar,
+body.reporting-duplicate .horizontal-button,
+body.reporting-duplicate .replacement-button {
+    display: none !important;
+}
+body.reporting-duplicate .topbar.duplicate {
+    display: block;
+}
+.topbar.duplicate::before {
+    content: none;
+}
 a:hover {
     background-color: none !important;
     text-decoration: none;
 }
 .leaflet-back-pane {
     z-index: 50;
+}
+.report-dup {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    text-align: center;
+    font-size: 0.8em;
 }

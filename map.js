@@ -14,14 +14,38 @@ var addSpotPoints = [],
 
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
+function maybeReportDuplicate(marker) {
+    if (document.body.classList.contains('reporting-duplicate')){
+        var row = marker.options._row, point = marker.getLatLng()
+
+        let activePoint = active[0].getLatLng()
+
+        if (activePoint.equals(point)) {
+            alert("A marker cannot be a duplicate of itself.")
+            return
+        }
+
+        if (confirm(`Are you sure you want to report a duplicate?`)) {
+            document.body.innerHTML += `<form id=dupform method=POST action=report-duplicate><input name=report value=${[activePoint.lat, activePoint.lng, row[0], row[1]].join(',')}>`
+            document.querySelector('#dupform').submit()
+        }
+    }
+}
+
 var markerClick = function(marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
-    active = [marker]
+    var row = marker.options._row, point = marker.getLatLng()
+
+    if (row[9] != null) {
+        active = allMarkers.filter(m => m.options._row[9] == row[9]).sort(m => m == marker)
+    }
+    else {
+        active = [marker]
+    }
+
     addSpotPoints = []
     renderPoints()
-
-    var row = marker.options._row, point = marker.getLatLng()
 
     setTimeout(() => {
         bar('.sidebar.show-spot')
@@ -31,7 +55,7 @@ var markerClick = function(marker) {
 Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
 Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 
-        $$('#spot-text').innerText = row[3];
+        $$('#spot-text').innerHTML = row[3];
         if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
         else $$('#extra-text').innerHTML = ''
     },100)
@@ -256,6 +280,9 @@ $$('#sb-close').onclick = function (e) {
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
 
+$$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
+$$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
+
 function updateAddSpotLine() {
     if (addSpotLine) {
         map.removeLayer(addSpotLine)
@@ -429,6 +456,7 @@ function clear() {
     renderPoints()
     updateAddSpotLine()
     document.body.classList.remove('adding-spot')
+    document.body.classList.remove('reporting-duplicate')
 }
 
 function clearRoute() {
@@ -527,4 +555,9 @@ navigate()
 if (window.location.hash == '#success') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success')
+}
+
+if (window.location.hash == '#success-duplicate') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.success-duplicate')
 }

@@ -79,11 +79,17 @@
         <div id='spot-text'></div>
         <div><button>Review this spot</button></div>
         <i id="extra-text"></i>
+        <div class="report-dup"><a href="javascript:;">report this spot as a duplicate</a></div>
     </div>
     <div class="sidebar success">
         <h3>Success!</h3>
 
         Your review will appear on the map within 10 minutes. Refreshing may be needed.
+    </div>
+    <div class="sidebar success-duplicate">
+        <h3>Success!</h3>
+
+        Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.
     </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -116,6 +122,10 @@
     <div class="topbar route step2">
         <span>Move the crosshairs to your destination.</span>
         <br><button>Done</button><button>Cancel</button>
+    </div>
+    <div class="topbar duplicate">
+        <span>Click on the duplicated marker.</span>
+        <br><button>Cancel</button>
     </div>
     <script>
      var allMarkers = [], destinationMarkers = []

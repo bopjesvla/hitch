@@ -5,9 +5,11 @@ import json
 import folium.plugins
 import sqlite3
 import os
+import html
 import sys
 from branca.element import Element
 from string import Template
+import networkx
 
 LIGHT = 'light' in sys.argv
 NEW = 'new' in sys.argv
@@ -45,6 +47,30 @@ fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.s
 points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
 print(f"{len(points)} points currently")
 
+duplicates = pd.read_sql('select from_lat, from_lon, to_lat, to_lon from duplicates where reviewed = accepted', sqlite3.connect(fn))
+
+duplicates['from'] = duplicates[['from_lat', 'from_lon']].apply(tuple, axis=1)
+duplicates['to'] = duplicates[['to_lat', 'to_lon']].apply(tuple, axis=1)
+
+dups = networkx.from_pandas_edgelist(duplicates, 'from', 'to')
+islands = networkx.connected_components(dups)
+
+replace_map = {}
+
+for island in islands:
+    parents = [node for node in island if node not in duplicates['from'].tolist()]
+
+    if len(parents) == 1:
+        for node in island:
+            if node != parents[0]:
+                replace_map[node] = parents[0]
+
+print(dups)
+
+points[['lat', 'lon']] = points[['lat', 'lon']].apply(lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True)
+
+# dups = duplicates.merge(points, left_on='child_id', right_on='id').merge(left_on='parent_id', right_on='id', suffixes=('child_', 'parent_'))
+
 points.loc[points.id.isin(range(1000000,1040000)), 'comment'] = points.loc[points.id.isin(range(1000000,1040000)), 'comment'].str.encode("cp1252",errors='ignore').str.decode('utf-8', errors='ignore')
 
 points.datetime = pd.to_datetime(points.datetime)
@@ -76,15 +102,24 @@ points.loc[has_accurate_wait, 'wait_text'] = ', wait: ' + points.wait[has_accura
     'thumb': '👍'
 })).fillna('')
 
+def e(s):
+    s2 = s.copy()
+    s2.loc[~s2.isnull()] = s2.loc[~s2.isnull()].map(lambda x: html.escape(x).replace('\n', '<br>'))
+    return s2
+
 extra_text = rating_text + points.wait_text.fillna('') + destination_text.fillna('')
 
 comment_nl = points['comment'] + '\n\n'
 
 comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ''
 
-points['text'] = comment_nl + extra_text + '\n\n―' + points['name'].fillna('Anonymous') + points.datetime.dt.strftime(', %B %Y').fillna('')
+points['text'] = e(comment_nl) + '<i>' + e(extra_text) + '</i><br><br>―' + e(points['name'].fillna('Anonymous')) + points.datetime.dt.strftime(', %B %Y').fillna('')
+
 oldies = points.datetime.dt.year <= 2021
-points.loc[oldies, 'text'] = comment_nl[oldies] + '―' + points[oldies].name.fillna('Anonymous') + points[oldies].datetime.dt.strftime(', %B %Y').fillna('')
+points.loc[oldies, 'text'] = e(comment_nl[oldies]) + '―' + e(points[oldies].name.fillna('Anonymous')) + points[oldies].datetime.dt.strftime(', %B %Y').fillna('')
+
+# has_text = ~points.text.isnull()
+# points.loc[has_text, 'text'] = points.loc[has_text, 'text'].map(lambda x: html.escape(x).replace('\n', '<br>'))
 
 groups = points.groupby(['lat', 'lon'])
 
@@ -92,7 +127,7 @@ places = groups[['country']].first()
 places['rating'] = groups.rating.mean().round()
 places['wait'] = points[~points.wait.isnull()].groupby(['lat', 'lon']).wait.mean()
 places['distance'] = points[~points.distance.isnull()].groupby(['lat', 'lon']).distance.mean()
-places['text'] = groups.text.apply(lambda t: '\n\n\n'.join(t.dropna()))
+places['text'] = groups.text.apply(lambda t: '<hr>'.join(t.dropna()))
 places['review_count'] = groups.size()
 places['dest_lats'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lat.apply(list)
 places['dest_lons'] = points.dropna(subset=['dest_lat', 'dest_lon']).groupby(['lat', 'lon']).dest_lon.apply(list)
@@ -117,6 +152,7 @@ function (row) {
     marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
 
     marker.on('click', function(e) {
+        maybeReportDuplicate(marker)
         if (window.location.hash.includes('#route'))
             markerClick(marker)
         else

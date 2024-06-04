@@ -127,5 +127,24 @@ def experience():
 
     return redirect('/#success')
 
+@app.route("/report-duplicate", methods=['POST'])
+def report_duplicate():
+    data = request.form
+
+    now = str(datetime.datetime.utcnow())
+
+    if request.headers.getlist("X-Real-IP"):
+       ip = request.headers.getlist("X-Real-IP")[-1]
+    else:
+       ip = request.remote_addr
+
+    from_lat, from_lon, to_lat, to_lon = map(float, data['report'].split(','))
+
+    df = pd.DataFrame([{'datetime': now, 'ip': ip, 'reviewed': False, 'accepted': False, 'from_lat': from_lat, 'to_lat': to_lat, 'from_lon': from_lon, 'to_lon': to_lon}])
+
+    df.to_sql('duplicates', get_db(), index=None, if_exists='append')
+
+    return redirect('/#success-duplicate')
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
