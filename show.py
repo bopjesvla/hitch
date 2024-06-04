@@ -47,7 +47,7 @@ fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.s
 points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
 print(f"{len(points)} points currently")
 
-duplicates = pd.read_sql('select from_lat, from_lon, to_lat, to_lon from duplicates where reviewed = accepted', sqlite3.connect(fn))
+duplicates = pd.read_sql('select * from duplicates where reviewed = accepted', sqlite3.connect(fn))
 
 duplicates['from'] = duplicates[['from_lat', 'from_lon']].apply(tuple, axis=1)
 duplicates['to'] = duplicates[['to_lat', 'to_lon']].apply(tuple, axis=1)
@@ -206,3 +206,7 @@ if not LIGHT:
     recent['text'] = recent.text.str.replace('://|\n|\r', '', regex=True)
     recent['name'] = recent.name.str.replace('://', '', regex=False)
     recent[['url', 'country', 'datetime', 'name', 'rating', 'distance', 'text']].to_html('recent.html', render_links=True, index=False)
+
+    duplicates['from_url'] = 'https://hitchmap.com/#' + duplicates.from_lat.astype(str) + ',' + duplicates.from_lon.astype(str)
+    duplicates['to_url'] = 'https://hitchmap.com/#' + duplicates.to_lat.astype(str) + ',' + duplicates.to_lon.astype(str)
+    duplicates[['id', 'from_url', 'to_url', 'reviewed', 'accepted']].to_html('recent-dups.html', render_links=True, index=False)

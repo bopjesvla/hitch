@@ -57,6 +57,10 @@ def new():
 def recent():
     return send_file("recent.html")
 
+@app.route("/recent-dups.html", methods=['GET'])
+def recent_dups():
+    return send_file("recent-dups.html")
+
 @app.route("/favicon.ico", methods=['GET'])
 def favicon():
     return send_file("favicon.ico")
