@@ -398,7 +398,7 @@ map.on('click', e => {
             circles[0].fire('click', e)
         }
     }
-    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
+    if (!added && !document.body.classList.contains('reporting-duplicate') && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
         clearAllButRoute()
     }
 
@@ -517,7 +517,7 @@ function storageAvailable(type) {
 if (!window.location.hash.includes(',')) // we'll center on coord
     if (!restoreView.apply(map))
         map.fitBounds([[-35, -40], [60, 40]])
-if (map.getZoom() > 13) map.setZoom(13);
+if (map.getZoom() > 13 && window.location.hash != '#success-duplicate') map.setZoom(13);
 
 $$('.folium-map').focus()
 
