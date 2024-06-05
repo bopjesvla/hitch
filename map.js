@@ -271,7 +271,7 @@ let oldMarkers = []
 
 geocoderInput.addEventListener('input', e => {
     let search = geocoderInput.value.toLowerCase()
-    let markers = geocoderInput.value ? allMarkers.filter(x => x.options._row[3].toLowerCase().includes(search)) : []
+    let markers = geocoderInput.value.length > 1 ? allMarkers.filter(x => x.options._row[3].toLowerCase().includes(search)) : []
     console.log(markers)
     for (let x of oldMarkers) {
         x.setStyle({radius: 5})
