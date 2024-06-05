@@ -273,3 +273,6 @@ a:hover {
     color: black;
     border-bottom: 1px dotted black;
 }
+.leaflet-control-geocoder-form:not(:has(:focus)) ~ .leaflet-control-geocoder-alternatives {
+    display: none;
+}
