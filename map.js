@@ -50,7 +50,7 @@ var markerClick = function(marker) {
     setTimeout(() => {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
-        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)}`
+        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
         $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
 Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
 Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
@@ -252,7 +252,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
     map.fitBounds(bounds, {})
 }
 
-var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city", "zoom": 11};
+var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search reviews", "zoom": 11};
 
 var customGeocoder = L.Control.Geocoder.photon();
 geocoderOpts["geocoder"] = customGeocoder;
@@ -262,7 +262,26 @@ L.Control.geocoder(
 ).on('markgeocode', function(e) {
     var zoom = geocoderOpts['zoom'] || map.getZoom();
     map.setView(e.geocode.center, zoom);
+    $$('.leaflet-control-geocoder input').clear()
 }).addTo(map);
+
+let geocoderInput = $$('.leaflet-control-geocoder input')
+geocoderInput.type = 'search'
+let oldMarkers = []
+
+geocoderInput.addEventListener('input', e => {
+    let search = geocoderInput.value.toLowerCase()
+    let markers = geocoderInput.value ? allMarkers.filter(x => x.options._row[3].toLowerCase().includes(search)) : []
+    console.log(markers)
+    for (let x of oldMarkers) {
+        x.setStyle({radius: 5})
+    }
+    for (let x of markers) {
+        x.setStyle({radius: 10})
+        x.bringToFront()
+    }
+    oldMarkers = markers
+})
 
 map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
@@ -517,7 +536,7 @@ function storageAvailable(type) {
 if (!window.location.hash.includes(',')) // we'll center on coord
     if (!restoreView.apply(map))
         map.fitBounds([[-35, -40], [60, 40]])
-if (map.getZoom() > 13 && window.location.hash != '#success-duplicate') map.setZoom(13);
+if (map.getZoom() > 17 && window.location.hash != '#success-duplicate') map.setZoom(17);
 
 $$('.folium-map').focus()
 

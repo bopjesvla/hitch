@@ -90,7 +90,7 @@ points['arrows'] = rounded_dir.replace({
     -90: '←', 90: '→', 0: '↑', 180: '↓', -180: '↓', -45: '↖', 45: '↗', 135: '↘', -135: '↙'
 })
 
-rating_text = 'Rating: ' + points.rating.astype(int).astype(str) + '/5'
+rating_text = 'rating: ' + points.rating.astype(int).astype(str) + '/5'
 destination_text = ', ride: ' + np.round(points.distance).astype(str).str.replace('.0','', regex=False) + ' km ' + points.arrows
 
 points['wait_text'] = None
