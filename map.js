@@ -257,19 +257,15 @@ var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position":
 var customGeocoder = L.Control.Geocoder.photon();
 geocoderOpts["geocoder"] = customGeocoder;
 
-L.Control.geocoder(
+let geocoderController = L.Control.geocoder(
     geocoderOpts
-).on('markgeocode', function(e) {
-    var zoom = geocoderOpts['zoom'] || map.getZoom();
-    map.setView(e.geocode.center, zoom);
-    $$('.leaflet-control-geocoder input').clear()
-}).addTo(map);
+).addTo(map);
 
 let geocoderInput = $$('.leaflet-control-geocoder input')
 geocoderInput.type = 'search'
-let oldMarkers = []
 
-geocoderInput.addEventListener('input', e => {
+let oldMarkers = []
+let updateRadius = e => {
     let search = geocoderInput.value.toLowerCase()
     let markers = geocoderInput.value.length > 1 ? allMarkers.filter(x => x.options._row[3].toLowerCase().includes(search)) : []
     console.log(markers)
@@ -281,8 +277,15 @@ geocoderInput.addEventListener('input', e => {
         x.bringToFront()
     }
     oldMarkers = markers
-})
+}
 
+geocoderInput.addEventListener('input', updateRadius)
+geocoderController.on('markgeocode', function(e) {
+    var zoom = geocoderOpts['zoom'] || map.getZoom();
+    map.setView(e.geocode.center, zoom);
+    $$('.leaflet-control-geocoder input').value = ''
+    updateRadius()
+})
 map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
 map.addControl(new RouteViewButton());
