@@ -252,7 +252,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
     map.fitBounds(bounds, {})
 }
 
-var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search reviews", "zoom": 11};
+var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11};
 
 var customGeocoder = L.Control.Geocoder.photon();
 geocoderOpts["geocoder"] = customGeocoder;
