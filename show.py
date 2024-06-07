@@ -45,7 +45,7 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
 fn = 'prod-points.sqlite' if os.path.exists('prod-points.sqlite') else 'points.sqlite'
 points = pd.read_sql('select * from points where not banned order by datetime is not null desc, datetime desc', sqlite3.connect(fn))
-print(f"{len(points)} points currently")
+print(f"{len(points)} points currently recorded.")
 
 duplicates = pd.read_sql('select * from duplicates where reviewed = accepted', sqlite3.connect(fn))
 
@@ -65,7 +65,7 @@ for island in islands:
             if node != parents[0]:
                 replace_map[node] = parents[0]
 
-print(dups)
+print("Currently recorded duplicate spots are represented by: ", dups)
 
 points[['lat', 'lon']] = points[['lat', 'lon']].apply(lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True)
 

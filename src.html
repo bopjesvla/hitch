@@ -36,20 +36,24 @@
             </div>
             <label>How long did you wait? Leave blank if you don't remember.</label>
             <input type="number" name="wait" min="0" max="9999" size="4"> minutes
-            <label>Optional comment</label>
+            <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
             <label for="username">Public nickname (alphanumeric)</label>
             <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
-            <label for="signal">Optionally, how you did you signal to drivers?</label>
-            <div>
-                <select name="signal" class="driver-signal">
-                    <option selected value="null" title="null"></option>
-                    <option value="sign" title="Sign">Sign</option>
-                    <option value="thumb" title="thumb">Thumb</option>
-                    <option value="ask" title="talk">Asked around</option>
-                    <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
-                </select>
-            </div>
+            <br>
+            <details>
+                <summary style="display:list-item">Extended</summary>
+                <label for="signal">How you did you signal to drivers?</label>
+                <div>
+                    <select name="signal" class="driver-signal">
+                        <option selected value="null" title="null"></option>
+                        <option value="sign" title="Sign">Sign</option>
+                        <option value="thumb" title="thumb">Thumb</option>
+                        <option value="ask" title="talk">Asked around</option>
+                        <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
+                    </select>
+                </div>
+            </details>
             <!-- <div class="driver-signal"> -->
             <!-- <input required type="radio" id="comm-thumb" name="signal" value="thumb" /> -->
             <!-- <label for="comm-thumb" title="thumb">Thumb</label> -->
