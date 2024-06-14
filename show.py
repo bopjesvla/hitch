@@ -59,6 +59,9 @@ duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
 )
 
+dup_rads = duplicates[["from_lon", "from_lat", "to_lon", "to_lat"]].values.T
+
+duplicates["distance"] = haversine_np(*dup_rads)
 duplicates["from"] = duplicates[["from_lat", "from_lon"]].apply(tuple, axis=1)
 duplicates["to"] = duplicates[["to_lat", "to_lon"]].apply(tuple, axis=1)
 
@@ -316,6 +319,6 @@ if not LIGHT:
         + ","
         + duplicates.to_lon.astype(str)
     )
-    duplicates[["id", "from_url", "to_url", "reviewed", "accepted"]].to_html(
+    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
         "recent-dups.html", render_links=True, index=False
     )
