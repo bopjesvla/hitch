@@ -152,7 +152,7 @@ def e(s):
     return s2
 
 
-extra_text = rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+points['extra_text'] = rating_text + points.wait_text.fillna("") + destination_text.fillna("")
 
 comment_nl = points["comment"] + "\n\n"
 
@@ -161,7 +161,7 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 points["text"] = (
     e(comment_nl)
     + "<i>"
-    + e(extra_text)
+    + e(points['extra_text'])
     + "</i><br><br>―"
     + e(points["name"].fillna("Anonymous"))
     + points.datetime.dt.strftime(", %B %Y").fillna("")
@@ -294,7 +294,6 @@ output = Template(template).substitute(
 open(outname, "w").write(output)
 
 if not LIGHT:
-    open("lines.html", "w").write(output)
     recent = (
         points.dropna(subset=["datetime"])
         .sort_values("datetime", ascending=False)
@@ -303,7 +302,7 @@ if not LIGHT:
     recent["url"] = (
         "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     )
-    recent["text"] = recent.text.str.replace("://|\n|\r", "", regex=True)
+    recent["text"] = points.comment.fillna('') + ' ' + points.extra_text.fillna('')
     recent["name"] = recent.name.str.replace("://", "", regex=False)
     recent[
         ["url", "country", "datetime", "name", "rating", "distance", "text"]
