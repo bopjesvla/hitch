@@ -128,6 +128,27 @@ var RouteButton = L.Control.extend({
     }
 });
 
+var MenuButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button menu');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "☰ Menu";
+
+        container.onclick = function (e) {
+            clearAllButRoute()
+            document.body.classList.add('menu')
+            bar('.sidebar.menu')
+            L.DomEvent.stopPropagation(e)
+        }
+
+        return controlDiv;
+    }
+});
+
 var RouteViewButton = L.Control.extend({
     options: {
         position: 'topleft'
@@ -290,6 +311,7 @@ map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
 map.addControl(new RouteViewButton());
 map.addControl(new CancelRouteButton());
+map.addControl(new MenuButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
@@ -582,4 +604,9 @@ if (window.location.hash == '#success') {
 if (window.location.hash == '#success-duplicate') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-duplicate')
+}
+
+if (window.location.hash == '#menu') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.menu')
 }
