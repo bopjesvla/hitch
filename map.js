@@ -606,7 +606,3 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
-if (window.location.hash == '#menu') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.menu')
-}
