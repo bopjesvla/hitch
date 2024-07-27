@@ -511,7 +511,7 @@ function clearRoute() {
 }
 
 var c = $$('.leaflet-control-attribution')
-c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.html>recent changes</a> <br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://tinyworldmap.com>TWM</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
+c.innerHTML = '&copy; Bob de Ruiter<br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://tinyworldmap.com>TWM</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
 
 function restoreView() {
     if (!storageAvailable('localStorage')) {
