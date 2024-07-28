@@ -140,7 +140,7 @@ def experience():
         math.isnan(dest_lat) and math.isnan(dest_lon)
     )
 
-    while True:
+    for _i in range(10):
         resp = requests.get(
             "https://nominatim.openstreetmap.org/reverse",
             {"lat": lat, "lon": lon, "format": "json", "zoom": 3},
