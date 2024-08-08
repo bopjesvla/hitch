@@ -130,7 +130,7 @@ var RouteButton = L.Control.extend({
 
 var MenuButton = L.Control.extend({
     options: {
-        position: 'topleft'
+        position: 'topright'
     },
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button menu');
@@ -509,9 +509,6 @@ function clearRoute() {
     if (window.location.hash.includes('#route'))
         window.history.pushState(null, null, ' ')
 }
-
-var c = $$('.leaflet-control-attribution')
-c.innerHTML = '&copy; Bob de Ruiter<br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://tinyworldmap.com>TWM</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
 
 function restoreView() {
     if (!storageAvailable('localStorage')) {
