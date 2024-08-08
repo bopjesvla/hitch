@@ -32,5 +32,5 @@ Join the conversation about a map for hitchhiking in our [Signal Chat](https://s
 
 File an issue for feature requests/bug reports.
 
-Perform a pull request if you solved an issue.
+Perform a pull request and link the issue it solves.
 
