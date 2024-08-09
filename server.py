@@ -221,11 +221,13 @@ def report_duplicate():
     return redirect("/#success-duplicate")
 
 #### dashboard ####
+# see
+# https://realpython.com/python-dash/
+# https://stackoverflow.com/a/47715493
 
-fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 df = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(fn),
+    sqlite3.connect(DATABASE),
 )
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
