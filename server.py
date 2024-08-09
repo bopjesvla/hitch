@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask import send_file, request, redirect
 import re
 from flask import g
@@ -9,6 +9,8 @@ import sqlite3
 import random
 import os
 import math
+import plotly.express as px
+from dash import Dash, dcc, html
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
@@ -217,6 +219,41 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
+#### dashboard ####
+
+fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
+df = pd.read_sql(
+    "select * from points where not banned order by datetime is not null desc, datetime desc",
+    sqlite3.connect(fn),
+)
+
+df["datetime"] = df["datetime"].astype("datetime64[ns]")
+
+hist_data = df['datetime'].groupby([df["datetime"].dt.year]).count()
+fig = px.histogram(hist_data, x=hist_data.index, y=hist_data.values, nbins=100, title="Points per year")
+
+dash_app = Dash(__name__, server=app, url_base_pathname='/dash/')
+
+dash_app.layout = html.Div(
+    children=[
+        html.H1(children="Stats"),
+        html.P(
+            children=(
+                "Insights about hitchhiking."
+            ),
+        ),
+        dcc.Graph(
+            figure=fig,
+        ),
+    ]
+)
+
+@app.route('/dash') 
+def render_dashboard():
+    return redirect('/dash/')
+
+#### dashboard ####
 
 
 if __name__ == "__main__":
