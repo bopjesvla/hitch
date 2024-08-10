@@ -1,2 +1,6 @@
-plotly
-dash
+dash==2.17.1
+folium==0.16.0
+networkx==3.2.1
+numpy==1.26.4
+pandas==2.2.2
+plotly==5.23.0
