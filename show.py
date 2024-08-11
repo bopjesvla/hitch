@@ -10,42 +10,10 @@ import sys
 from branca.element import Element
 from string import Template
 import networkx
+from utils_data import haversine_np, get_bearing
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
-
-
-def haversine_np(lon1, lat1, lon2, lat2):
-    """
-    Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees)
-
-    All args must be of equal length.
-
-    """
-    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
-
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
-
-    c = 2 * np.arcsin(np.sqrt(a))
-    km = 6367 * c
-    # 1.25 because the road distance is, on average, 25% larger than a straight flight
-    return 1.25 * km
-
-
-def get_bearing(lon1, lat1, lon2, lat2):
-    dLon = lon2 - lon1
-    x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
-    y = np.cos(np.radians(lat1)) * np.sin(np.radians(lat2)) - np.sin(
-        np.radians(lat1)
-    ) * np.cos(np.radians(lat2)) * np.cos(np.radians(dLon))
-    brng = np.arctan2(x, y)
-    brng = np.degrees(brng)
-
-    return brng
 
 
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"

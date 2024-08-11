@@ -7,18 +7,23 @@ import requests
 import datetime
 import sqlite3
 import random
+import simplekml
 import os
 import math
+
+from utils_data import load_as_places
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
+
 
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
+
 
 app = Flask(__name__)
 
@@ -144,15 +149,17 @@ def experience():
         resp = requests.get(
             "https://nominatim.openstreetmap.org/reverse",
             {
-                "lat": lat, "lon": lon, "format": "json",
-                "zoom": 3, "email": "info@hitchmap.com"
-            }
+                "lat": lat,
+                "lon": lon,
+                "format": "json",
+                "zoom": 3,
+                "email": "info@hitchmap.com",
+            },
         )
         if resp.ok:
             break
         else:
             print(resp)
-
 
     res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()
@@ -217,6 +224,28 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
+
+@app.route("/download")
+def downloadFile():
+    places = load_as_places()
+    places = places.head(int(len(places) * 0.25))  # to get <5 MB file for google maps
+
+    kml = simplekml.Kml()
+
+    for i, place in places.iterrows():
+        lat = place.name[0]
+        lon = place.name[1]
+        kml.newpoint(
+            name=f'{lat}, {lon}',
+            description=place.text,
+            coords=[(lon, lat)],
+        )
+
+    path = "world.kml"
+    kml.save(path)
+
+    return send_file(path, as_attachment=True)
 
 
 if __name__ == "__main__":
