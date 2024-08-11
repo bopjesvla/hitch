@@ -229,7 +229,6 @@ def report_duplicate():
 @app.route("/download")
 def downloadFile():
     places = load_as_places()
-    places = places.head(int(len(places) * 0.25))  # to get <5 MB file for google maps
 
     kml = simplekml.Kml()
 
