@@ -1,9 +1,12 @@
 import os
 import sqlite3
+import simplekml
 import pandas as pd
 import numpy as np
 import networkx
 import html
+import argparse
+import xml.sax
 
 
 def haversine_np(lon1, lat1, lon2, lat2):
@@ -39,8 +42,29 @@ def get_bearing(lon1, lat1, lon2, lat2):
     return brng
 
 
+def places_as_kml():
+    places = load_as_places()
+
+    kml = simplekml.Kml()
+
+    for i, place in places.iterrows():
+        lat = place.name[0]
+        lon = place.name[1]
+        kml.newpoint(
+            name=f"{lat}, {lon}",
+            description=place.text,
+            coords=[(lon, lat)],
+        )
+
+    return kml
+
+
 def load_as_places():
-    fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
+    fn = (
+        "prod-points.sqlite"
+        if os.path.exists("prod-points.sqlite")
+        else "points.sqlite"
+    )
     points = pd.read_sql(
         "select * from points where not banned order by datetime is not null desc, datetime desc",
         sqlite3.connect(fn),
@@ -75,7 +99,9 @@ def load_as_places():
     print(dups)
 
     points[["lat", "lon"]] = points[["lat", "lon"]].apply(
-        lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True
+        lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x,
+        axis=1,
+        raw=True,
     )
 
     # dups = duplicates.merge(points, left_on='child_id', right_on='id').merge(left_on='parent_id', right_on='id', suffixes=('child_', 'parent_'))
@@ -135,7 +161,6 @@ def load_as_places():
         ).fillna("")
     )
 
-
     def e(s):
         s2 = s.copy()
         s2.loc[~s2.isnull()] = s2.loc[~s2.isnull()].map(
@@ -143,8 +168,9 @@ def load_as_places():
         )
         return s2
 
-
-    points['extra_text'] = rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+    points["extra_text"] = (
+        rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+    )
 
     comment_nl = points["comment"] + "\n\n"
 
@@ -153,7 +179,7 @@ def load_as_places():
     points["text"] = (
         e(comment_nl)
         + "<i>"
-        + e(points['extra_text'])
+        + e(points["extra_text"])
         + "</i><br><br>―"
         + e(points["name"].fillna("Anonymous"))
         + points.datetime.dt.strftime(", %B %Y").fillna("")
@@ -192,3 +218,7 @@ def load_as_places():
     )
 
     return places
+
+
+def kml_to_gpx(file_path: str):
+    pass

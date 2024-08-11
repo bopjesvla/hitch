@@ -7,11 +7,10 @@ import requests
 import datetime
 import sqlite3
 import random
-import simplekml
 import os
 import math
 
-from utils_data import load_as_places
+from utils_data import places_as_kml, kml_to_gpx
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
@@ -226,25 +225,28 @@ def report_duplicate():
     return redirect("/#success-duplicate")
 
 
-@app.route("/download")
-def downloadFile():
-    places = load_as_places()
-
-    kml = simplekml.Kml()
-
-    for i, place in places.iterrows():
-        lat = place.name[0]
-        lon = place.name[1]
-        kml.newpoint(
-            name=f'{lat}, {lon}',
-            description=place.text,
-            coords=[(lon, lat)],
-        )
+@app.route("/downloadKml")
+def downloadKml():
+    kml = places_as_kml()
 
     path = "world.kml"
     kml.save(path)
 
     return send_file(path, as_attachment=True)
+
+@app.route("/downloadGpx")
+def downloadGpx():
+    kml = places_as_kml()   
+
+    path = "world.kml"
+    kml.save(path)
+
+    gpx = kml_to_gpx(path)
+
+    with open("world.gpx", "w") as f:
+        f.write(gpx)
+
+    return send_file("world.gpx", as_attachment=True)
 
 
 if __name__ == "__main__":
