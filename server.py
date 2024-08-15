@@ -235,6 +235,21 @@ df["datetime"] = df["datetime"].astype("datetime64[ns]")
 hist_data = df['datetime'].groupby([df["datetime"].dt.year]).count()
 fig = px.histogram(hist_data, x=hist_data.index, y=hist_data.values, nbins=100, title="Points per year")
 
+fig.update_xaxes(
+    rangeslider_visible=True,
+    rangeselector=dict(
+        buttons=list([
+            dict(count=1, label="1m", step="month", stepmode="backward"),
+            dict(count=6, label="6m", step="month", stepmode="backward"),
+            dict(count=1, label="1y", step="year", stepmode="backward"),
+            dict(count=2, label="2y", step="year", stepmode="backward"),
+            dict(count=5, label="5y", step="year", stepmode="backward"),
+            dict(count=10, label="10y", step="year", stepmode="backward"),
+            dict(step="all")
+        ])
+    )
+)
+
 dash_app = Dash(__name__, server=app, url_base_pathname='/dash/')
 
 dash_app.layout = html.Div(
