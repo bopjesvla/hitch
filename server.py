@@ -230,7 +230,7 @@ def report_wrong():
     else:
         ip = request.remote_addr
 
-    from_lat, from_lon = map(float, data["report"].split(","))
+    lat, lon = map(float, data["report"].split(","))
 
     df = pd.DataFrame(
         [
@@ -239,8 +239,8 @@ def report_wrong():
                 "ip": ip,
                 "reviewed": False,
                 "accepted": False,
-                "from_lat": from_lat,
-                "from_lon": from_lon,
+                "lat": lat,
+                "lon": lon,
             }
         ]
     )

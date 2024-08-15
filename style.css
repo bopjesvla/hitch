@@ -269,6 +269,12 @@ a:hover {
     text-align: left;
     font-size: 1.0em;
 }
+.report-wrong {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 1.0em;
+}
 #spot-header a {
     color: black;
     border-bottom: 1px dotted black;
