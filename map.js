@@ -305,6 +305,13 @@ $$('a.step2-help').onclick = e => alert(e.target.title)
 $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
 
+$$('.report-wrong').onclick = e => {
+    let activePoint = active[0].getLatLng()
+    document.body.innerHTML += `<form id=dupform method=POST action=report-wrong><input name=report value=${[activePoint.lat, activePoint.lng].join(',')}>`
+    document.querySelector('#dupform').submit()
+}
+
+
 function updateAddSpotLine() {
     if (addSpotLine) {
         map.removeLayer(addSpotLine)

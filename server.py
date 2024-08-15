@@ -219,5 +219,36 @@ def report_duplicate():
     return redirect("/#success-duplicate")
 
 
+@app.route("/report-wrong", methods=["POST"])
+def report_wrong():
+    data = request.form
+
+    now = str(datetime.datetime.utcnow())
+
+    if request.headers.getlist("X-Real-IP"):
+        ip = request.headers.getlist("X-Real-IP")[-1]
+    else:
+        ip = request.remote_addr
+
+    from_lat, from_lon = map(float, data["report"].split(","))
+
+    df = pd.DataFrame(
+        [
+            {
+                "datetime": now,
+                "ip": ip,
+                "reviewed": False,
+                "accepted": False,
+                "from_lat": from_lat,
+                "from_lon": from_lon,
+            }
+        ]
+    )
+
+    df.to_sql("wrong", get_db(), index=None, if_exists="append")
+
+    return redirect("/#success-wrong")
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
