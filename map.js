@@ -314,9 +314,15 @@ $$('.report-wrong').onclick = e => {
 $$('.report-hitchwiki').onclick = e => {
     prompt_content = 'Please provide the Hitchwiki link that describes this spot.\n\nYou can get the link to a spot description of a Hitchwiki page from the Contents menu e.g. https://hitchwiki.org/en/Dresden#Option_1'
     link = prompt(prompt_content)
+    if (link === null) {
+        return
+    }
     while (!/^https:\/\/hitchwiki\.org\/en\/.*/.test(link)) {
         alert("You did not enter a valid link to Hitchwiki.")
         link = prompt(prompt_content)
+        if (link === null) {
+            return
+        }
     }
     let activePoint = active[0].getLatLng()
     document.body.innerHTML += `<form id=dupform method=POST action=report-hitchwiki><input name=report value=${[activePoint.lat, activePoint.lng, link].join(';')}>`
