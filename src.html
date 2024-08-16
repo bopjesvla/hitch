@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
@@ -7,11 +8,12 @@
 
     $folium_head
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <style>
-     $hitch_style
+        $hitch_style
     </style>
 </head>
+
 <body>
     $folium_body
     <div class="sidebar spot spot-form-container">
@@ -74,8 +76,12 @@
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>
-        <div class="report-dup"><a href="javascript:;" title="Report this spot as duplicate."><i class="fa-solid fa-left-right" style="color: red"></i></a> Report duplicate</div>
-        <div class="report-wrong"><a href="javascript:;" title="Report this spot as it should not exist."><i class="fa-solid fa-ban" style="color: red"></i></a> Report wrong</div>
+        <div class="report-hitchwiki"><a href="javascript:;" title="Link this spot to a Hitchwiki entry."><i
+            class="fa-solid fa-thumbs-up" style="color: green"></i></a> Link Hitchwiki</div>
+        <div class="report-dup"><a href="javascript:;" title="Report this spot as duplicate."><i
+                    class="fa-solid fa-left-right" style="color: orange"></i></a> Report duplicate</div>
+        <div class="report-wrong"><a href="javascript:;" title="Report this spot as it should not exist."><i
+                    class="fa-solid fa-ban" style="color: rgb(170, 30, 30)"></i></a> Report wrong</div>
         <hr>
         <div id='spot-summary'></div>
         <h4>Comments</h4>
@@ -95,14 +101,8 @@
     </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <line x1="1" y1="13"
-                  x2="13" y2="1"
-                  stroke="black"
-                  stroke-width="2"/>
-            <line x1="1" y1="1"
-                  x2="13" y2="13"
-                  stroke="black"
-                  stroke-width="2"/>
+            <line x1="1" y1="13" x2="13" y2="1" stroke="black" stroke-width="2" />
+            <line x1="1" y1="1" x2="13" y2="13" stroke="black" stroke-width="2" />
         </svg>
     </a>
     <div class="topbar spot step1">
@@ -111,7 +111,10 @@
     </div>
     <div class="topbar spot step2">
         <span>
-            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
+            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a
+                    href="javascript:void(0);"
+                    title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews."
+                    class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
     </div>
@@ -130,12 +133,12 @@
         <br><button>Cancel</button>
     </div>
     <script>
-     var allMarkers = [], destinationMarkers = []
+        var allMarkers = [], destinationMarkers = []
     </script>
     <script>
-     $folium_script
+        $folium_script
     </script>
     <script>
-     $hitch_script
+        $hitch_script
     </script>
 </body>
