@@ -50,7 +50,7 @@ var markerClick = function (marker) {
     setTimeout(() => {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
-        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍}`
+        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
         if (row[9]) {
             $$('#hitchwiki a').href = row[9]
             let page = row[9].split('/en/')[1]
@@ -318,7 +318,7 @@ $$('.report-wrong').onclick = e => {
 }
 
 $$('.report-hitchwiki').onclick = e => {
-    prompt_content = 'Please provide the Hitchwiki link that describes this spot.\n\nYou can get the link to a spot description of a Hitchwiki page from the Contents menu e.g. https://hitchwiki.org/en/Dresden#Option_1'
+    prompt_content = 'Please provide the Hitchwiki link that describes this spot.\n\nYou can get the link to a spot description of a Hitchwiki page from the Contents menu e.g.\nhttps://hitchwiki.org/en/Berlin#Option_1:_Berliner_Allee\n\nLinks should have the format\nhttps://hitchwiki.org/en/CITY#OPTION_i:_OPTION_NAME\nwhere the opiton is a sub category of a direction. The above link is a good example. Also feel free to edit the Hitchwiki to match this format.'
     link = prompt(prompt_content)
     if (link === null) {
         return
