@@ -47,18 +47,24 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
     return brng
 
-
+# loading data from database
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 points = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
     sqlite3.connect(fn),
 )
-print(f"{len(points)} points currently")
 
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
 )
 
+hitchwiki_links = pd.read_sql(
+    "select * from hitchwiki where reviewed and accepted", sqlite3.connect(fn)
+)
+
+print(f"{len(points)} points currently")
+
+# merging and transforming data
 dup_rads = duplicates[["from_lon", "from_lat", "to_lon", "to_lat"]].values.T
 
 duplicates["distance"] = haversine_np(*dup_rads)
@@ -199,6 +205,10 @@ places["dest_lons"] = (
     .dest_lon.apply(list)
 )
 
+# add reported hitchwiki links to places if it is present
+places = pd.merge(places, hitchwiki_links[['lat','lon','link']], on=['lat', 'lon'], how='left')
+places.rename(columns={'link':'hitchwiki_link'}, inplace=True)
+
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
 elif NEW:
@@ -253,6 +263,7 @@ cluster = folium.plugins.FastMarkerCluster(
             "review_count",
             "dest_lats",
             "dest_lons",
+            "hitchwiki_link",
         ]
     ].values,
     disableClusteringAtZoom=7,

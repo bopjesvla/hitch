@@ -37,8 +37,8 @@ var markerClick = function (marker) {
 
     var row = marker.options._row, point = marker.getLatLng()
 
-    if (row[9] != null) {
-        active = allMarkers.filter(m => m.options._row[9] == row[9]).sort(m => m == marker)
+    if (row[10] != null) {
+        active = allMarkers.filter(m => m.options._row[10] == row[10]).sort(m => m == marker)
     }
     else {
         active = [marker]
@@ -50,7 +50,13 @@ var markerClick = function (marker) {
     setTimeout(() => {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
-        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
+        $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍}`
+        if (row[9]) {
+            $$('#hitchwiki a').href = row[9]
+            let page = row[9].split('/en/')[1]
+            page = page.replace('#', ' ')
+            $$('#hitchwiki a').innerText = `Featured on Hitchwiki: ${page}`
+        }
         $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
 Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
 Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
