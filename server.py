@@ -16,11 +16,13 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
+
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
+
 
 app = Flask(__name__)
 
@@ -39,6 +41,10 @@ def light():
 def lines():
     return send_file("lines.html")
 
+
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    return send_file("dashboard.html")
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
@@ -146,15 +152,17 @@ def experience():
         resp = requests.get(
             "https://nominatim.openstreetmap.org/reverse",
             {
-                "lat": lat, "lon": lon, "format": "json",
-                "zoom": 3, "email": "info@hitchmap.com"
-            }
+                "lat": lat,
+                "lon": lon,
+                "format": "json",
+                "zoom": 3,
+                "email": "info@hitchmap.com",
+            },
         )
         if resp.ok:
             break
         else:
             print(resp)
-
 
     res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()
@@ -219,58 +227,6 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
-
-#### dashboard ####
-# see
-# https://realpython.com/python-dash/
-# https://stackoverflow.com/a/47715493
-
-df = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(DATABASE),
-)
-
-df["datetime"] = df["datetime"].astype("datetime64[ns]")
-
-hist_data = df['datetime'].groupby([df["datetime"].dt.year]).count()
-fig = px.histogram(hist_data, x=hist_data.index, y=hist_data.values, nbins=100, title="Points per year")
-
-fig.update_xaxes(
-    rangeslider_visible=True,
-    rangeselector=dict(
-        buttons=list([
-            dict(count=1, label="1m", step="month", stepmode="backward"),
-            dict(count=6, label="6m", step="month", stepmode="backward"),
-            dict(count=1, label="1y", step="year", stepmode="backward"),
-            dict(count=2, label="2y", step="year", stepmode="backward"),
-            dict(count=5, label="5y", step="year", stepmode="backward"),
-            dict(count=10, label="10y", step="year", stepmode="backward"),
-            dict(step="all")
-        ])
-    )
-)
-
-dash_app = Dash(__name__, server=app, url_base_pathname='/dash/')
-
-dash_app.layout = html.Div(
-    children=[
-        html.H1(children="Stats"),
-        html.P(
-            children=(
-                "Insights about hitchhiking."
-            ),
-        ),
-        dcc.Graph(
-            figure=fig,
-        ),
-    ]
-)
-
-@app.route('/dash') 
-def render_dashboard():
-    return redirect('/dash/')
-
-#### dashboard ####
 
 
 if __name__ == "__main__":
