@@ -19,23 +19,33 @@ df = pd.read_sql(
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
 
-hist_data = df['datetime'].groupby([df["datetime"].dt.year]).count()
-fig = px.histogram(hist_data, x=hist_data.index, y=hist_data.values, nbins=100, title="Points per year")
+hist_data = df["datetime"]
+fig = px.histogram(df["datetime"], title="Entries per month")
+
 
 fig.update_xaxes(
-    rangeslider_visible=True,
+    range=[
+        "2006-01-01",
+        pd.Timestamp.today().strftime("%Y-%m-%d"),
+    ],
     rangeselector=dict(
-        buttons=list([
-            dict(count=1, label="1m", step="month", stepmode="backward"),
-            dict(count=6, label="6m", step="month", stepmode="backward"),
-            dict(count=1, label="1y", step="year", stepmode="backward"),
-            dict(count=2, label="2y", step="year", stepmode="backward"),
-            dict(count=5, label="5y", step="year", stepmode="backward"),
-            dict(count=10, label="10y", step="year", stepmode="backward"),
-            dict(step="all")
-        ])
-    )
+        buttons=list(
+            [
+                dict(count=1, label="1m", step="month", stepmode="backward"),
+                dict(count=6, label="6m", step="month", stepmode="backward"),
+                dict(count=1, label="1y", step="year", stepmode="backward"),
+                dict(count=2, label="2y", step="year", stepmode="backward"),
+                dict(count=5, label="5y", step="year", stepmode="backward"),
+                dict(count=10, label="10y", step="year", stepmode="backward"),
+                dict(step="all"),
+            ]
+        )
+    ),
 )
+
+fig.update_layout(showlegend=False)
+fig.update_layout(xaxis_title=None)
+fig.update_layout(yaxis_title="# of entries")
 
 
 timeline_plot = fig.to_html("dash.html", full_html=False)

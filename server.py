@@ -9,8 +9,7 @@ import sqlite3
 import random
 import os
 import math
-import plotly.express as px
-from dash import Dash, dcc, html
+
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
