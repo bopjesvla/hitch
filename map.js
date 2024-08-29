@@ -502,6 +502,7 @@ function clearAllButRoute() {
     if (!window.location.hash) navigate() // clears rest
     else clear()
 }
+
 function clear() {
     bar()
     addSpotPoints = []

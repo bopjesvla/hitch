@@ -239,7 +239,7 @@ function (row) {
     })
 
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
-    if (row[6] > 2) {
+    if (row[6] >= 3) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
     }
 
