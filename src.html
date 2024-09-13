@@ -53,6 +53,9 @@
                         <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
                     </select>
                 </div>
+                <label for="hitchhiking-time">When did you get the ride?</label>
+                /* maximum date is now */
+                <input type="datetime-local" name="hitchhiking-time" max=<?= date('Y-m-d'); ?>/>
             </details>
             <!-- <div class="driver-signal"> -->
             <!-- <input required type="radio" id="comm-thumb" name="signal" value="thumb" /> -->
