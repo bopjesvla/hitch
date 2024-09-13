@@ -53,11 +53,11 @@
                         <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
                     </select>
                 </div>
-                <label for="hitchhiking-time">When did you get the ride?</label>
-                <input id="hitchhiking-time" type="datetime-local" name="hitchhiking-time">
+                <label for="datetime_ride">When did you get the ride?</label>
+                <input id="datetime_ride" type="datetime-local" name="datetime_ride">
                 <!-- maximum date is today -->
                 <script>                    
-                    document.getElementById("hitchhiking-time").max = (new Date().toISOString().slice(0,11)) + "23:59";
+                    document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0,11)) + "23:59";
                 </script>
             </details>
             <!-- <label for="gender">Optionally, what genders were you and your co-hitchhikers?</label> -->

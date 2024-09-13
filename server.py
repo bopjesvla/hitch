@@ -119,7 +119,7 @@ def experience():
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
-    datetime = data["hitchhiking-time"]
+    datetime_ride = data["datetime_ride"]
 
     # genders = [data['males'], data['females'], data['others']]
     # genders = [(int(g) if g != '' else 0) for g in genders]
@@ -168,7 +168,7 @@ def experience():
                 "dest_lon": dest_lon,
                 "country": country,
                 "signal": signal,
-                "datetime_ride": datetime,
+                "datetime_ride": datetime_ride,
             }
         ],
         index=[pid],
