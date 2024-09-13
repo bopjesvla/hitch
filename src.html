@@ -54,23 +54,12 @@
                     </select>
                 </div>
                 <label for="hitchhiking-time">When did you get the ride?</label>
-                /* maximum date is now */
-                <input type="datetime-local" name="hitchhiking-time" max=<?= date('Y-m-d'); ?>/>
+                <input id="hitchhiking-time" type="datetime-local" name="hitchhiking-time">
+                <!-- maximum date is today -->
+                <script>                    
+                    document.getElementById("hitchhiking-time").max = (new Date().toISOString().slice(0,11)) + "23:59";
+                </script>
             </details>
-            <!-- <div class="driver-signal"> -->
-            <!-- <input required type="radio" id="comm-thumb" name="signal" value="thumb" /> -->
-            <!-- <label for="comm-thumb" title="thumb">Thumb</label> -->
-            <!-- <input required type="radio" id="comm-sign" name="signal" value="sign" /> -->
-            <!-- <label for="comm-sign" title="Sign">Sign</label> -->
-            <!-- <input required type="radio" id="comm-ask" name="signal" value="ask" /> -->
-            <!-- <label for="comm-ask" title="talk">Asked around</label> -->
-            <!-- <br/> -->
-            <!-- <input required type="radio" id="comm-ask-sign" name="signal" value="ask" /> -->
-            <!-- <label for="comm-ask-sign" title="talk">Asked around with a sign in hand</label> -->
-            <!-- <br/> -->
-            <!-- <input checked required type="radio" id="comm-null" name="signal" value="null" /> -->
-            <!-- <label for="comm-null" title="null">Prefer not to answer</label> -->
-            <!-- </div> -->
             <!-- <label for="gender">Optionally, what genders were you and your co-hitchhikers?</label> -->
             <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
             <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
