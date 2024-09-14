@@ -41,11 +41,11 @@
             <label for="username">Public nickname (alphanumeric)</label>
             <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
             <br>
-            <details closed>
-                <summary style="display:list-item">Extended</summary>
-                <label for="signal">How you did you signal to drivers?</label>
+            <details closed id="extended_info">
+                <summary id="ds" style="display:list-item">Extended</summary>
+                <label for="signal">How did you signal to drivers?</label>
                 <div>
-                    <select name="signal" class="driver-signal">
+                    <select id="signal" name="signal" class="driver-signal">
                         <option selected value="null" title="null"></option>
                         <option value="sign" title="Sign">Sign</option>
                         <option value="thumb" title="thumb">Thumb</option>
@@ -60,13 +60,28 @@
                     document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0,11)) + "23:59";
                 </script>
             </details>
+
             <!-- <label for="gender">Optionally, what genders were you and your co-hitchhikers?</label> -->
             <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
             <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
             <!-- <input value="0" type="number" name="others" min="0" max="9" size="2"> others -->
 
-            <input type="submit" value="Submit">
+            <button>Submit</button>
         </form>
+        <script>
+            const form = document.querySelector("form");
+            const details = document.getElementById("extended_info");
+            const signal = document.getElementById("signal");
+            const datetime_ride = document.getElementById("datetime_ride");
+            form.addEventListener("submit", (event) => {
+                const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
+                if (isNotValid) {
+                    document.getElementById("ds").innerHTML = "<span style='color: red;'>Extended (submit again if values are correct)</span>";
+                    details.open = true;
+                    event.preventDefault();
+                }
+            });
+        </script>
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>
