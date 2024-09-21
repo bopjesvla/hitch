@@ -41,7 +41,7 @@ def lines():
     return send_file("lines.html")
 
 
-@app.route("/dashboard", methods=["GET"])
+@app.route("/dashboard.html", methods=["GET"])
 def dashboard():
     return send_file("dashboard.html")
 
