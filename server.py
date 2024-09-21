@@ -14,13 +14,11 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
-
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
-
 
 app = Flask(__name__)
 
@@ -150,10 +148,21 @@ def experience():
         math.isnan(dest_lat) and math.isnan(dest_lon)
     )
 
-    res = requests.get(
-        "https://nominatim.openstreetmap.org/reverse",
-        {"lat": lat, "lon": lon, "format": "json", "zoom": 3},
-    ).json()
+    for _i in range(10):
+        resp = requests.get(
+            "https://nominatim.openstreetmap.org/reverse",
+            {
+                "lat": lat, "lon": lon, "format": "json",
+                "zoom": 3, "email": "info@hitchmap.com"
+            }
+        )
+        if resp.ok:
+            break
+        else:
+            print(resp)
+
+
+    res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()
     pid = random.randint(0, 2**63)
 
