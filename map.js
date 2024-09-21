@@ -128,6 +128,30 @@ var RouteButton = L.Control.extend({
     }
 });
 
+var MenuButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button menu');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "☰";
+
+        container.onclick = function (e) {
+            clearAllButRoute()
+            document.body.classList.toggle('menu')
+            if (document.body.classList.contains('menu'))
+                bar()
+            else
+                bar('.sidebar.menu')
+            L.DomEvent.stopPropagation(e)
+        }
+
+        return controlDiv;
+    }
+});
+
 var RouteViewButton = L.Control.extend({
     options: {
         position: 'topleft'
@@ -290,6 +314,7 @@ map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
 map.addControl(new RouteViewButton());
 map.addControl(new CancelRouteButton());
+map.addControl(new MenuButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
@@ -488,8 +513,7 @@ function clearRoute() {
         window.history.pushState(null, null, ' ')
 }
 
-var c = $$('.leaflet-control-attribution')
-c.innerHTML = '&copy; Bob de Ruiter | <a href=https://github.com/bopjesvla/hitch>#</a> | <a href=/dump.sqlite>⭳</a> | <a href=recent.html>recent changes</a> <br> Thanks to <a href=https://openstreetmap.org>OSM</a>, <a href=https://tinyworldmap.com>TWM</a> and <a href=https://hitchwiki.org>HitchWiki</a>'
+$$('.leaflet-control-attribution').remove()
 
 function restoreView() {
     if (!storageAvailable('localStorage')) {
@@ -583,3 +607,4 @@ if (window.location.hash == '#success-duplicate') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-duplicate')
 }
+
