@@ -130,18 +130,21 @@ var RouteButton = L.Control.extend({
 
 var MenuButton = L.Control.extend({
     options: {
-        position: 'topright'
+        position: 'topleft'
     },
     onAdd: function (map) {
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button menu');
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "javascript:void(0);";
-        container.innerHTML = "☰ Menu";
+        container.innerHTML = "☰";
 
         container.onclick = function (e) {
             clearAllButRoute()
-            document.body.classList.add('menu')
-            bar('.sidebar.menu')
+            document.body.classList.toggle('menu')
+            if (document.body.classList.contains('menu'))
+                bar()
+            else
+                bar('.sidebar.menu')
             L.DomEvent.stopPropagation(e)
         }
 
@@ -509,6 +512,8 @@ function clearRoute() {
     if (window.location.hash.includes('#route'))
         window.history.pushState(null, null, ' ')
 }
+
+$$('.leaflet-control-attribution').remove()
 
 function restoreView() {
     if (!storageAvailable('localStorage')) {

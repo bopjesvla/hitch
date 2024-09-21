@@ -82,11 +82,14 @@ body.planning-route .horizontal-button {
     padding: 5px 10px;
     background: #fff !important;
     white-space: nowrap;
+    padding: 0 !important;
 }
 .horizontal-button a, .replacement-button a {
     width: auto !important;
+    height: auto !important;
+    padding: 5px 10px;
 }
-.plan-route, .cancel-route {
+.plan-route, .cancel-route, .horizontal-button.menu {
     clear: none !important;
 }
 .topbar {
@@ -275,4 +278,9 @@ a:hover {
 }
 .leaflet-control-geocoder-form:not(:has(:focus)) ~ .leaflet-control-geocoder-alternatives {
     display: none;
+}
+ul.no-style {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
