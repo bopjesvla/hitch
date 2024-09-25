@@ -55,7 +55,7 @@ input[type=radio] + label {
     max-width: 50%;
 }
 .sidebar button {
-    margin-top: 15px;
+    margin-top: 30px;
     margin-bottom: 30px;
     width: 100%;
     padding: 5px;
@@ -84,11 +84,14 @@ body.planning-route .horizontal-button {
     padding: 5px 10px;
     background: #fff !important;
     white-space: nowrap;
+    padding: 0 !important;
 }
 .horizontal-button a, .replacement-button a {
     width: auto !important;
+    height: auto !important;
+    padding: 5px 10px;
 }
-.plan-route, .cancel-route {
+.plan-route, .cancel-route, .horizontal-button.menu {
     clear: none !important;
 }
 .topbar {
@@ -308,3 +311,8 @@ details[open] summary {
     margin-bottom: 0.5em;
 }
   
+ul.no-style {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask import send_file, request, redirect
 import re
 from flask import g
@@ -10,6 +10,10 @@ import random
 import os
 import math
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
@@ -39,6 +43,10 @@ def light():
 def lines():
     return send_file("lines.html")
 
+
+@app.route("/dashboard.html", methods=["GET"])
+def dashboard():
+    return send_file("dashboard.html")
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
@@ -83,6 +91,14 @@ def favicon():
 @app.route("/icon.png", methods=["GET"])
 def icon():
     return send_file("hitchwiki-high-contrast-no-car-flipped.png")
+
+@app.route("/content/report_duplicate.png", methods=["GET"])
+def report_duplicate_image():
+    return send_file("content/report_duplicate.png")
+
+@app.route("/content/route_planner.png", methods=["GET"])
+def route_planner_image():
+    return send_file("content/route_planner.png")
 
 
 @app.route("/manifest.json", methods=["GET"])
@@ -144,10 +160,23 @@ def experience():
         math.isnan(dest_lat) and math.isnan(dest_lon)
     )
 
-    res = requests.get(
-        "https://nominatim.openstreetmap.org/reverse",
-        {"lat": lat, "lon": lon, "format": "json", "zoom": 3},
-    ).json()
+    for _i in range(10):
+        resp = requests.get(
+            "https://nominatim.openstreetmap.org/reverse",
+            {
+                "lat": lat,
+                "lon": lon,
+                "format": "json",
+                "zoom": 3,
+                "email": "info@hitchmap.com",
+            },
+        )
+        if resp.ok:
+            break
+        else:
+            print(resp)
+
+    res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()
     pid = random.randint(0, 2**63)
 
