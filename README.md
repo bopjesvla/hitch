@@ -18,7 +18,7 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 ## Installation
 
 ```bash
-pip install numpy pandas folium==0.16.0 networkx==3.2.1
+pip install -r requirements.txt
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 
 OR

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask import send_file, request, redirect
 import re
 from flask import g
@@ -10,15 +10,18 @@ import random
 import os
 import math
 
+
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
+
 
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
+
 
 app = Flask(__name__)
 
@@ -37,6 +40,10 @@ def light():
 def lines():
     return send_file("lines.html")
 
+
+@app.route("/dashboard.html", methods=["GET"])
+def dashboard():
+    return send_file("dashboard.html")
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
@@ -156,15 +163,17 @@ def experience():
         resp = requests.get(
             "https://nominatim.openstreetmap.org/reverse",
             {
-                "lat": lat, "lon": lon, "format": "json",
-                "zoom": 3, "email": "info@hitchmap.com"
-            }
+                "lat": lat,
+                "lon": lon,
+                "format": "json",
+                "zoom": 3,
+                "email": "info@hitchmap.com",
+            },
         )
         if resp.ok:
             break
         else:
             print(resp)
-
 
     res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()

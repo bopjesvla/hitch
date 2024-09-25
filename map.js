@@ -140,11 +140,11 @@ var MenuButton = L.Control.extend({
 
         container.onclick = function (e) {
             clearAllButRoute()
-            document.body.classList.toggle('menu')
             if (document.body.classList.contains('menu'))
                 bar()
             else
                 bar('.sidebar.menu')
+            document.body.classList.toggle('menu')
             L.DomEvent.stopPropagation(e)
         }
 
