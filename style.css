@@ -58,6 +58,8 @@ input[type=radio] + label {
     margin-top: 15px;
     margin-bottom: 30px;
     width: 100%;
+    padding: 5px;
+    margin-top: 24px;
 }
 #sb-close {
     display: none;
@@ -131,7 +133,10 @@ body.planning-route .horizontal-button {
     width: 100%;
 }
 #spot-form > label, #spot-form input[type=submit] {
-    margin-top: 15px;
+    margin-top: 18px;
+}
+#spot-form details select, #spot-form details input {
+    margin-bottom: 18px;
 }
 .rate {
     float: left;
@@ -289,9 +294,9 @@ details {
 }
 
 summary {
-    font-weight: bold;
     margin: -0.5em -0.5em 0;
     padding: 0.5em;
+    cursor: pointer;
 }
 
 details[open] {
