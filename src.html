@@ -42,7 +42,7 @@
             <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
             <br>
             <details closed id="extended_info">
-                <summary id="ds" style="display:list-item">more optional fields</summary>
+                <summary id="details-summary" style="display:list-item">more optional fields</summary>
                 <label for="signal">How did you signal to drivers?</label>
                 <div>
                     <select id="signal" name="signal" class="driver-signal">
@@ -68,20 +68,6 @@
 
             <button>Submit</button>
         </form>
-        <script>
-            const form = document.querySelector("form");
-            const details = document.getElementById("extended_info");
-            const signal = document.getElementById("signal");
-            const datetime_ride = document.getElementById("datetime_ride");
-            form.addEventListener("submit", (event) => {
-                const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
-                if (isNotValid) {
-                    document.getElementById("ds").innerHTML = "<span style='color: red;'>Extended (submit again if values are correct)</span>";
-                    details.open = true;
-                    event.preventDefault();
-                }
-            });
-        </script>
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>

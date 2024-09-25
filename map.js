@@ -583,3 +583,17 @@ if (window.location.hash == '#success-duplicate') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-duplicate')
 }
+
+// logic to prevent submitting hidden detailed info
+const form = document.querySelector("form");
+const details = document.getElementById("extended_info");
+const signal = document.getElementById("signal");
+const datetime_ride = document.getElementById("datetime_ride");
+form.addEventListener("submit", (event) => {
+    const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
+    if (isNotValid) {
+        document.getElementById("ds").innerHTML = "<span style='color: red;'>Extended (submit again if values are correct)</span>";
+        details.open = true;
+        event.preventDefault();
+    }
+});
