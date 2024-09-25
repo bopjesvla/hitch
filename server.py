@@ -10,10 +10,6 @@ import random
 import os
 import math
 
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )

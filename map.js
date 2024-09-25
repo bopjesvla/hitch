@@ -616,7 +616,7 @@ const datetime_ride = document.getElementById("datetime_ride");
 form.addEventListener("submit", (event) => {
     const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
     if (isNotValid) {
-        document.getElementById("ds").innerHTML = "<span style='color: red;'>Extended (submit again if values are correct)</span>";
+        document.getElementById("details-summary").innerHTML = "<span style='color: red;'>Extended (check values, then submit again)</span>";
         details.open = true;
         event.preventDefault();
     }

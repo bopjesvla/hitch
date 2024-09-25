@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
@@ -8,13 +7,11 @@
 
     $folium_head
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
     <style>
-        $hitch_style
+     $hitch_style
     </style>
 </head>
-
 <body>
     $folium_body
     <div class="sidebar spot spot-form-container">
@@ -79,12 +76,11 @@
         <div id='spot-text'></div>
         <div><button>Review this spot</button></div>
         <i id="extra-text"></i>
-        <div class="report-dup"><a href="javascript:;"><i class="fa-solid fa-left-right" style="color: red"></i> merge into nearby spot</a></div>
+        <div class="report-dup"><a href="javascript:;">report this spot as a duplicate</a></div>
     </div>
     <div class="sidebar success">
         <h3>Success!</h3>
 
-        Thank you for your contribution & warm roads!<br><br>
         Your review will appear on the map within 10 minutes. Refreshing may be needed.
     </div>
     <div class="sidebar success-duplicate">
@@ -92,29 +88,16 @@
 
         Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.
     </div>
-    <div class="sidebar menu">
-        <h3>Menu</h3>
-        <h4>Links</h4>
-        <ul class="no-style">
-            <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch"> Contribute</a></li>
-            <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch/issues/new"> Report bugs</a></li>
-            <li><i class="fa-solid fa-download"></i><a href="https://hitchmap.com/dump.sqlite"> Download spots</a></li>
-            <li><i class="fa-solid fa-map-pin"></i><a href="https://hitchmap.com/recent.html"> Recent reviews</a></li>
-            <li><i class="fa-solid fa-chart-simple"></i><a href="https://hitchmap.com/dashboard.html"> Charts & graphs</a></li>
-        </ul>
-        <h4>Credits</h4>
-        <p>&copy; <a href=https://github.com/bopjesvla>Bob de Ruiter</a> & <a href=https://tillwenke.github.io/about/>Till Wenke</a></p>
-        <p>Maps and data by <a href=https://openstreetmap.org>OpenStreetMap</a>, <a href=https://tinyworldmap.com>tinyworldmap</a> and <a href=https://hitchwiki.org>HitchWiki</a></p>
-        <h4>Recent features</h4>
-        <p>Route planner</p>
-        <p><img src="content/route_planner.png" style="max-width:100%;padding:1px;border:thin solid black"></p>
-        <p>Report duplicate spots</p>
-        <p><img src="content/report_duplicate.png" style="max-width:100%;padding:1px;border:thin solid black"></p>
-    </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <line x1="1" y1="13" x2="13" y2="1" stroke="black" stroke-width="2" />
-            <line x1="1" y1="1" x2="13" y2="13" stroke="black" stroke-width="2" />
+            <line x1="1" y1="13"
+                  x2="13" y2="1"
+                  stroke="black"
+                  stroke-width="2"/>
+            <line x1="1" y1="1"
+                  x2="13" y2="13"
+                  stroke="black"
+                  stroke-width="2"/>
         </svg>
     </a>
     <div class="topbar spot step1">
@@ -123,10 +106,7 @@
     </div>
     <div class="topbar spot step2">
         <span>
-            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a
-                    href="javascript:void(0);"
-                    title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews."
-                    class=step2-help>?</a></sup>
+            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
     </div>
@@ -145,12 +125,12 @@
         <br><button>Cancel</button>
     </div>
     <script>
-        var allMarkers = [], destinationMarkers = []
+     var allMarkers = [], destinationMarkers = []
     </script>
     <script>
-        $folium_script
+     $folium_script
     </script>
     <script>
-        $hitch_script
+     $hitch_script
     </script>
 </body>
