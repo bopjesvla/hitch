@@ -240,9 +240,9 @@ def report_duplicate():
 
 @app.route("/downloadKml", methods=["GET"])
 def downloadKml():
-    kml = places_as_kml().kml()
+    kml_content = places_as_kml().kml()
     return send_file(
-        BytesIO(kml.encode()),
+        BytesIO(kml_content.encode()),
         mimetype='text/plain',
         as_attachment=True,
         download_name='world.kml'
@@ -250,10 +250,10 @@ def downloadKml():
 
 @app.route("/downloadGpx", methods=["GET"])
 def downloadGpx():
-    kml = places_as_kml().kml()
-    gpx = kml_to_gpx(kml)
+    kml_content = places_as_kml().kml()
+    gpx_content = kml_to_gpx(kml_content)
     return send_file(
-        BytesIO(gpx.encode()),
+        BytesIO(gpx_content.encode()),
         mimetype='text/plain',
         as_attachment=True,
         download_name='world.gpx'
