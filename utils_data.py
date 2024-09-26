@@ -220,6 +220,9 @@ def load_as_places():
 
     return places
 
+
+# relies on gpsbabel being installed on the host
+# sudo apt-get install gpsbabel-gui
 def kml_to_gpx(kml: str):
     with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
         temp_file.write(kml)
