@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect
 from flask import send_file, request, redirect
 import re
 from flask import g
@@ -41,6 +41,10 @@ def light():
 def lines():
     return send_file("lines.html")
 
+
+@app.route("/dashboard.html", methods=["GET"])
+def dashboard():
+    return send_file("dashboard.html")
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
@@ -85,6 +89,14 @@ def favicon():
 @app.route("/icon.png", methods=["GET"])
 def icon():
     return send_file("hitchwiki-high-contrast-no-car-flipped.png")
+
+@app.route("/content/report_duplicate.png", methods=["GET"])
+def report_duplicate_image():
+    return send_file("content/report_duplicate.png")
+
+@app.route("/content/route_planner.png", methods=["GET"])
+def route_planner_image():
+    return send_file("content/route_planner.png")
 
 
 @app.route("/manifest.json", methods=["GET"])
