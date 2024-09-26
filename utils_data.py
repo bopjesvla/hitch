@@ -7,6 +7,7 @@ import networkx
 import html
 import argparse
 import xml.sax
+import tempfile
 
 
 def haversine_np(lon1, lat1, lon2, lat2):
@@ -219,6 +220,13 @@ def load_as_places():
 
     return places
 
+def kml_to_gpx(kml: str):
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+        temp_file.write(kml)
+        temp_file.flush()  # Ensure the content is written
 
-def kml_to_gpx(file_path: str):
-    pass
+        # Call the command and pass the file path
+        stream = os.popen(f"gpsbabel -i kml -f {temp_file.name} -o gpx -F -")
+        output = stream.read()
+
+    return output

@@ -9,6 +9,7 @@ import sqlite3
 import random
 import os
 import math
+from io import BytesIO
 
 from utils_data import places_as_kml, kml_to_gpx
 
@@ -237,28 +238,26 @@ def report_duplicate():
     return redirect("/#success-duplicate")
 
 
-@app.route("/downloadKml")
+@app.route("/downloadKml", methods=["GET"])
 def downloadKml():
-    kml = places_as_kml()
+    kml = places_as_kml().kml()
+    return send_file(
+        BytesIO(kml.encode()),
+        mimetype='text/plain',
+        as_attachment=True,
+        download_name='world.kml'
+    )
 
-    path = "world.kml"
-    kml.save(path)
-
-    return send_file(path, as_attachment=True)
-
-@app.route("/downloadGpx")
+@app.route("/downloadGpx", methods=["GET"])
 def downloadGpx():
-    kml = places_as_kml()   
-
-    path = "world.kml"
-    kml.save(path)
-
-    gpx = kml_to_gpx(path)
-
-    with open("world.gpx", "w") as f:
-        f.write(gpx)
-
-    return send_file("world.gpx", as_attachment=True)
+    kml = places_as_kml().kml()
+    gpx = kml_to_gpx(kml)
+    return send_file(
+        BytesIO(gpx.encode()),
+        mimetype='text/plain',
+        as_attachment=True,
+        download_name='world.gpx'
+    )
 
 
 if __name__ == "__main__":
