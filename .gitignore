@@ -466,7 +466,7 @@ junit/
 # custom
 recent.html
 index.html
-points.sqlite
+*.sqlite
 recent-dups.html
 lines.html
 dashboard.html

@@ -12,6 +12,8 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
+HITCHMAP_START_DATE = "2006-01-01"
+
 df = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
     sqlite3.connect(DATABASE),
@@ -25,7 +27,7 @@ fig = px.histogram(df["datetime"], title="Entries per month")
 
 fig.update_xaxes(
     range=[
-        "2006-01-01",
+        HITCHMAP_START_DATE,
         pd.Timestamp.today().strftime("%Y-%m-%d"),
     ],
     rangeselector=dict(
