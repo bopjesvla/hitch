@@ -59,7 +59,7 @@ def places_as_kml():
 
     return kml
 
-
+# adapted from show.py
 def load_as_places():
     fn = (
         "prod-points.sqlite"
