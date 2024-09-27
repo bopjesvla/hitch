@@ -89,8 +89,11 @@ body.planning-route .horizontal-button {
     height: auto !important;
     padding: 5px 10px;
 }
-.plan-route, .cancel-route, .horizontal-button.menu {
+.plan-route, .cancel-route, .horizontal-button.add-spot {
     clear: none !important;
+}
+.horizontal-button.menu {
+    width: 35px;
 }
 .topbar {
     pointer-events: none;

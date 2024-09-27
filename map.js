@@ -310,11 +310,12 @@ geocoderController.on('markgeocode', function(e) {
     $$('.leaflet-control-geocoder input').value = ''
     updateRadius()
 })
+
+map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
 map.addControl(new RouteViewButton());
 map.addControl(new CancelRouteButton());
-map.addControl(new MenuButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
