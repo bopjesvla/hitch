@@ -49,10 +49,7 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
 
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-points = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(fn),
-)
+points = pd.read_csv("prino_to_hitchmap.csv")
 print(f"{len(points)} points currently")
 
 duplicates = pd.read_sql(
@@ -88,11 +85,11 @@ points[["lat", "lon"]] = points[["lat", "lon"]].apply(
 
 # dups = duplicates.merge(points, left_on='child_id', right_on='id').merge(left_on='parent_id', right_on='id', suffixes=('child_', 'parent_'))
 
-points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
-    points.loc[points.id.isin(range(1000000, 1040000)), "comment"]
-    .str.encode("cp1252", errors="ignore")
-    .str.decode("utf-8", errors="ignore")
-)
+# points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
+#     points.loc[points.id.isin(range(1000000, 1040000)), "comment"]
+#     .str.encode("cp1252", errors="ignore")
+#     .str.decode("utf-8", errors="ignore")
+# )
 
 points.datetime = pd.to_datetime(points.datetime)
 
