@@ -32,6 +32,12 @@ function maybeReportDuplicate(marker) {
     }
 }
 
+function summaryText(row) {
+    return `Rating: ${row[2].toFixed(0)}/5
+    Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
+    Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
+}
+
 var markerClick = function(marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
@@ -51,9 +57,7 @@ var markerClick = function(marker) {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
-        $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
-Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
-Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
+        $$('#spot-summary').innerText = summaryText(row)
 
         $$('#spot-text').innerHTML = row[3];
         if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
@@ -310,11 +314,12 @@ geocoderController.on('markgeocode', function(e) {
     $$('.leaflet-control-geocoder input').value = ''
     updateRadius()
 })
+
+map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
 map.addControl(new RouteViewButton());
 map.addControl(new CancelRouteButton());
-map.addControl(new MenuButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
@@ -504,6 +509,7 @@ function clear() {
     updateAddSpotLine()
     document.body.classList.remove('adding-spot')
     document.body.classList.remove('reporting-duplicate')
+    document.body.classList.remove('menu')
 }
 
 function clearRoute() {
@@ -608,3 +614,49 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
+function exportAsGPX() {
+    var script = document.createElement("script");
+    script.src = 'https://cdn.jsdelivr.net/npm/togpx@0.5.4/togpx.js';
+    script.onload = function() {
+        let features = allMarkers.map(m => ({
+            "type": "Feature",
+            "properties": {
+                "text": summaryText(m.options._row) + '\n\n' + m.options._row[3],
+                "url": `https://hitchmap.com/${m.options._row[0]},${m.options._row[1]}`
+            },
+            "geometry": {
+                "coordinates": [ m.options._row[1], m.options._row[0] ],
+                "type": "Point"
+            }
+        }))
+        let geojson = {
+            type: "FeatureCollection",
+            features
+        }
+
+        let div = document.createElement('div')
+        function toPlainText(html) {
+            div.innerHTML = html.replace(/\<(b|h)r\>/g, '\n')
+            return div.textContent
+        }
+
+        let gpxStr = togpx(geojson, {
+            creator: 'Hitchmap',
+            featureDescription: f => toPlainText(f.text),
+            featureLink: f => f.url
+        });
+
+        function downloadGPX(data) {
+            const blob = new Blob([data], { type: 'application/gpx+xml' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'hitchmap.gpx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        downloadGPX(gpxStr)
+    }
+    document.body.appendChild(script)
+}
