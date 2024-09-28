@@ -124,11 +124,12 @@ body.planning-route .horizontal-button {
 .topbar::before {
     content: '';
     pointer-events: none;
-    position: absolute;
-    left: 50vw;
-    bottom: 50vh;
-    margin-left: -30vmin;
-    margin-bottom: -30vmin;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    margin: auto;
     width: 60vmin;
     height: 60vmin;
     background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px));
