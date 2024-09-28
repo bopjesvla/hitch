@@ -509,6 +509,7 @@ function clear() {
     updateAddSpotLine()
     document.body.classList.remove('adding-spot')
     document.body.classList.remove('reporting-duplicate')
+    document.body.classList.remove('menu')
 }
 
 function clearRoute() {

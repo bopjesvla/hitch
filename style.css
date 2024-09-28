@@ -289,10 +289,14 @@ ul.no-style {
     padding: 0;
 }
 .sidebar .fa {
-    min-width: 25px;
+    min-width: 28px;
     display: inline-block;
     color: black;
 }
 .sidebar.menu {
     padding-top: 25px;
+}
+.sidebar.menu a {
+    border-bottom: 1px solid blue;
+    color: #000;
 }
