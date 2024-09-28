@@ -609,3 +609,55 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
+function exportAsGPX() {
+    var script = document.createElement("script");
+    script.src = 'https://cdn.jsdelivr.net/npm/togpx@0.5.4/togpx.js';
+    script.onload = function() {
+        let features = allMarkers.map(m => ({
+            "type": "Feature",
+            "properties": {
+                "text": m.options._row[3],
+                "url": `https://hitchmap.com/${m.options._row[0]},${m.options._row[1]}`
+            },
+            "geometry": {
+                "coordinates": [ m.options._row[1], m.options._row[0] ],
+                "type": "Point"
+            }
+        }))
+        let geojson = {
+            type: "FeatureCollection",
+            features
+        }
+
+        let div = document.createElement('div')
+        function toPlainText(html) {
+            div.innerHTML = html
+            return div.innerText
+        }
+
+        let gpxStr = togpx(geojson, {
+            creator: 'Hitchmap',
+            featureDescription: f => toPlainText(f.text),
+            featureLink: f => f.url
+        });
+
+        function downloadFile(str) {
+            var filename = "hitchmap.gpx";
+            var blob = new Blob([str], {type: 'text/plain'});
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                window.navigator.msSaveOrOpenBlob(blob, filename);
+            } else{
+                var e = document.createEvent('MouseEvents'),
+                    a = document.createElement('a');
+                a.download = filename;
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+                e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                a.dispatchEvent(e);
+            }
+        }
+
+        downloadFile(gpxStr)
+    }
+    document.body.appendChild(script)
+}
