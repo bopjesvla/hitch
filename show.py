@@ -10,6 +10,7 @@ import sys
 from branca.element import Element
 from string import Template
 import networkx
+import math
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
@@ -49,10 +50,7 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
 
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-points = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(fn),
-)
+points = pd.read_csv("prino_to_hitchmap.csv")
 print(f"{len(points)} points currently")
 
 duplicates = pd.read_sql(
@@ -88,11 +86,11 @@ points[["lat", "lon"]] = points[["lat", "lon"]].apply(
 
 # dups = duplicates.merge(points, left_on='child_id', right_on='id').merge(left_on='parent_id', right_on='id', suffixes=('child_', 'parent_'))
 
-points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
-    points.loc[points.id.isin(range(1000000, 1040000)), "comment"]
-    .str.encode("cp1252", errors="ignore")
-    .str.decode("utf-8", errors="ignore")
-)
+# points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
+#     points.loc[points.id.isin(range(1000000, 1040000)), "comment"]
+#     .str.encode("cp1252", errors="ignore")
+#     .str.decode("utf-8", errors="ignore")
+# )
 
 points.datetime = pd.to_datetime(points.datetime)
 
@@ -121,7 +119,10 @@ points["arrows"] = rounded_dir.replace(
     }
 )
 
-rating_text = "rating: " + points.rating.astype(int).astype(str) + "/5"
+
+rating_text = points.rating.apply(
+    lambda x: "rating: " + str(int(x)) + "/5" if not math.isnan(x) else "rating: not rated"
+)
 destination_text = (
     ", ride: "
     + np.round(points.distance).astype(str).str.replace(".0", "", regex=False)
@@ -152,8 +153,12 @@ def e(s):
     return s2
 
 
-points['extra_text'] = rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+points["extra_text"] = (
+    rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+)
 
+points["comment"] = points.comment.astype(str)
+points.comment.replace({"nan": None}, inplace=True)
 comment_nl = points["comment"] + "\n\n"
 
 comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
@@ -161,7 +166,7 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 points["text"] = (
     e(comment_nl)
     + "<i>"
-    + e(points['extra_text'])
+    + e(points["extra_text"])
     + "</i><br><br>―"
     + e(points["name"].fillna("Anonymous"))
     + points.datetime.dt.strftime(", %B %Y").fillna("")
@@ -302,7 +307,7 @@ if not LIGHT:
     recent["url"] = (
         "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     )
-    recent["text"] = points.comment.fillna('') + ' ' + points.extra_text.fillna('')
+    recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
     recent["name"] = recent.name.str.replace("://", "", regex=False)
     recent[
         ["url", "country", "datetime", "name", "rating", "distance", "text"]
@@ -320,6 +325,6 @@ if not LIGHT:
         + ","
         + duplicates.to_lon.astype(str)
     )
-    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
-        "recent-dups.html", render_links=True, index=False
-    )
+    duplicates[
+        ["id", "from_url", "to_url", "distance", "reviewed", "accepted"]
+    ].to_html("recent-dups.html", render_links=True, index=False)
