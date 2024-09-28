@@ -32,6 +32,12 @@ function maybeReportDuplicate(marker) {
     }
 }
 
+function summaryText(row) {
+    return `Rating: ${row[2].toFixed(0)}/5
+    Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
+    Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
+}
+
 var markerClick = function(marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
@@ -51,9 +57,7 @@ var markerClick = function(marker) {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
-        $$('#spot-summary').innerText = `Rating: ${row[2].toFixed(0)}/5
-Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
-Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
+        $$('#spot-summary').innerText = summaryText(row)
 
         $$('#spot-text').innerHTML = row[3];
         if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
@@ -616,7 +620,7 @@ function exportAsGPX() {
         let features = allMarkers.map(m => ({
             "type": "Feature",
             "properties": {
-                "text": m.options._row[3],
+                "text": summaryText(m.options._row) + '\n\n' + m.options._row[3],
                 "url": `https://hitchmap.com/${m.options._row[0]},${m.options._row[1]}`
             },
             "geometry": {
@@ -631,8 +635,8 @@ function exportAsGPX() {
 
         let div = document.createElement('div')
         function toPlainText(html) {
-            div.innerHTML = html
-            return div.innerText
+            div.innerHTML = html.replace(/\<(b|h)r\>/g, '\n')
+            return div.textContent
         }
 
         let gpxStr = togpx(geojson, {
@@ -641,23 +645,17 @@ function exportAsGPX() {
             featureLink: f => f.url
         });
 
-        function downloadFile(str) {
-            var filename = "hitchmap.gpx";
-            var blob = new Blob([str], {type: 'text/plain'});
-            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                window.navigator.msSaveOrOpenBlob(blob, filename);
-            } else{
-                var e = document.createEvent('MouseEvents'),
-                    a = document.createElement('a');
-                a.download = filename;
-                a.href = window.URL.createObjectURL(blob);
-                a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
-                e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                a.dispatchEvent(e);
-            }
+        function downloadGPX(data) {
+            const blob = new Blob([data], { type: 'application/gpx+xml' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'hitchmap.gpx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        downloadFile(gpxStr)
+        downloadGPX(gpxStr)
     }
     document.body.appendChild(script)
 }
