@@ -640,6 +640,11 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
+if (window.location.hash == '#success-hitchwiki') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.success-hitchwiki')
+}
+
 function exportAsGPX() {
     var script = document.createElement("script");
     script.src = 'https://cdn.jsdelivr.net/npm/togpx@0.5.4/togpx.js';
