@@ -38,7 +38,7 @@ function summaryText(row) {
     Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 }
 
-var markerClick = function(marker) {
+var markerClick = function (marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
     var row = marker.options._row, point = marker.getLatLng()
@@ -57,11 +57,13 @@ var markerClick = function(marker) {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
+        
+        // hitchwiki link only shows if available
+        $$('#hitchwiki').innerText = ''
         if (row[9]) {
-            $$('#hitchwiki a').href = row[9]
-            let page = row[9].split('/en/')[1]
-            page = page.replace('#', ' ')
-            $$('#hitchwiki a').innerText = `Featured on Hitchwiki: ${page}`
+            let link = row[9]
+            let city = row[9].split('/en/')[1]
+            $$('#hitchwiki').innerHTML = `Featured on Hitchwiki: <a href=${link}>${city}</a>`
         }
         $$('#spot-summary').innerText = summaryText(row)
 
@@ -342,7 +344,10 @@ $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicat
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
 
 $$('.report-hitchwiki').onclick = e => {
-    prompt_content = 'Please provide the Hitchwiki link that describes this spot.\n\nYou can get the link to a spot description of a Hitchwiki page from the Contents menu e.g.\nhttps://hitchwiki.org/en/Berlin#Option_1:_Berliner_Allee\n\nLinks should have the format\nhttps://hitchwiki.org/en/CITY#OPTION_i:_OPTION_NAME\nwhere the opiton is a sub category of a direction. The above link is a good example. Also feel free to edit the Hitchwiki to match this format.'
+    prompt_content = 'Is this spot mentioned on Hitchwiki?\n \
+    If so, please provide the Hitchwiki link for the city article that mentions it.\n\n \
+    The link should have a format similar to https://hitchwiki.org/en/city_name.\n \
+    The above link is a good example. Also feel free to edit the Hitchwiki to match this format.'
     link = prompt(prompt_content)
     if (link === null) {
         return
