@@ -18,7 +18,7 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 ## Installation
 
 ```bash
-pip install numpy pandas folium==0.16.0 networkx==3.2.1
+pip install -r requirements.txt
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 
 OR
@@ -30,7 +30,7 @@ curl https://hitchmap.com/dump.sqlite > points.sqlite
 ## Contributing
 Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhCtydy3DOOCKEAE_tsR6g9s).
 
-File an issue for feature requests/bug reports.
+File an issue if you have a feature request/found a bug.
 
-Perform a pull request and link the issue it solves.
+Perform a pull request if you solved an issue. (It's best to file an issue first so we can discuss it and reference it in the PR.)
 
