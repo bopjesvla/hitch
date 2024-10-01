@@ -341,12 +341,6 @@ $$('a.step2-help').onclick = e => alert(e.target.title)
 $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
 
-$$('.report-wrong').onclick = e => {
-    let activePoint = active[0].getLatLng()
-    document.body.innerHTML += `<form id=dupform method=POST action=report-wrong><input name=report value=${[activePoint.lat, activePoint.lng].join(',')}>`
-    document.querySelector('#dupform').submit()
-}
-
 $$('.report-hitchwiki').onclick = e => {
     prompt_content = 'Please provide the Hitchwiki link that describes this spot.\n\nYou can get the link to a spot description of a Hitchwiki page from the Contents menu e.g.\nhttps://hitchwiki.org/en/Berlin#Option_1:_Berliner_Allee\n\nLinks should have the format\nhttps://hitchwiki.org/en/CITY#OPTION_i:_OPTION_NAME\nwhere the opiton is a sub category of a direction. The above link is a good example. Also feel free to edit the Hitchwiki to match this format.'
     link = prompt(prompt_content)

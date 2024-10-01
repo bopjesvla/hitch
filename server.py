@@ -240,36 +240,6 @@ def report_duplicate():
     return redirect("/#success-duplicate")
 
 
-@app.route("/report-wrong", methods=["POST"])
-def report_wrong():
-    data = request.form
-
-    now = str(datetime.datetime.utcnow())
-
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
-
-    lat, lon = map(float, data["report"].split(","))
-
-    df = pd.DataFrame(
-        [
-            {
-                "datetime": now,
-                "ip": ip,
-                "reviewed": False,
-                "accepted": False,
-                "lat": lat,
-                "lon": lon,
-            }
-        ]
-    )
-
-    df.to_sql("wrong", get_db(), index=None, if_exists="append")
-
-    return redirect("/#success-wrong")
-
 @app.route("/report-hitchwiki", methods=["POST"])
 def report_hitchwiki():
     data = request.form
