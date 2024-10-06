@@ -271,11 +271,11 @@ a:hover {
 .leaflet-back-pane {
     z-index: 50;
 }
-.report-dup {
-    margin-top: 30px;
-    margin-bottom: 30px;
-    text-align: center;
-    font-size: 0.8em;
+.report-dup, .report-hitchwiki {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 1.0em;
 }
 #spot-header a {
     color: black;

@@ -77,35 +77,63 @@
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>
+        <div id='hitchwiki'></div>
         <div id='spot-summary'></div>
         <h4>Comments</h4>
         <div id='spot-text'></div>
         <div><button>Review this spot</button></div>
         <i id="extra-text"></i>
-        <div class="report-dup"><a href="javascript:;"><i class="fa-solid fa-left-right" style="color: red"></i> merge into nearby spot</a></div>
+        <hr>
+        <div class="report-dup"><a href="javascript:;"
+                title="Is there another spot close by that is a duplicate of this spot?"><i
+                    class="fa-solid fa-left-right" style="color: red"></i> Merge
+                into nearby spot</a>
+        </div>
+        <div class="report-hitchwiki"><a href="javascript:;" title="Is this a spot mentioned on the Hitchwiki?"><i
+                    class="fa-solid fa-thumbs-up" style="color: green"></i> Link to Hitchwiki</a>
+        </div>
     </div>
     <div class="sidebar success">
         <h3>Success!</h3>
 
+        Thank you for your contribution & warm roads!<br>
         Your review will appear on the map within 10 minutes. Refreshing may be needed.
     </div>
     <div class="sidebar success-duplicate">
         <h3>Success!</h3>
 
+        Thanks for your effort.<br>
         Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.
+    </div>
+    <div class="sidebar success-hitchwiki">
+        <h3>Success!</h3>
+
+        Thanks for your effort.<br>
+        Your hitchwiki link has been recorded and will show up proptly.<br><br>
+        While you are at it it would be appreciated if you could check which other spots are mentioned on Hitchwiki for
+        the cities you know well.
     </div>
     <div class="sidebar menu">
         <ul class="no-style">
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch">Contribute</a></li>
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch/issues/new">Report bugs</a></li>
-            <li><i class="fa fa-download"></i><a href="https://hitchmap.com/dump.sqlite">Download spots as SQLite</a></li>
+            <li><i class="fa fa-download"></i><a href="https://hitchmap.com/dump.sqlite">Download spots as SQLite</a>
+            </li>
             <li><i class="fa fa-download"></i><a href="javascript:exportAsGPX()">Download spots as GPX</a></li>
             <li><i class="fa fa-map-pin"></i><a href="https://hitchmap.com/recent.html">Recent reviews</a></li>
             <li><i class="fa fa-chart-simple"></i><a href="https://hitchmap.com/dashboard.html">Charts & graphs</a></li>
         </ul>
         <h4>Credits</h4>
-        <p>&copy; <a href=https://github.com/bopjesvla>Bob de Ruiter</a> & <a href=https://tillwenke.github.io/about/>Till Wenke</a></p>
-        <p>Maps and data by <a href=https://openstreetmap.org>OpenStreetMap</a>, <a href=https://tinyworldmap.com>tinyworldmap</a> and <a href=https://hitchwiki.org>HitchWiki</a></p>
+        <p>
+            &copy; <a href=https://github.com/bopjesvla>Bob de Ruiter</a> &
+            <a href=https://tillwenke.github.io/about />Till Wenke</a>
+        </p>
+        <p>
+            Maps and data by
+            <a href=https://openstreetmap.org>OpenStreetMap</a>,
+            <a href=https: //tinyworldmap.com>tinyworldmap</a> and
+            <a href=https://hitchwiki.org>HitchWiki</a>
+        </p>
     </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">

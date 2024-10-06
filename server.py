@@ -240,5 +240,39 @@ def report_duplicate():
     return redirect("/#success-duplicate")
 
 
+@app.route("/report-hitchwiki", methods=["POST"])
+def report_hitchwiki():
+    data = request.form
+
+    now = str(datetime.datetime.utcnow())
+
+    if request.headers.getlist("X-Real-IP"):
+        ip = request.headers.getlist("X-Real-IP")[-1]
+    else:
+        ip = request.remote_addr
+
+    lat, lon, link = data["report"].split(";")
+    lat = float(lat)
+    lon = float(lon)
+
+    df = pd.DataFrame(
+        [
+            {
+                "datetime": now,
+                "ip": ip,
+                "reviewed": False,
+                "accepted": False,
+                "lat": lat,
+                "lon": lon,
+                "link": link,
+            }
+        ]
+    )
+
+    df.to_sql("hitchwiki", get_db(), index=None, if_exists="append")
+
+    return redirect("/#success-hitchwiki")
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

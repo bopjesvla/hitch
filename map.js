@@ -15,7 +15,7 @@ var addSpotPoints = [],
 var bars = document.querySelectorAll('.sidebar, .topbar')
 
 function maybeReportDuplicate(marker) {
-    if (document.body.classList.contains('reporting-duplicate')){
+    if (document.body.classList.contains('reporting-duplicate')) {
         var row = marker.options._row, point = marker.getLatLng()
 
         let activePoint = active[0].getLatLng()
@@ -38,17 +38,11 @@ function summaryText(row) {
     Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 }
 
-var markerClick = function(marker) {
+var markerClick = function (marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
     var row = marker.options._row, point = marker.getLatLng()
-
-    if (row[9] != null) {
-        active = allMarkers.filter(m => m.options._row[9] == row[9]).sort(m => m == marker)
-    }
-    else {
-        active = [marker]
-    }
+    active = [marker]
 
     addSpotPoints = []
     renderPoints()
@@ -57,18 +51,26 @@ var markerClick = function(marker) {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
+        
+        // hitchwiki link only shows if available
+        $$('#hitchwiki').innerText = ''
+        if (row[9]) {
+            let link = row[9]
+            let city = row[9].split('/en/')[1]
+            $$('#hitchwiki').innerHTML = `Featured on Hitchwiki: <a href=${link}>${city}</a>`
+        }
         $$('#spot-summary').innerText = summaryText(row)
 
         $$('#spot-text').innerHTML = row[3];
         if (!row[3] && Number.isNaN(row[5])) $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
         else $$('#extra-text').innerHTML = ''
-    },100)
+    }, 100)
 
     console.log(row)
 
     if (row[7] != null) {
         for (let i in row[7]) {
-            destLines.push(L.polyline([point, [row[7][i], row[8][i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
+            destLines.push(L.polyline([point, [row[7][i], row[8][i]]], { opacity: 0.3, dashArray: '5', color: 'black' }).addTo(map))
         }
     }
 };
@@ -238,7 +240,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
     for (let d of directionsLayers)
         map.removeLayer(d)
 
-    directionsLayers = [L.polyline([A, Z], {opacity: 0.1, weight: 5, dashArray: '1', color: 'red', pane: 'directions', interactive: false}).addTo(map)]
+    directionsLayers = [L.polyline([A, Z], { opacity: 0.1, weight: 5, dashArray: '1', color: 'red', pane: 'directions', interactive: false }).addTo(map)]
 
     for (let spot of destinationMarkers) {
         let B = spot.getLatLng()
@@ -265,11 +267,11 @@ function planRoute(lat1, lon1, lat2, lon2) {
             if (improvement > 0 && retreat < 0.5 * travel) {
                 bestImprovement = Math.max(bestImprovement, improvement)
 
-                directionsLayers.push(L.polyline([spot.getLatLng(), rideCoord], {opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false}).addTo(map))
+                directionsLayers.push(L.polyline([spot.getLatLng(), rideCoord], { opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false }).addTo(map))
             }
         }
         if (bestImprovement > 0) {
-            let marker = new L.circleMarker(B, Object.assign({}, spot.options, {pane: 'directions', radius: 5 + Math.min(bestImprovement / 80000, 5)}))
+            let marker = new L.circleMarker(B, Object.assign({}, spot.options, { pane: 'directions', radius: 5 + Math.min(bestImprovement / 80000, 5) }))
             marker.on('click', e => spot.fire('click', e))
             marker.addTo(map)
             directionsLayers.push(marker)
@@ -280,7 +282,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
     map.fitBounds(bounds, {})
 }
 
-var geocoderOpts = {"collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11};
+var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11 };
 
 var customGeocoder = L.Control.Geocoder.photon();
 geocoderOpts["geocoder"] = customGeocoder;
@@ -298,17 +300,17 @@ let updateRadius = e => {
     let markers = geocoderInput.value.length > 1 ? allMarkers.filter(x => x.options._row[3].toLowerCase().includes(search)) : []
     console.log(markers)
     for (let x of oldMarkers) {
-        x.setStyle({radius: 5})
+        x.setStyle({ radius: 5 })
     }
     for (let x of markers) {
-        x.setStyle({radius: 10})
+        x.setStyle({ radius: 10 })
         x.bringToFront()
     }
     oldMarkers = markers
 }
 
 geocoderInput.addEventListener('input', updateRadius)
-geocoderController.on('markgeocode', function(e) {
+geocoderController.on('markgeocode', function (e) {
     var zoom = geocoderOpts['zoom'] || map.getZoom();
     map.setView(e.geocode.center, zoom);
     $$('.leaflet-control-geocoder input').value = ''
@@ -335,16 +337,37 @@ $$('a.step2-help').onclick = e => alert(e.target.title)
 $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
 
+$$('.report-hitchwiki').onclick = e => {
+    prompt_content = 'Is this spot mentioned on Hitchwiki?\n\
+If so, please provide the Hitchwiki link for the city article that mentions it.\n\n\
+The link should have a format similar to https://hitchwiki.org/en/city_name.'
+    link = prompt(prompt_content)
+    if (link === null) {
+        return
+    }
+    while (!/^https:\/\/hitchwiki\.org\/en\/.*/.test(link)) {
+        alert("You did not enter a valid link to Hitchwiki.")
+        link = prompt(prompt_content)
+        if (link === null) {
+            return
+        }
+    }
+    let activePoint = active[0].getLatLng()
+    document.body.innerHTML += `<form id=dupform method=POST action=report-hitchwiki><input name=report value=${[activePoint.lat, activePoint.lng, link].join(';')}>`
+    document.querySelector('#dupform').submit()
+}
+
+
 function updateAddSpotLine() {
     if (addSpotLine) {
         map.removeLayer(addSpotLine)
         addSpotLine = null
     }
     if (addSpotPoints.length == 1) {
-        addSpotLine = L.polyline([addSpotPoints[0], map.getCenter()], {opacity: 1, dashArray: '5', color: 'black'}).addTo(map)
+        addSpotLine = L.polyline([addSpotPoints[0], map.getCenter()], { opacity: 1, dashArray: '5', color: 'black' }).addTo(map)
     }
     else if (planRoutePoints.length == 1) {
-        addSpotLine = L.polyline([planRoutePoints[0], map.getCenter()], {opacity: 1, dashArray: '5', color: 'black'}).addTo(map)
+        addSpotLine = L.polyline([planRoutePoints[0], map.getCenter()], { opacity: 1, dashArray: '5', color: 'black' }).addTo(map)
     }
 }
 
@@ -486,7 +509,7 @@ function renderPoints() {
         let lons = a.options._destination_lons
         if (lats && lats.length) {
             for (let i in lats) {
-                destLines.push(L.polyline([a.getLatLng(), [lats[i], lons[i]]], {opacity: 0.3, dashArray: '5', color: 'black'}).addTo(map))
+                destLines.push(L.polyline([a.getLatLng(), [lats[i], lons[i]]], { opacity: 0.3, dashArray: '5', color: 'black' }).addTo(map))
             }
         }
     }
@@ -501,6 +524,7 @@ function clearAllButRoute() {
     if (!window.location.hash) navigate() // clears rest
     else clear()
 }
+
 function clear() {
     bar()
     addSpotPoints = []
@@ -614,10 +638,15 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
+if (window.location.hash == '#success-hitchwiki') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.success-hitchwiki')
+}
+
 function exportAsGPX() {
     var script = document.createElement("script");
     script.src = 'https://cdn.jsdelivr.net/npm/togpx@0.5.4/togpx.js';
-    script.onload = function() {
+    script.onload = function () {
         let features = allMarkers.map(m => ({
             "type": "Feature",
             "properties": {
@@ -625,7 +654,7 @@ function exportAsGPX() {
                 "url": `https://hitchmap.com/${m.options._row[0]},${m.options._row[1]}`
             },
             "geometry": {
-                "coordinates": [ m.options._row[1], m.options._row[0] ],
+                "coordinates": [m.options._row[1], m.options._row[0]],
                 "type": "Point"
             }
         }))
