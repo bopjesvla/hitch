@@ -116,6 +116,10 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
+@app.route('/content/<path:path>')
+def send_report(path):
+    return send_from_directory('content', path)
+
 
 @app.route("/experience", methods=["POST"])
 def experience():
@@ -236,6 +240,40 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
+
+@app.route("/report-hitchwiki", methods=["POST"])
+def report_hitchwiki():
+    data = request.form
+
+    now = str(datetime.datetime.utcnow())
+
+    if request.headers.getlist("X-Real-IP"):
+        ip = request.headers.getlist("X-Real-IP")[-1]
+    else:
+        ip = request.remote_addr
+
+    lat, lon, link = data["report"].split(";")
+    lat = float(lat)
+    lon = float(lon)
+
+    df = pd.DataFrame(
+        [
+            {
+                "datetime": now,
+                "ip": ip,
+                "reviewed": False,
+                "accepted": False,
+                "lat": lat,
+                "lon": lon,
+                "link": link,
+            }
+        ]
+    )
+
+    df.to_sql("hitchwiki", get_db(), index=None, if_exists="append")
+
+    return redirect("/#success-hitchwiki")
 
 
 if __name__ == "__main__":

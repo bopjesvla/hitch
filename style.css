@@ -24,7 +24,8 @@ input[type=radio] + label {
 }
 .sidebar {
     line-height: 1.5;
-    font-size: 16px;
+    font-size: 19px;
+    font-family: Georgia, serif;
     color: #1a1a1a;
     background-color: #fdfdfd;
     hyphens: auto;
@@ -69,7 +70,7 @@ input[type=radio] + label {
     position: absolute;
     top: 0px;
     right: 0px;
-    padding: 20px 14px 8px;
+    padding: 23px 14px 8px;
     cursor: pointer;
     font-size: 0;
     z-index: 2000;
@@ -91,8 +92,11 @@ body.planning-route .horizontal-button {
     height: auto !important;
     padding: 5px 10px;
 }
-.plan-route, .cancel-route, .horizontal-button.menu {
+.plan-route, .cancel-route, .horizontal-button.add-spot {
     clear: none !important;
+}
+.horizontal-button.menu {
+    width: 35px;
 }
 .topbar {
     pointer-events: none;
@@ -122,11 +126,12 @@ body.planning-route .horizontal-button {
 .topbar::before {
     content: '';
     pointer-events: none;
-    position: absolute;
-    left: 50vw;
-    bottom: 50vh;
-    margin-left: -30vmin;
-    margin-bottom: -30vmin;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    margin: auto;
     width: 60vmin;
     height: 60vmin;
     background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px));
@@ -271,11 +276,11 @@ a:hover {
 .leaflet-back-pane {
     z-index: 50;
 }
-.report-dup {
-    margin-top: 30px;
-    margin-bottom: 30px;
-    text-align: center;
-    font-size: 0.8em;
+.report-dup, .report-hitchwiki {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 1.0em;
 }
 #spot-header a {
     color: black;
@@ -315,4 +320,16 @@ ul.no-style {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+.sidebar .fa {
+    min-width: 28px;
+    display: inline-block;
+    color: black;
+}
+.sidebar.menu {
+    padding-top: 25px;
+}
+.sidebar.menu a {
+    border-bottom: 1px solid blue;
+    color: #000;
 }
