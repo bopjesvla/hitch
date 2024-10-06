@@ -42,13 +42,7 @@ var markerClick = function (marker) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
     var row = marker.options._row, point = marker.getLatLng()
-
-    if (row[10] != null) {
-        active = allMarkers.filter(m => m.options._row[10] == row[10]).sort(m => m == marker)
-    }
-    else {
-        active = [marker]
-    }
+    active = [marker]
 
     addSpotPoints = []
     renderPoints()

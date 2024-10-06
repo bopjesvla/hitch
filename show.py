@@ -62,6 +62,9 @@ hitchwiki_links = pd.read_sql(
     "select * from hitchwiki where reviewed = accepted", sqlite3.connect(fn), dtype={'lat':float, 'lon':float}
 )
 
+# TODO: #88
+hitchwiki_links.drop_duplicates(subset=["lat", "lon"], keep='last', inplace=True)
+
 print(f"{len(points)} points currently")
 
 # merging and transforming data

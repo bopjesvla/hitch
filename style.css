@@ -271,13 +271,7 @@ a:hover {
 .leaflet-back-pane {
     z-index: 50;
 }
-.report-dup {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-align: left;
-    font-size: 1.0em;
-}
-.report-hitchwiki {
+.report-dup, .report-hitchwiki {
     margin-top: 10px;
     margin-bottom: 10px;
     text-align: left;
