@@ -50,17 +50,20 @@ def get_bearing(lon1, lat1, lon2, lat2):
 # loading data from database
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 points = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(fn),
+    sql="select * from points where not banned order by datetime is not null desc, datetime desc",
+    con=sqlite3.connect(fn),
 )
 
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
 )
 
-hitchwiki_links = pd.read_sql(
-    "select * from hitchwiki where reviewed = accepted", sqlite3.connect(fn), dtype={'lat':float, 'lon':float}
-)
+try:
+    hitchwiki_links = pd.read_sql(
+        "select * from hitchwiki where reviewed = accepted", sqlite3.connect(fn), dtype={'lat':float, 'lon':float}
+    )
+except:
+    hitchwiki_links = pd.DataFrame(columns=['lat', 'lon', 'link'])
 
 # TODO: #88
 hitchwiki_links.drop_duplicates(subset=["lat", "lon"], keep='last', inplace=True)
