@@ -9,3 +9,4 @@ Please fill out as much as you can.
 ## Specifications
 
 - Browser:
+- Device:
