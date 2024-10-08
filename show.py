@@ -92,7 +92,7 @@ for island in islands:
             if node != parents[0]:
                 replace_map[node] = parents[0]
 
-print(dups)
+print("Currently recorded duplicate spots are represented by: ", dups)
 
 points[["lat", "lon"]] = points[["lat", "lon"]].apply(
     lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True
