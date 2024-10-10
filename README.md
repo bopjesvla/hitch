@@ -1,6 +1,6 @@
 # Hitchmap
 
-The map to hitchhiking the world.
+The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitchwiki:Maps).
 
 
 ## Description
