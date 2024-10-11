@@ -197,7 +197,7 @@ def experience():
                 "dest_lon": dest_lon,
                 "country": country,
                 "signal": signal,
-                "datetime_ride": datetime_ride,
+                "ride_datetime": datetime_ride,
             }
         ],
         index=[pid],
