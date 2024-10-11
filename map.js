@@ -338,9 +338,9 @@ $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicat
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
 
 $$('.report-hitchwiki').onclick = e => {
-    prompt_content = 'Is this spot mentioned on Hitchwiki?\n\
-If so, please provide the Hitchwiki link for the city article that mentions it.\n\n\
-The link should have a format similar to https://hitchwiki.org/en/city_name.'
+    prompt_content = 'Is this spot mentioned on Hitchwiki?\
+ If so, please provide the Hitchwiki link for the city article that mentions it.\
+ The link should have a format similar to https://hitchwiki.org/en/city_name.'
     link = prompt(prompt_content)
     if (link === null) {
         return

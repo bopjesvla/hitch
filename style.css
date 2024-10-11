@@ -279,8 +279,8 @@ a:hover {
 .report-dup, .report-hitchwiki {
     margin-top: 10px;
     margin-bottom: 10px;
-    text-align: left;
-    font-size: 1.0em;
+    text-align: center;
+    font-size: 0.8em;
 }
 #spot-header a {
     color: black;
