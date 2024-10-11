@@ -92,7 +92,7 @@ timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
 # Hitchwiki
 df = pd.read_sql(
-    "select * from hitchwiki",
+    "select * from hitchwikipy",
     sqlite3.connect(DATABASE),
 )
 

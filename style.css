@@ -334,6 +334,6 @@ ul.no-style {
     color: #000;
 }
 
-.make-red {
-    color: red;
+.make-invisible {
+    display: none;
 }
