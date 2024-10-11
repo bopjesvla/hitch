@@ -14,7 +14,7 @@ DATABASE = (
 
 # Spots
 df = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
+    "select * from points where not banned and datetime is not null",
     sqlite3.connect(DATABASE),
 )
 
