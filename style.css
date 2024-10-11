@@ -333,3 +333,7 @@ ul.no-style {
     border-bottom: 1px solid blue;
     color: #000;
 }
+
+.make-red {
+    color: red;
+}
