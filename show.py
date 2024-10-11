@@ -47,6 +47,7 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
     return brng
 
+
 # loading data from database
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 points = pd.read_sql(
@@ -60,13 +61,15 @@ duplicates = pd.read_sql(
 
 try:
     hitchwiki_links = pd.read_sql(
-        "select * from hitchwiki where reviewed = accepted", sqlite3.connect(fn), dtype={'lat':float, 'lon':float}
+        "select * from hitchwiki where reviewed = accepted",
+        sqlite3.connect(fn),
+        dtype={"lat": float, "lon": float},
     )
 except:
-    hitchwiki_links = pd.DataFrame(columns=['lat', 'lon', 'link'])
+    hitchwiki_links = pd.DataFrame(columns=["lat", "lon", "link"])
 
 # TODO: #88
-hitchwiki_links.drop_duplicates(subset=["lat", "lon"], keep='last', inplace=True)
+hitchwiki_links.drop_duplicates(subset=["lat", "lon"], keep="last", inplace=True)
 
 print(f"{len(points)} points currently")
 
@@ -106,7 +109,8 @@ points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
     .str.decode("utf-8", errors="ignore")
 )
 
-points.datetime = pd.to_datetime(points.datetime)
+points["datetime"] = pd.to_datetime(points.datetime)
+points["ride_datetime"] = pd.to_datetime(points.ride_datetime)
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
@@ -164,19 +168,32 @@ def e(s):
     return s2
 
 
-points['extra_text'] = rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+points["extra_text"] = (
+    rating_text + points.wait_text.fillna("") + destination_text.fillna("")
+)
 
 comment_nl = points["comment"] + "\n\n"
 
 comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
+
+def get_displayed_time(row):
+    """Use the actual time of the ride if available, otherwise use the time of the review."""
+    if not pd.isnull(row.ride_datetime):
+        return row.ride_datetime.strftime(", 🕒 %B %Y")
+    elif not pd.isnull(row.datetime):
+        return row.datetime.strftime(", %B %Y")
+    else:
+        return ""
+
+
 points["text"] = (
     e(comment_nl)
     + "<i>"
-    + e(points['extra_text'])
+    + e(points["extra_text"])
     + "</i><br><br>―"
     + e(points["name"].fillna("Anonymous"))
-    + points.datetime.dt.strftime(", %B %Y").fillna("")
+    + points.apply(get_displayed_time, axis=1)
 )
 
 oldies = points.datetime.dt.year <= 2021
@@ -184,7 +201,7 @@ points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
     + "―"
     + e(points[oldies].name.fillna("Anonymous"))
-    + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
+    + points[oldies].apply(get_displayed_time, axis=1)
 )
 
 # has_text = ~points.text.isnull()
@@ -212,8 +229,10 @@ places["dest_lons"] = (
 )
 
 # add reported hitchwiki links to places if it is present
-places = pd.merge(places, hitchwiki_links[['lat','lon','link']], on=['lat', 'lon'], how='left')
-places.rename(columns={'link':'hitchwiki_link'}, inplace=True)
+places = pd.merge(
+    places, hitchwiki_links[["lat", "lon", "link"]], on=["lat", "lon"], how="left"
+)
+places.rename(columns={"link": "hitchwiki_link"}, inplace=True)
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
@@ -319,7 +338,7 @@ if not LIGHT:
     recent["url"] = (
         "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     )
-    recent["text"] = points.comment.fillna('') + ' ' + points.extra_text.fillna('')
+    recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
     recent["name"] = recent.name.str.replace("://", "", regex=False)
     recent[
         ["url", "country", "datetime", "name", "rating", "distance", "text"]
@@ -337,6 +356,6 @@ if not LIGHT:
         + ","
         + duplicates.to_lon.astype(str)
     )
-    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
-        "recent-dups.html", render_links=True, index=False
-    )
+    duplicates[
+        ["id", "from_url", "to_url", "distance", "reviewed", "accepted"]
+    ].to_html("recent-dups.html", render_links=True, index=False)
