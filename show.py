@@ -109,6 +109,8 @@ points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
     .str.decode("utf-8", errors="ignore")
 )
 
+points["ride_datetime"] = points.datetime
+
 points["datetime"] = pd.to_datetime(points.datetime)
 points["ride_datetime"] = pd.to_datetime(points.ride_datetime)
 
@@ -173,19 +175,9 @@ points["extra_text"] = (
 )
 
 comment_nl = points["comment"] + "\n\n"
-
 comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
-
-def get_displayed_time(row):
-    """Use the actual time of the ride if available, otherwise use the time of the review."""
-    if not pd.isnull(row.ride_datetime):
-        return row.ride_datetime.strftime(", 🕒 %B %Y")
-    elif not pd.isnull(row.datetime):
-        return row.datetime.strftime(", %B %Y")
-    else:
-        return ""
-
+review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
 points["text"] = (
     e(comment_nl)
@@ -193,7 +185,7 @@ points["text"] = (
     + e(points["extra_text"])
     + "</i><br><br>―"
     + e(points["name"].fillna("Anonymous"))
-    + points.apply(get_displayed_time, axis=1)
+    + points.ride_datetime.dt.strftime(", 🕒 %B %Y").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
@@ -201,7 +193,7 @@ points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
     + "―"
     + e(points[oldies].name.fillna("Anonymous"))
-    + points[oldies].apply(get_displayed_time, axis=1)
+    + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
 # has_text = ~points.text.isnull()
