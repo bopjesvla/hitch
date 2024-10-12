@@ -109,8 +109,6 @@ points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
     .str.decode("utf-8", errors="ignore")
 )
 
-points["ride_datetime"] = points.datetime
-
 points["datetime"] = pd.to_datetime(points.datetime)
 points["ride_datetime"] = pd.to_datetime(points.ride_datetime)
 
