@@ -67,12 +67,6 @@ var markerClick = function (marker) {
     }, 100)
 
     console.log(row)
-
-    if (row[7] != null) {
-        for (let i in row[7]) {
-            destLines.push(L.polyline([point, [row[7][i], row[8][i]]], { opacity: 0.3, dashArray: '5', color: 'black' }).addTo(map))
-        }
-    }
 };
 
 
@@ -267,7 +261,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
             if (improvement > 0 && retreat < 0.5 * travel) {
                 bestImprovement = Math.max(bestImprovement, improvement)
 
-                directionsLayers.push(L.polyline([spot.getLatLng(), rideCoord], { opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false }).addTo(map))
+                directionsLayers.push(arrowLine(spot.getLatLng(), [lats[i], lons[i]], {interactive: false, pane: 'directions'}).addTo(map))
             }
         }
         if (bestImprovement > 0) {
@@ -364,11 +358,11 @@ function updateAddSpotLine() {
         addSpotLine = null
     }
     if (addSpotPoints.length == 1) {
-        addSpotLine = L.polyline([addSpotPoints[0], map.getCenter()], { opacity: 1, dashArray: '5', color: 'black' }).addTo(map)
+        addSpotLine = arrowLine(addSpotPoints[0], map.getCenter()).addTo(map)
     }
     else if (planRoutePoints.length == 1) {
-        addSpotLine = L.polyline([planRoutePoints[0], map.getCenter()], { opacity: 1, dashArray: '5', color: 'black' }).addTo(map)
-    }
+        addSpotLine = arrowLine(planRoutePoints[0], map.getCenter()).addTo(map)
+   }
 }
 
 map.on('move', updateAddSpotLine)
@@ -486,6 +480,11 @@ map.on('zoom', e => {
 
 var oldActive = [];
 
+function arrowLine(from, to, opts = {}) {
+    opts = Object.assign({frequency: '7px', size: '5px', fill: true, stroke: false, fillOpacity: 0.8}, opts)
+    return L.polyline([from, to], { opacity: 0, color: 'black' }).arrowheads(opts)
+}
+
 function renderPoints() {
     if (spotMarker) map.removeLayer(spotMarker)
     if (destMarker) map.removeLayer(destMarker)
@@ -509,7 +508,7 @@ function renderPoints() {
         let lons = a.options._destination_lons
         if (lats && lats.length) {
             for (let i in lats) {
-                destLines.push(L.polyline([a.getLatLng(), [lats[i], lons[i]]], { opacity: 0.3, dashArray: '5', color: 'black' }).addTo(map))
+                destLines.push(arrowLine(a.getLatLng(), [lats[i], lons[i]]).addTo(map))
             }
         }
     }
