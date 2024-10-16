@@ -333,14 +333,14 @@ $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('re
 
 $$('.report-hitchwiki').onclick = e => {
     prompt_content = 'Is this spot mentioned on Hitchwiki?\
- If so, please provide the Hitchwiki link for the city article that mentions it.\
+ If so, please provide the link to the city article from the English Hitchwiki that mentions it.\
  The link should have a format similar to https://hitchwiki.org/en/city_name.'
     link = prompt(prompt_content)
     if (link === null) {
         return
     }
     while (!/^https:\/\/hitchwiki\.org\/en\/.*/.test(link)) {
-        alert("You did not enter a valid link to Hitchwiki.")
+        alert("You did not enter a valid link to the English Hitchwiki. You can check if your link contain /en/.")
         link = prompt(prompt_content)
         if (link === null) {
             return
