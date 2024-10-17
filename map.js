@@ -688,3 +688,6 @@ function exportAsGPX() {
     }
     document.body.appendChild(script)
 }
+
+// $$('.report-button').onclick = _ => $$('.report-options').classList.toggle('.visible')
+// $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')

@@ -79,6 +79,29 @@
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>
+        <input type="checkbox" id="toggle" class="toggle-checkbox">
+        <div class="report">
+            <label for="toggle" class="toggle-label">
+                <svg class="triangle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+                    <polygon points="0,0 10,5 0,10" fill="black" />
+                </svg>
+            </label>
+        </div>
+        <div class=report-options>
+            <div class="report-dup">
+                <a href="javascript:;"
+                   title="Is there another spot close by that is a duplicate of this spot?">
+                    <i class="fa-solid fa-left-right" style="color: red"></i>
+                    Merge into nearby spot
+                </a>
+            </div>
+            <div class="report-hitchwiki">
+                <a href="javascript:;" title="Is this a spot mentioned on the Hitchwiki?">
+                    <i class="fa-solid fa-thumbs-up" style="color: red"></i>
+                    Link to Hitchwiki
+                </a>
+            </div>
+        </div>
         <div id='hitchwiki'></div>
         <div id='spot-summary'></div>
         <h4>Comments</h4>
@@ -86,14 +109,6 @@
         <div><button>Review this spot</button></div>
         <i id="extra-text"></i>
         <hr>
-        <div class="report-dup"><a href="javascript:;"
-                title="Is there another spot close by that is a duplicate of this spot?"><i
-                    class="fa-solid fa-left-right" style="color: red"></i> Merge
-                into nearby spot</a>
-        </div>
-        <div class="report-hitchwiki"><a href="javascript:;" title="Is this a spot mentioned on the Hitchwiki?"><i
-                    class="fa-solid fa-thumbs-up" style="color: red"></i> Link to Hitchwiki</a>
-        </div>
     </div>
     <div class="sidebar success">
         <h3>Success!</h3>
