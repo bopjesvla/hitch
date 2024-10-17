@@ -402,8 +402,12 @@ var addSpotStep = function (e) {
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
             let points = addSpotPoints
-            var dest = points[1].lat !== 'nan' ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
+            const destinationGiven = points[1].lat !== 'nan'
+            var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
+            if (destinationGiven) {
+                document.getElementById("no-ride").classList.toggle("make-invisible");
+            }
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
@@ -637,6 +641,19 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
+// logic to prevent submitting hidden detailed info
+const form = document.querySelector("form");
+const details = document.getElementById("extended_info");
+const signal = document.getElementById("signal");
+const datetime_ride = document.getElementById("datetime_ride");
+form.addEventListener("submit", (event) => {
+    const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
+    if (isNotValid) {
+        document.getElementById("details-summary").innerHTML = "<span style='color: red;'>Extended (check values, then submit again)</span>";
+        details.open = true;
+        event.preventDefault();
+    }
+});
 if (window.location.hash == '#success-hitchwiki') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-hitchwiki')
