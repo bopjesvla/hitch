@@ -51,11 +51,7 @@ var markerClick = function (marker) {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
-        
-        if (row[9]) {
-            let link = row[9]
-            let city = row[9].split('/en/')[1]
-        }
+
         $$('#spot-summary').innerText = summaryText(row)
 
         $$('#spot-text').innerHTML = row[3];
