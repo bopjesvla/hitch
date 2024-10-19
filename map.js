@@ -52,12 +52,9 @@ var markerClick = function (marker) {
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
         
-        // hitchwiki link only shows if available
-        $$('#hitchwiki').innerText = ''
         if (row[9]) {
             let link = row[9]
             let city = row[9].split('/en/')[1]
-            $$('#hitchwiki').innerHTML = `Featured on Hitchwiki: <a href=${link}>${city}</a>`
         }
         $$('#spot-summary').innerText = summaryText(row)
 
@@ -330,27 +327,6 @@ $$('a.step2-help').onclick = e => alert(e.target.title)
 
 $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
-
-$$('.report-hitchwiki').onclick = e => {
-    prompt_content = 'Is this spot mentioned on Hitchwiki?\
- If so, please provide the link to the city article from the English Hitchwiki that mentions it.\
- The link should have a format similar to https://hitchwiki.org/en/city_name.'
-    link = prompt(prompt_content)
-    if (link === null) {
-        return
-    }
-    while (!/^https:\/\/hitchwiki\.org\/en\/.*/.test(link)) {
-        alert("You did not enter a valid link to the English Hitchwiki. You can check if your link contain /en/.")
-        link = prompt(prompt_content)
-        if (link === null) {
-            return
-        }
-    }
-    let activePoint = active[0].getLatLng()
-    document.body.innerHTML += `<form id=dupform method=POST action=report-hitchwiki><input name=report value=${[activePoint.lat, activePoint.lng, link].join(';')}>`
-    document.querySelector('#dupform').submit()
-}
-
 
 function updateAddSpotLine() {
     if (addSpotLine) {
@@ -635,11 +611,6 @@ if (window.location.hash == '#success') {
 if (window.location.hash == '#success-duplicate') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-duplicate')
-}
-
-if (window.location.hash == '#success-hitchwiki') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.success-hitchwiki')
 }
 
 function exportAsGPX() {

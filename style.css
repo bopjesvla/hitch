@@ -309,12 +309,12 @@ a:hover {
     margin-top: -20px;
     margin-bottom: 20px;
 }
-.report-dup, .report-hitchwiki {
+.report-dup {
     text-align: center;
     font-size: 0.8em;
     font-weight: bold;
 }
-.report-dup a, .report-hitchwiki a {
+.report-dup a {
     display: block;
     padding-top: 10px;
     padding-bottom: 10px;

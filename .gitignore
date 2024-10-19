@@ -464,6 +464,7 @@ OpenCover/
 junit/
 
 # custom
+light.html
 recent.html
 index.html
 points.sqlite
