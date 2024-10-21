@@ -411,9 +411,7 @@ var addSpotStep = function (e) {
             const destinationGiven = points[1].lat !== 'nan'
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
-            if (destinationGiven) {
-                document.getElementById("no-ride").classList.toggle("make-invisible");
-            }
+            document.getElementById("no-ride").classList.toggle("make-invisible", destinationGiven);
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
