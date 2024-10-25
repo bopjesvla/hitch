@@ -641,14 +641,14 @@ if (window.location.hash == '#success-duplicate') {
 }
 
 // logic to prevent submitting hidden detailed info
-const form = document.querySelector("form");
-const details = document.getElementById("extended_info");
-const signal = document.getElementById("signal");
-const datetime_ride = document.getElementById("datetime_ride");
+const form = $$("#spot-form");
+const details = $$("#extended_info");
+const signal = $$("#signal");
+const datetime_ride = $$("#datetime_ride");
 form.addEventListener("submit", (event) => {
     const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
     if (isNotValid) {
-        document.getElementById("details-summary").innerHTML = "<span style='color: red;'>Extended (check values, then submit again)</span>";
+        $$("#details-summary").innerHTML = "<span style='color: red;'>Extended (check values, then submit again)</span>";
         details.open = true;
         event.preventDefault();
     }
