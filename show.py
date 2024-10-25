@@ -35,7 +35,6 @@ def haversine_np(lon1, lat1, lon2, lat2):
     # 1.25 because the road distance is, on average, 25% larger than a straight flight
     return 1.25 * km
 
-
 def get_bearing(lon1, lat1, lon2, lat2):
     dLon = lon2 - lon1
     x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
@@ -58,18 +57,6 @@ points = pd.read_sql(
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
 )
-
-try:
-    hitchwiki_links = pd.read_sql(
-        "select * from hitchwiki where reviewed = accepted",
-        sqlite3.connect(fn),
-        dtype={"lat": float, "lon": float},
-    )
-except:
-    hitchwiki_links = pd.DataFrame(columns=["lat", "lon", "link"])
-
-# TODO: #88
-hitchwiki_links.drop_duplicates(subset=["lat", "lon"], keep="last", inplace=True)
 
 print(f"{len(points)} points currently")
 
@@ -218,12 +205,6 @@ places["dest_lons"] = (
     .dest_lon.apply(list)
 )
 
-# add reported hitchwiki links to places if it is present
-places = pd.merge(
-    places, hitchwiki_links[["lat", "lon", "link"]], on=["lat", "lon"], how="left"
-)
-places.rename(columns={"link": "hitchwiki_link"}, inplace=True)
-
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
 elif NEW:
@@ -278,7 +259,6 @@ cluster = folium.plugins.FastMarkerCluster(
             "review_count",
             "dest_lats",
             "dest_lons",
-            "hitchwiki_link",
         ]
     ].values,
     disableClusteringAtZoom=7,
@@ -346,6 +326,7 @@ if not LIGHT:
         + ","
         + duplicates.to_lon.astype(str)
     )
-    duplicates[
-        ["id", "from_url", "to_url", "distance", "reviewed", "accepted"]
-    ].to_html("recent-dups.html", render_links=True, index=False)
+    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
+        "recent-dups.html", render_links=True, index=False
+    )
+    

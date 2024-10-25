@@ -51,14 +51,7 @@ var markerClick = function (marker) {
         bar('.sidebar.show-spot')
         $$('#spot-header a').href = window.ontouchstart ? `geo:${row[0]},${row[1]}` : ` https://www.google.com/maps/place/${row[0]},${row[1]}`
         $$('#spot-header a').innerText = `${row[0].toFixed(4)}, ${row[1].toFixed(4)} ☍`
-        
-        // hitchwiki link only shows if available
-        $$('#hitchwiki').innerText = ''
-        if (row[9]) {
-            let link = row[9]
-            let city = row[9].split('/en/')[1]
-            $$('#hitchwiki').innerHTML = `Featured on Hitchwiki: <a href=${link}>${city}</a>`
-        }
+
         $$('#spot-summary').innerText = summaryText(row)
 
         $$('#spot-text').innerHTML = row[3];
@@ -67,12 +60,6 @@ var markerClick = function (marker) {
     }, 100)
 
     console.log(row)
-
-    if (row[7] != null) {
-        for (let i in row[7]) {
-            destLines.push(L.polyline([point, [row[7][i], row[8][i]]], { opacity: 0.3, dashArray: '5', color: 'black' }).addTo(map))
-        }
-    }
 };
 
 
@@ -267,7 +254,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
             if (improvement > 0 && retreat < 0.5 * travel) {
                 bestImprovement = Math.max(bestImprovement, improvement)
 
-                directionsLayers.push(L.polyline([spot.getLatLng(), rideCoord], { opacity: 0.7, weight: 1, dashArray: '5', color: 'black', pane: 'directions', interactive: false }).addTo(map))
+                directionsLayers.push(arrowLine(spot.getLatLng(), [lats[i], lons[i]], {interactive: false, pane: 'directions'}).addTo(map))
             }
         }
         if (bestImprovement > 0) {
@@ -337,38 +324,17 @@ $$('a.step2-help').onclick = e => alert(e.target.title)
 $$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
 $$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
 
-$$('.report-hitchwiki').onclick = e => {
-    prompt_content = 'Is this spot mentioned on Hitchwiki?\
- If so, please provide the Hitchwiki link for the city article that mentions it.\
- The link should have a format similar to https://hitchwiki.org/en/city_name.'
-    link = prompt(prompt_content)
-    if (link === null) {
-        return
-    }
-    while (!/^https:\/\/hitchwiki\.org\/en\/.*/.test(link)) {
-        alert("You did not enter a valid link to Hitchwiki.")
-        link = prompt(prompt_content)
-        if (link === null) {
-            return
-        }
-    }
-    let activePoint = active[0].getLatLng()
-    document.body.innerHTML += `<form id=dupform method=POST action=report-hitchwiki><input name=report value=${[activePoint.lat, activePoint.lng, link].join(';')}>`
-    document.querySelector('#dupform').submit()
-}
-
-
 function updateAddSpotLine() {
     if (addSpotLine) {
         map.removeLayer(addSpotLine)
         addSpotLine = null
     }
     if (addSpotPoints.length == 1) {
-        addSpotLine = L.polyline([addSpotPoints[0], map.getCenter()], { opacity: 1, dashArray: '5', color: 'black' }).addTo(map)
+        addSpotLine = arrowLine(addSpotPoints[0], map.getCenter()).addTo(map)
     }
     else if (planRoutePoints.length == 1) {
-        addSpotLine = L.polyline([planRoutePoints[0], map.getCenter()], { opacity: 1, dashArray: '5', color: 'black' }).addTo(map)
-    }
+        addSpotLine = arrowLine(planRoutePoints[0], map.getCenter()).addTo(map)
+   }
 }
 
 map.on('move', updateAddSpotLine)
@@ -489,6 +455,11 @@ map.on('zoom', e => {
 
 var oldActive = [];
 
+function arrowLine(from, to, opts = {}) {
+    opts = Object.assign({frequency: '7px', size: '5px', fill: true, stroke: false, fillOpacity: 0.8}, opts)
+    return L.polyline([from, to], { opacity: 0, color: 'black' }).arrowheads(opts)
+}
+
 function renderPoints() {
     if (spotMarker) map.removeLayer(spotMarker)
     if (destMarker) map.removeLayer(destMarker)
@@ -512,7 +483,7 @@ function renderPoints() {
         let lons = a.options._destination_lons
         if (lats && lats.length) {
             for (let i in lats) {
-                destLines.push(L.polyline([a.getLatLng(), [lats[i], lons[i]]], { opacity: 0.3, dashArray: '5', color: 'black' }).addTo(map))
+                destLines.push(arrowLine(a.getLatLng(), [lats[i], lons[i]]).addTo(map))
             }
         }
     }
@@ -706,3 +677,6 @@ function exportAsGPX() {
     }
     document.body.appendChild(script)
 }
+
+// $$('.report-button').onclick = _ => $$('.report-options').classList.toggle('.visible')
+// $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')

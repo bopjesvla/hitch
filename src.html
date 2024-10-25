@@ -6,6 +6,8 @@
     <link rel="manifest" href="/manifest.json">
 
     $folium_head
+    <script src=" https://cdn.jsdelivr.net/npm/leaflet-geometryutil@0.10.3/src/leaflet.geometryutil.min.js "></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-arrowheads@1.4.0/src/leaflet-arrowheads.min.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -72,21 +74,35 @@
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>
-        <div id='hitchwiki'></div>
+        <input type="checkbox" id="toggle" class="toggle-checkbox">
+        <div class="report">
+            <label for="toggle" class="toggle-label">
+                <svg class="triangle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+                    <polygon points="0,0 10,5 0,10" fill="black" />
+                </svg>
+            </label>
+        </div>
+        <div class=report-options>
+            <div class="report-dup">
+                <a href="javascript:;"
+                   title="Is there another spot close by that is a duplicate of this spot?">
+                    <i class="fa-solid fa-left-right" style="color: red"></i>
+                    Merge into nearby spot
+                </a>
+            </div>
+            <div class="report-hitchwiki">
+                <a href="javascript:;" title="Is this a spot mentioned on the Hitchwiki?">
+                    <i class="fa-solid fa-thumbs-up" style="color: red"></i>
+                    Link to Hitchwiki
+                </a>
+            </div>
+        </div>
         <div id='spot-summary'></div>
         <h4>Comments</h4>
         <div id='spot-text'></div>
         <div><button>Review this spot</button></div>
         <i id="extra-text"></i>
         <hr>
-        <div class="report-dup"><a href="javascript:;"
-                title="Is there another spot close by that is a duplicate of this spot?"><i
-                    class="fa-solid fa-left-right" style="color: red"></i> Merge
-                into nearby spot</a>
-        </div>
-        <div class="report-hitchwiki"><a href="javascript:;" title="Is this a spot mentioned on the Hitchwiki?"><i
-                    class="fa-solid fa-thumbs-up" style="color: red"></i> Link to Hitchwiki</a>
-        </div>
     </div>
     <div class="sidebar success">
         <h3>Success!</h3>
@@ -99,12 +115,6 @@
 
         <p>Thanks for your contribution!</p>
         <p>Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.</p>
-    </div>
-    <div class="sidebar success-hitchwiki">
-        <h3>Success!</h3>
-
-        <p>Thanks for your contribution!</p>
-        Your hitchwiki link has been recorded and will show up promptly.
     </div>
     <div class="sidebar menu">
         <ul class="no-style">
