@@ -411,7 +411,8 @@ var addSpotStep = function (e) {
             const destinationGiven = points[1].lat !== 'nan'
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
-            document.getElementById("no-ride").classList.toggle("make-invisible", destinationGiven);
+            $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
+            $$('#details-seen').classList.add("make-invisible")
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
             if (storageAvailable('localStorage')) {
@@ -646,9 +647,10 @@ const details = $$("#extended_info");
 const signal = $$("#signal");
 const datetime_ride = $$("#datetime_ride");
 form.addEventListener("submit", (event) => {
-    const isNotValid = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
-    if (isNotValid) {
-        $$("#details-summary").innerHTML = "<span style='color: red;'>Extended (check values, then submit again)</span>";
+    const detailsNotSeenDuringSubmit = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
+    const warningNotShown = $$('#details-seen').classList.contains("make-invisible")
+    if (detailsNotSeenDuringSubmit && warningNotShown) {
+        $$('#details-seen').classList.remove("make-invisible")
         details.open = true;
         event.preventDefault();
     }
