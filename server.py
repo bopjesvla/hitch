@@ -10,7 +10,6 @@ import random
 import os
 import math
 
-
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
@@ -136,6 +135,8 @@ def experience():
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
+    datetime_ride = data["datetime_ride"]
+
     # genders = [data['males'], data['females'], data['others']]
     # genders = [(int(g) if g != '' else 0) for g in genders]
 
@@ -196,6 +197,7 @@ def experience():
                 "dest_lon": dest_lon,
                 "country": country,
                 "signal": signal,
+                "ride_datetime": datetime_ride,
             }
         ],
         index=[pid],

@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
@@ -10,13 +9,12 @@
     <script src=" https://cdn.jsdelivr.net/npm/leaflet-geometryutil@0.10.3/src/leaflet.geometryutil.min.js "></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-arrowheads@1.4.0/src/leaflet-arrowheads.min.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
-        $hitch_style
+     $hitch_style
     </style>
 </head>
-
 <body>
     $folium_body
     <div class="sidebar spot spot-form-container">
@@ -41,40 +39,37 @@
             </div>
             <label>How long did you wait? Leave blank if you don't remember.</label>
             <input type="number" name="wait" min="0" max="9999" size="4"> minutes
-            <label>Optional comment</label>
+            <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
             <label for="username">Public nickname (alphanumeric)</label>
             <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
-            <label for="signal">Optionally, how you did you signal to drivers?</label>
-            <div>
-                <select name="signal" class="driver-signal">
-                    <option selected value="null" title="null"></option>
-                    <option value="sign" title="Sign">Sign</option>
-                    <option value="thumb" title="thumb">Thumb</option>
-                    <option value="ask" title="talk">Asked around</option>
-                    <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
-                </select>
-            </div>
-            <!-- <div class="driver-signal"> -->
-            <!-- <input required type="radio" id="comm-thumb" name="signal" value="thumb" /> -->
-            <!-- <label for="comm-thumb" title="thumb">Thumb</label> -->
-            <!-- <input required type="radio" id="comm-sign" name="signal" value="sign" /> -->
-            <!-- <label for="comm-sign" title="Sign">Sign</label> -->
-            <!-- <input required type="radio" id="comm-ask" name="signal" value="ask" /> -->
-            <!-- <label for="comm-ask" title="talk">Asked around</label> -->
-            <!-- <br/> -->
-            <!-- <input required type="radio" id="comm-ask-sign" name="signal" value="ask" /> -->
-            <!-- <label for="comm-ask-sign" title="talk">Asked around with a sign in hand</label> -->
-            <!-- <br/> -->
-            <!-- <input checked required type="radio" id="comm-null" name="signal" value="null" /> -->
-            <!-- <label for="comm-null" title="null">Prefer not to answer</label> -->
-            <!-- </div> -->
+            <br>
+            <details closed id="extended_info">
+                <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen" style='color: red;'> (check values, then submit again)</span></summary>
+                <label for="signal">How did you signal to drivers?</label>
+                <div>
+                    <select id="signal" name="signal" class="driver-signal">
+                        <option selected value="null" title="null"></option>
+                        <option value="sign" title="Sign">Sign</option>
+                        <option value="thumb" title="thumb">Thumb</option>
+                        <option value="ask" title="talk">Asked around</option>
+                        <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
+                    </select>
+                </div>
+                <label for="datetime_ride">When did you get the ride?<span id="no-ride"> If you didn't get a ride, when did you stop soliciting rides?</span></label>
+                <input id="datetime_ride" type="datetime-local" name="datetime_ride">
+                <!-- maximum date is today -->
+                <script>                    
+                    document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0,11)) + "23:59";
+                </script>
+            </details>
+
             <!-- <label for="gender">Optionally, what genders were you and your co-hitchhikers?</label> -->
             <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
             <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
             <!-- <input value="0" type="number" name="others" min="0" max="9" size="2"> others -->
 
-            <input type="submit" value="Submit">
+            <button>Submit</button>
         </form>
     </div>
     <div class="sidebar show-spot spot">
@@ -139,8 +134,14 @@
     </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <line x1="1" y1="13" x2="13" y2="1" stroke="black" stroke-width="2" />
-            <line x1="1" y1="1" x2="13" y2="13" stroke="black" stroke-width="2" />
+            <line x1="1" y1="13"
+                  x2="13" y2="1"
+                  stroke="black"
+                  stroke-width="2"/>
+            <line x1="1" y1="1"
+                  x2="13" y2="13"
+                  stroke="black"
+                  stroke-width="2"/>
         </svg>
     </a>
     <div class="topbar spot step1">
@@ -149,10 +150,7 @@
     </div>
     <div class="topbar spot step2">
         <span>
-            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a
-                    href="javascript:void(0);"
-                    title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews."
-                    class=step2-help>?</a></sup>
+            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
     </div>
@@ -171,12 +169,12 @@
         <br><button>Cancel</button>
     </div>
     <script>
-        var allMarkers = [], destinationMarkers = []
+     var allMarkers = [], destinationMarkers = []
     </script>
     <script>
-        $folium_script
+     $folium_script
     </script>
     <script>
-        $hitch_script
+     $hitch_script
     </script>
 </body>

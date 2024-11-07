@@ -474,3 +474,4 @@ dashboard.html
 *.ipynb
 *.kml
 *.gpx
+*_hidden.py

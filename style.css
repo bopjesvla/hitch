@@ -59,6 +59,8 @@ input[type=radio] + label {
     margin-top: 30px;
     margin-bottom: 30px;
     width: 100%;
+    padding: 5px;
+    margin-top: 24px;
 }
 #sb-close {
     display: none;
@@ -139,7 +141,10 @@ body.planning-route .horizontal-button {
     width: 100%;
 }
 #spot-form > label, #spot-form input[type=submit] {
-    margin-top: 15px;
+    margin-top: 18px;
+}
+#spot-form details select, #spot-form details input {
+    margin-bottom: 18px;
 }
 .rate {
     float: left;
@@ -327,6 +332,33 @@ a:hover {
 .leaflet-control-geocoder-form:not(:has(:focus)) ~ .leaflet-control-geocoder-alternatives {
     display: none;
 }
+
+/* 
+optional section for recording spot data 
+from https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details
+*/
+
+details {
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: 0.5em 0.5em 0;
+}
+
+summary {
+    margin: -0.5em -0.5em 0;
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+details[open] {
+    padding: 0.5em;
+}
+
+details[open] summary {
+    border-bottom: 1px solid #aaa;
+    margin-bottom: 0.5em;
+}
+  
 ul.no-style {
     list-style-type: none;
     margin: 0;
@@ -343,4 +375,8 @@ ul.no-style {
 .sidebar.menu a {
     border-bottom: 1px solid blue;
     color: #000;
+}
+
+.make-invisible {
+    display: none;
 }
