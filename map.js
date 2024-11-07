@@ -381,6 +381,26 @@ var addSpotStep = function (e) {
             $$('#details-seen').classList.add("make-invisible")
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
+            // logic to prevent submitting hidden detailed info
+            const form = $$("#spot-form");
+            const details = $$("#extended_info");
+            const signal = $$("#signal");
+            const datetime_ride = $$("#datetime_ride");
+            let hasBeenOpen = details.open;
+
+            details.addEventListener("toggle", function() {
+                hasBeenOpen = true;
+            })
+
+            form.addEventListener("submit", (event) => {
+                const hasHiddenFields = signal.value != "null" || datetime_ride.value;
+                if (hasHiddenFields && !hasBeenOpen) {
+                    $$('#details-seen').classList.remove("make-invisible");
+                    hasBeenOpen = details.open = true;
+                    event.preventDefault();
+                }
+            });
+
             if (storageAvailable('localStorage')) {
                 var uname = $$('input[name=username]')
                 uname.value = localStorage.getItem('nick')
@@ -612,20 +632,6 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
-// logic to prevent submitting hidden detailed info
-const form = $$("#spot-form");
-const details = $$("#extended_info");
-const signal = $$("#signal");
-const datetime_ride = $$("#datetime_ride");
-form.addEventListener("submit", (event) => {
-    const detailsNotSeenDuringSubmit = !details.open && (signal.value != "null" || Boolean(datetime_ride.value));
-    const warningNotShown = $$('#details-seen').classList.contains("make-invisible")
-    if (detailsNotSeenDuringSubmit && warningNotShown) {
-        $$('#details-seen').classList.remove("make-invisible")
-        details.open = true;
-        event.preventDefault();
-    }
-});
 if (window.location.hash == '#success-hitchwiki') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-hitchwiki')
