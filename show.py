@@ -35,6 +35,7 @@ def haversine_np(lon1, lat1, lon2, lat2):
     # 1.25 because the road distance is, on average, 25% larger than a straight flight
     return 1.25 * km
 
+
 def get_bearing(lon1, lat1, lon2, lat2):
     dLon = lon2 - lon1
     x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
@@ -97,7 +98,9 @@ points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
 )
 
 points["datetime"] = pd.to_datetime(points.datetime)
-points["ride_datetime"] = pd.to_datetime(points.ride_datetime, errors = 'coerce') # handels invalid dates
+points["ride_datetime"] = pd.to_datetime(
+    points.ride_datetime, errors="coerce"
+)  # handels invalid dates
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
@@ -311,7 +314,18 @@ if not LIGHT:
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
     recent["name"] = recent.name.str.replace("://", "", regex=False)
     recent[
-        ["url", "country", "datetime", "name", "rating", "distance", "text"]
+        [
+            "url",
+            "country",
+            "datetime",
+            "ride_datetime",
+            "name",
+            "rating",
+            "wait",
+            "signal",
+            "distance",
+            "text",
+        ]
     ].to_html("recent.html", render_links=True, index=False)
 
     duplicates["from_url"] = (
@@ -326,7 +340,6 @@ if not LIGHT:
         + ","
         + duplicates.to_lon.astype(str)
     )
-    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
-        "recent-dups.html", render_links=True, index=False
-    )
-    
+    duplicates[
+        ["id", "from_url", "to_url", "distance", "reviewed", "accepted"]
+    ].to_html("recent-dups.html", render_links=True, index=False)
