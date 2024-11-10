@@ -310,6 +310,10 @@ if not LIGHT:
     )
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
     recent["name"] = recent.name.str.replace("://", "", regex=False)
+    recent["distance"] = recent["distance"].round(1)
+    recent["datetime"] = recent["datetime"].astype(str)
+    recent["datetime"] += np.where(~recent.ride_datetime.isnull(), ' 🕒', '')
+
     recent[
         ["url", "country", "datetime", "name", "rating", "distance", "text"]
     ].to_html("recent.html", render_links=True, index=False)
