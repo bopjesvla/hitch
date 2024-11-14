@@ -599,6 +599,11 @@ function navigate() {
         clear()
         planRoute(+args[1], +args[2], +args[3], +args[4])
     }
+    else if (args[0] == '#location') {
+        clear()
+        clearRoute()
+        map.setView([+args[1], +args[2]], args[3])
+    }
     else if (args.length == 2) {
         clear()
         clearRoute()
@@ -630,11 +635,6 @@ if (window.location.hash == '#success') {
 if (window.location.hash == '#success-duplicate') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-duplicate')
-}
-
-if (window.location.hash == '#success-hitchwiki') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.success-hitchwiki')
 }
 
 function exportAsGPX() {
