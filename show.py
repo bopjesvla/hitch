@@ -170,7 +170,7 @@ points["text"] = (
     + e(points["extra_text"])
     + "</i><br><br>―"
     + e(points["name"].fillna("Anonymous"))
-    + points.ride_datetime.dt.strftime(", 🕒 %B %Y").fillna(review_submit_datetime)
+    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
