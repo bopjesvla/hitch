@@ -10,6 +10,9 @@ import random
 import os
 import math
 
+from flask_sqlalchemy import SQLAlchemy
+from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user
+
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
@@ -23,7 +26,40 @@ def get_db():
 
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DATABASE
+app.config['SECRET_KEY'] = 'super-secret'
+app.config['SECURITY_PASSWORD_SALT'] = 'super-secret-salt'
+app.config['SECURITY_REGISTERABLE'] = True
+app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
+app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
+app.config['SECURITY_TRACKABLE'] = True
 
+db = SQLAlchemy(app)
+
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+
+class Role(db.Model, RoleMixin):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True)
+    password = db.Column(db.String(255))
+    username = db.Column(db.String(255), unique=True)
+    active = db.Column(db.Boolean())
+    confirmed_at = db.Column(db.DateTime())
+    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore)
+
+@app.before_first_request
+def create_user():
+    db.create_all()
 
 @app.route("/", methods=["GET"])
 def index():
@@ -122,6 +158,7 @@ def send_report(path):
 
 
 @app.route("/experience", methods=["POST"])
+@login_required
 def experience():
     data = request.form
     rating = int(data["rate"])
@@ -198,6 +235,7 @@ def experience():
                 "country": country,
                 "signal": signal,
                 "ride_datetime": datetime_ride,
+                "user_id": current_user.id
             }
         ],
         index=[pid],
@@ -240,6 +278,40 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        username = request.form.get('username')
+        user_datastore.create_user(email=email, password=password, username=username)
+        db.session.commit()
+        return redirect('/login')
+    return send_file('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = user_datastore.get_user(email)
+        if user and user.verify_password(password):
+            login_user(user)
+            return redirect('/')
+    return send_file('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/')
+
+@app.route('/user/<username>')
+def user_page(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    reviews = pd.read_sql(f"SELECT * FROM points WHERE user_id = {user.id}", get_db())
+    return render_template('user_page.html', user=user, reviews=reviews)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

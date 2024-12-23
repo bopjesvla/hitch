@@ -333,4 +333,3 @@ if not LIGHT:
     duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
         "recent-dups.html", render_links=True, index=False
     )
-    

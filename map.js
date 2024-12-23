@@ -617,6 +617,19 @@ function navigate() {
             }
         }
     }
+    else if (args[0].startsWith('#user:')) {
+        clear()
+        clearRoute()
+        let username = args[0].slice(6)
+        fetch(`/user/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                // Filter reviews by user
+                let userReviews = allMarkers.filter(marker => marker.options._row[6] === data.user_id)
+                userReviews.forEach(marker => marker.setStyle({ radius: 10, color: 'blue' }))
+                oldMarkers = userReviews
+            })
+    }
     else {
         clear()
         clearRoute()
@@ -686,3 +699,41 @@ function exportAsGPX() {
 
 // $$('.report-button').onclick = _ => $$('.report-options').classList.toggle('.visible')
 // $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')
+
+var UserButton = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button user-button');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "👤 User";
+
+        container.onclick = function (e) {
+            fetch('/current_user')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.logged_in) {
+                        // Show logout/change email link
+                        container.innerHTML = `<a href="/logout">Logout</a> | <a href="/change_email">Change Email</a>`;
+                    } else {
+                        // Redirect to login page
+                        window.location.href = '/login';
+                    }
+                });
+            L.DomEvent.stopPropagation(e)
+        }
+
+        return controlDiv;
+    }
+});
+
+map.addControl(new UserButton());
+
+$$('.folium-map').addEventListener('click', function (e) {
+    if (e.target.tagName === 'A' && e.target.href.includes('#user:')) {
+        let username = e.target.href.split('#user:')[1];
+        window.location.hash = `#user:${username}`;
+    }
+});
