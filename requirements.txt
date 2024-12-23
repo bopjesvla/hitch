@@ -4,4 +4,8 @@ networkx==3.2.1
 numpy==1.26.4
 pandas==2.2.2
 plotly==5.23.0
-flask-security-too
+flask-security[common]
+flask-sqlalchemy-lite
+sqlalchemy
+flask-babel
+zxcvbn

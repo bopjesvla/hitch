@@ -730,10 +730,3 @@ var UserButton = L.Control.extend({
 });
 
 map.addControl(new UserButton());
-
-$$('.folium-map').addEventListener('click', function (e) {
-    if (e.target.tagName === 'A' && e.target.href.includes('#user:')) {
-        let username = e.target.href.split('#user:')[1];
-        window.location.hash = `#user:${username}`;
-    }
-});

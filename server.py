@@ -10,8 +10,12 @@ import random
 import os
 import math
 
+from flask_babel import Babel
+from flask import Flask, render_template_string, current_app
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, login_required, current_user
+from flask_security import Security, SQLAlchemyUserDatastore, auth_required, hash_password
+from flask_security.models import fsqla_v3 as fsqla
+
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
@@ -25,43 +29,107 @@ def get_db():
     return db
 
 
+# Create database connection object
+db = SQLAlchemy()
+
+# Define models
+fsqla.FsModels.set_db_info(db, user_table_name="myuser", role_table_name="myrole")
+
+class Role(db.Model, fsqla.FsRoleMixin):
+    __tablename__ = "myrole"
+    
+
+class User(db.Model, fsqla.FsUserMixin):
+    __tablename__ = "myuser"
+
+
+# Create app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DATABASE
-app.config['SECRET_KEY'] = 'super-secret'
-app.config['SECURITY_PASSWORD_SALT'] = 'super-secret-salt'
-app.config['SECURITY_REGISTERABLE'] = True
-app.config['SECURITY_SEND_REGISTER_EMAIL'] = False
-app.config['SECURITY_PASSWORD_HASH'] = 'bcrypt'
-app.config['SECURITY_TRACKABLE'] = True
+app.config["DEBUG"] = True
+# generated using: secrets.token_urlsafe()
+app.config["SECRET_KEY"] = "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw"
+app.config["SECURITY_PASSWORD_HASH"] = "argon2"
+# argon2 uses double hashing by default - so provide key.
+# For python3: secrets.SystemRandom().getrandbits(128)
+app.config["SECURITY_PASSWORD_SALT"] = "146585145368132386173505678016728509634"
 
-db = SQLAlchemy(app)
+# Take password complexity seriously
+app.config["SECURITY_PASSWORD_COMPLEXITY_CHECKER"] = "zxcvbn"
 
-roles_users = db.Table('roles_users',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
+# Allow registration of new users without confirmation
+app.config["SECURITY_REGISTERABLE"] = True
+app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
+app.config["SECURITY_CONFIRMABLE"] = False
 
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "SQLALCHEMY_DATABASE_URI", "sqlite://"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
-    username = db.Column(db.String(255), unique=True)
-    active = db.Column(db.Boolean())
-    confirmed_at = db.Column(db.DateTime())
-    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
+# As of Flask-SQLAlchemy 2.4.0 it is easy to pass in options directly to the
+# underlying engine. This option makes sure that DB connections from the pool
+# are still valid. Important for entire application since many DBaaS options
+# automatically close idle connections.
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
+# Setup Flask-Security
+db.init_app(app)
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore)
+app.security = Security(app, user_datastore)
 
-@app.before_first_request
-def create_user():
-    db.create_all()
+# Setup Babel - not strictly necessary but since our virtualenv has Flask-Babel
+# we need to initialize it
+Babel(app)
+
+
+# one time setup
+with app.app_context():
+    if current_app.testing:
+        pass
+    with current_app.app_context():
+        security = current_app.security
+        security.datastore.db.create_all()
+        security.datastore.find_or_create_role(
+            name="admin",
+            permissions={"admin-read", "admin-write", "user-read", "user-write"},
+        )
+        security.datastore.find_or_create_role(
+            name="monitor", permissions={"admin-read", "user-read"}
+        )
+        security.datastore.find_or_create_role(
+            name="user", permissions={"user-read", "user-write"}
+        )
+        security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
+
+        if not security.datastore.find_user(email="admin@me.com"):
+            security.datastore.create_user(
+                email="admin@me.com",
+                password=hash_password("password"),
+                roles=["admin"],
+            )
+        if not security.datastore.find_user(email="ops@me.com"):
+            security.datastore.create_user(
+                email="ops@me.com",
+                password=hash_password("password"),
+                roles=["monitor"],
+            )
+        real_user = security.datastore.find_user(email="user@me.com")
+        if not real_user:
+            real_user = security.datastore.create_user(
+                email="user@me.com", password=hash_password("password"), roles=["user"]
+            )
+        if not security.datastore.find_user(email="reader@me.com"):
+            security.datastore.create_user(
+                email="reader@me.com",
+                password=hash_password("password"),
+                roles=["reader"],
+            )
+
+        security.datastore.db.session.commit()
+
 
 @app.route("/", methods=["GET"])
+@auth_required()
 def index():
     return send_file("index.html")
 
@@ -158,7 +226,6 @@ def send_report(path):
 
 
 @app.route("/experience", methods=["POST"])
-@login_required
 def experience():
     data = request.form
     rating = int(data["rate"])
@@ -279,39 +346,11 @@ def report_duplicate():
 
     return redirect("/#success-duplicate")
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        username = request.form.get('username')
-        user_datastore.create_user(email=email, password=password, username=username)
-        db.session.commit()
-        return redirect('/login')
-    return send_file('register.html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = user_datastore.get_user(email)
-        if user and user.verify_password(password):
-            login_user(user)
-            return redirect('/')
-    return send_file('login.html')
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect('/')
-
-@app.route('/user/<username>')
-def user_page(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    reviews = pd.read_sql(f"SELECT * FROM points WHERE user_id = {user.id}", get_db())
-    return render_template('user_page.html', user=user, reviews=reviews)
+# @app.route('/user/<username>')
+# def user_page(username):
+#     user = User.query.filter_by(username=username).first_or_404()
+#     reviews = pd.read_sql(f"SELECT * FROM points WHERE user_id = {user.id}", get_db())
+#     return render_template('user_page.html', user=user, reviews=reviews)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
