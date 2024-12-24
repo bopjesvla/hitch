@@ -11,9 +11,9 @@ import os
 import math
 
 from flask_babel import Babel
-from flask import Flask, render_template_string, current_app
+from flask import Flask, render_template_string, current_app, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, auth_required, hash_password
+from flask_security import Security, SQLAlchemyUserDatastore, auth_required, hash_password, current_user
 from flask_security.models import fsqla_v3 as fsqla
 
 
@@ -129,9 +129,17 @@ with app.app_context():
 
 
 @app.route("/", methods=["GET"])
-@auth_required()
 def index():
     return send_file("index.html")
+
+
+@app.route('/get_user', methods=['GET'])
+def get_user():
+    # Check if the user is logged in
+    if current_user:  # Assuming 'user_id' is stored in session upon login
+        return jsonify({'logged_in': True, 'username': current_user.id})
+    else:
+        return jsonify({'logged_in': False, 'username': ""})
 
 
 @app.route("/light.html", methods=["GET"])

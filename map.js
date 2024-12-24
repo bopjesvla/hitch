@@ -711,17 +711,7 @@ var UserButton = L.Control.extend({
         container.innerHTML = "👤 User";
 
         container.onclick = function (e) {
-            fetch('/current_user')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.logged_in) {
-                        // Show logout/change email link
-                        container.innerHTML = `<a href="/logout">Logout</a> | <a href="/change_email">Change Email</a>`;
-                    } else {
-                        // Redirect to login page
-                        window.location.href = '/login';
-                    }
-                });
+            window.location.href = '/login';
             L.DomEvent.stopPropagation(e)
         }
 
