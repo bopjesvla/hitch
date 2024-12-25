@@ -475,3 +475,4 @@ dashboard.html
 *.kml
 *.gpx
 *_hidden.py
+*.sqlite

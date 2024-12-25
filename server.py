@@ -13,7 +13,13 @@ import math
 from flask_babel import Babel
 from flask import Flask, render_template_string, current_app, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore, auth_required, hash_password, current_user
+from flask_security import (
+    Security,
+    SQLAlchemyUserDatastore,
+    auth_required,
+    hash_password,
+    current_user,
+)
 from flask_security.models import fsqla_v3 as fsqla
 
 
@@ -35,9 +41,10 @@ db = SQLAlchemy()
 # Define models
 fsqla.FsModels.set_db_info(db, user_table_name="myuser", role_table_name="myrole")
 
+
 class Role(db.Model, fsqla.FsRoleMixin):
     __tablename__ = "myrole"
-    
+
 
 class User(db.Model, fsqla.FsUserMixin):
     __tablename__ = "myuser"
@@ -61,8 +68,10 @@ app.config["SECURITY_REGISTERABLE"] = True
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
 app.config["SECURITY_CONFIRMABLE"] = False
 
+app.config["SECURITY_USERNAME_ENABLE"] = True
+
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "SQLALCHEMY_DATABASE_URI", "sqlite://"
+    "SQLALCHEMY_DATABASE_URI", "sqlite:///test.sqlite"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -105,23 +114,29 @@ with app.app_context():
             security.datastore.create_user(
                 email="admin@me.com",
                 password=hash_password("password"),
+                username="admin",
                 roles=["admin"],
             )
         if not security.datastore.find_user(email="ops@me.com"):
             security.datastore.create_user(
                 email="ops@me.com",
                 password=hash_password("password"),
+                username="ops",
                 roles=["monitor"],
             )
         real_user = security.datastore.find_user(email="user@me.com")
         if not real_user:
             real_user = security.datastore.create_user(
-                email="user@me.com", password=hash_password("password"), roles=["user"]
+                email="user@me.com",
+                password=hash_password("password"),
+                username="me",
+                roles=["user"],
             )
         if not security.datastore.find_user(email="reader@me.com"):
             security.datastore.create_user(
                 email="reader@me.com",
                 password=hash_password("password"),
+                username="reader",
                 roles=["reader"],
             )
 
@@ -133,13 +148,13 @@ def index():
     return send_file("index.html")
 
 
-@app.route('/get_user', methods=['GET'])
+@app.route("/get_user", methods=["GET"])
 def get_user():
     # Check if the user is logged in
     if current_user:  # Assuming 'user_id' is stored in session upon login
-        return jsonify({'logged_in': True, 'username': current_user.id})
+        return jsonify({"logged_in": True, "username": current_user.id})
     else:
-        return jsonify({'logged_in': False, 'username': ""})
+        return jsonify({"logged_in": False, "username": ""})
 
 
 @app.route("/light.html", methods=["GET"])
@@ -155,6 +170,7 @@ def lines():
 @app.route("/dashboard.html", methods=["GET"])
 def dashboard():
     return send_file("dashboard.html")
+
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
@@ -200,9 +216,11 @@ def favicon():
 def icon():
     return send_file("hitchwiki-high-contrast-no-car-flipped.png")
 
+
 @app.route("/content/report_duplicate.png", methods=["GET"])
 def report_duplicate_image():
     return send_file("content/report_duplicate.png")
+
 
 @app.route("/content/route_planner.png", methods=["GET"])
 def route_planner_image():
@@ -228,9 +246,10 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
-@app.route('/content/<path:path>')
+
+@app.route("/content/<path:path>")
 def send_report(path):
-    return send_from_directory('content', path)
+    return send_from_directory("content", path)
 
 
 @app.route("/experience", methods=["POST"])
@@ -310,7 +329,7 @@ def experience():
                 "country": country,
                 "signal": signal,
                 "ride_datetime": datetime_ride,
-                "user_id": current_user.id
+                "user_id": current_user.id,
             }
         ],
         index=[pid],
@@ -353,6 +372,7 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
 
 # @app.route('/user/<username>')
 # def user_page(username):
