@@ -158,6 +158,17 @@ def get_user():
         return jsonify({"logged_in": False, "username": ""})
 
 
+@app.route('/is_username_used/<username>', methods=['GET'])
+def is_username_used(username):
+    print(f"Received request to check if username {username} is used.")
+    user = app.security.datastore.find_user(username=username)
+    if user:
+        return jsonify({"used": True})
+    else:
+        return jsonify({"used": False})
+
+
+
 @app.route("/light.html", methods=["GET"])
 def light():
     return send_file("light.html")

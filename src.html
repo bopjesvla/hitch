@@ -73,20 +73,17 @@
         </form>
         <script>
             document.getElementById('spot-form').addEventListener('submit', function(event) {
-                const errorMessage = document.getElementById('username-error-message');
-                // Clear previous error message
-                errorMessage.textContent = '';
-
-                // nicknames that are used as usernames are not allowed
                 const nicknameInput = document.getElementById('username-input');
-                if (nicknameInput.value == "bob") {
-                    event.preventDefault(); // Prevent form submission
-                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
-                } else {
-                    // nicknames wont be recorded if a user is logged in
-                    if (nicknameInput.value != ""){
-                        event.preventDefault(); // Prevent form submission
-                        fetch('/get_user')
+                if (nicknameInput.value != ""){
+                    
+                    event.preventDefault();
+                    const errorMessage = document.getElementById('username-error-message');
+                    errorMessage.textContent = '';
+
+                    // nicknames that are used as usernames are not allowed
+                    let url = '/is_username_used/' + nicknameInput.value;
+                    console.log(url)
+                    fetch(url)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error('HTTP error! Status:');
@@ -94,15 +91,33 @@
                             return response.json(); // Parse the JSON response
                         })
                         .then(data => {
-                            if (data.logged_in) {
-                                errorMessage.textContent = 'You are logged in. Please do not use a nickname';
+                            if (data.used){
+                                errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
+                            } else { 
+                                // nicknames wont be recorded if a user is logged in
+                                fetch('/get_user')
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('HTTP error! Status:');
+                                    }
+                                    return response.json(); // Parse the JSON response
+                                })
+                                .then(data => {
+                                    if (data.logged_in) {
+                                        errorMessage.textContent = 'You are logged in. Please do not use a nickname';
+                                    } else {
+                                        this.submit();
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching user info:', error);
+                                });
                             }
                         })
                         .catch(error => {
                             console.error('Error fetching user info:', error);
                         });
                     };
-                };
             });
         </script>
     </div>
