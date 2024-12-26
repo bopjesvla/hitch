@@ -164,20 +164,22 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
+points["link_name"] = points["name"].apply(lambda x: f'<a href="http://192.168.178.154:5000/#user:{x}">{x}</a>' if x else x) 
+
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―"
-    + e(points["name"].fillna("Anonymous"))
+    + "</i><br><br>―<a href='http://192.168.178.154:5000/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
+    + e(points["name"].fillna("Anonymous")) + "</a>"
     + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―"
-    + e(points[oldies].name.fillna("Anonymous"))
+    + "―<a href='http://192.168.178.154:5000/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
+    + e(points["name"].fillna("Anonymous")) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
