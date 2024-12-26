@@ -150,9 +150,10 @@ def index():
 
 @app.route("/get_user", methods=["GET"])
 def get_user():
+    print("Received request to get user.")
     # Check if the user is logged in
-    if current_user:  # Assuming 'user_id' is stored in session upon login
-        return jsonify({"logged_in": True, "username": current_user.id})
+    if not current_user.is_anonymous:
+        return jsonify({"logged_in": True, "username": current_user.username})
     else:
         return jsonify({"logged_in": False, "username": ""})
 
@@ -329,7 +330,7 @@ def experience():
                 "country": country,
                 "signal": signal,
                 "ride_datetime": datetime_ride,
-                "user_id": current_user.id,
+                "user_id": current_user.id if not current_user.is_anonymous else None,
             }
         ],
         index=[pid],

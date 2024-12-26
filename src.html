@@ -42,7 +42,8 @@
             <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
             <label for="username">Public nickname (alphanumeric)</label>
-            <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
+            <input id="username-input" name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
+            <span id="username-error-message" class="error"></span>
             <br>
             <details closed id="extended_info">
                 <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen" style='color: red;'> (check values, then submit again)</span></summary>
@@ -68,9 +69,42 @@
             <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
             <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
             <!-- <input value="0" type="number" name="others" min="0" max="9" size="2"> others -->
-
             <button>Submit</button>
         </form>
+        <script>
+            document.getElementById('spot-form').addEventListener('submit', function(event) {
+                const errorMessage = document.getElementById('username-error-message');
+                // Clear previous error message
+                errorMessage.textContent = '';
+
+                // nicknames that are used as usernames are not allowed
+                const nicknameInput = document.getElementById('username-input');
+                if (nicknameInput.value == "bob") {
+                    event.preventDefault(); // Prevent form submission
+                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
+                } else {
+                    // nicknames wont be recorded if a user is logged in
+                    if (nicknameInput.value != ""){
+                        event.preventDefault(); // Prevent form submission
+                        fetch('/get_user')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('HTTP error! Status:');
+                            }
+                            return response.json(); // Parse the JSON response
+                        })
+                        .then(data => {
+                            if (data.logged_in) {
+                                errorMessage.textContent = 'You are logged in. Please do not use a nickname';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching user info:', error);
+                        });
+                    };
+                };
+            });
+        </script>
     </div>
     <div class="sidebar show-spot spot">
         <h3 id="spot-header"><a target="_blank"></a></h3>

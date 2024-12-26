@@ -380,3 +380,8 @@ ul.no-style {
 .make-invisible {
     display: none;
 }
+
+.error {
+    color: red;
+    font-size: 0.9em;
+}

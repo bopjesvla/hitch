@@ -421,6 +421,7 @@ var addSpotStep = function (e) {
     document.body.classList.toggle('adding-spot', addSpotPoints.length > 0)
 }
 
+
 function planRouteStep(e) {
     if (e.target.tagName != 'BUTTON') return
     if (e.target.innerText == 'Done') {
