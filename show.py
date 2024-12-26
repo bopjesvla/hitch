@@ -193,7 +193,7 @@ places["distance"] = (
     points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 )
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
-places["review_count"] = groups.size()
+places["review_users"] = groups.name.unique().apply(list)
 places["dest_lats"] = (
     points.dropna(subset=["dest_lat", "dest_lon"])
     .groupby(["lat", "lon"])
@@ -222,7 +222,7 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6].length > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
 
     marker.on('click', function(e) {
         maybeReportDuplicate(marker)
@@ -235,7 +235,7 @@ function (row) {
     })
 
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
-    if (row[6] >= 3) {
+    if (row[6].length >= 3) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
     }
 
@@ -256,7 +256,7 @@ cluster = folium.plugins.FastMarkerCluster(
             "text",
             "wait",
             "distance",
-            "review_count",
+            "review_users",
             "dest_lats",
             "dest_lons",
         ]

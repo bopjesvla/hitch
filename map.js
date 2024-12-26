@@ -617,18 +617,13 @@ function navigate() {
             }
         }
     }
+    // make markers that do not contain the username invisible
     else if (args[0].startsWith('#user:')) {
         clear()
         clearRoute()
         let username = args[0].slice(6)
-        fetch(`/user/${username}`)
-            .then(response => response.json())
-            .then(data => {
-                // Filter reviews by user
-                let userReviews = allMarkers.filter(marker => marker.options._row[6] === data.user_id)
-                userReviews.forEach(marker => marker.setStyle({ radius: 10, color: 'blue' }))
-                oldMarkers = userReviews
-            })
+        let notUserReviews = allMarkers.filter(marker => !marker.options._row[6].includes(username))
+        notUserReviews.forEach(marker => marker.setStyle({ opacity: 0.0, fillOpacity: 0.0 }))
     }
     else {
         clear()
