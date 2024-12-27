@@ -19,8 +19,11 @@ from flask_security import (
     auth_required,
     hash_password,
     current_user,
+    RegisterForm,
 )
 from flask_security.models import fsqla_v3 as fsqla
+from wtforms import StringField
+from wtforms.validators import DataRequired
 
 
 DATABASE = (
@@ -48,7 +51,16 @@ class Role(db.Model, fsqla.FsRoleMixin):
 
 class User(db.Model, fsqla.FsUserMixin):
     __tablename__ = "myuser"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True)
+    password = db.Column(db.String(255))
+    gender = db.Column(db.String(255))
+    year_of_birth = db.Column(db.String(255))
 
+
+class ExtendedRegisterForm(RegisterForm):
+    gender = StringField('Gender', [DataRequired()])
+    year_of_birth = StringField('Year of Birth', [DataRequired()])
 
 # Create app
 app = Flask(__name__)
@@ -69,9 +81,14 @@ app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
 app.config["SECURITY_CONFIRMABLE"] = False
 
 app.config["SECURITY_USERNAME_ENABLE"] = True
+app.config["SECURITY_USERNAME_REQUIRED"] = True
+app.config["SECURITY_USERNAME_MIN_LENGTH"] = 1
+app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
+
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "SQLALCHEMY_DATABASE_URI", "sqlite:///test.sqlite"
+    "SQLALCHEMY_DATABASE_URI", "sqlite:///lkjdsf.sqlite"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -84,7 +101,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 # Setup Flask-Security
 db.init_app(app)
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-app.security = Security(app, user_datastore)
+app.security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
 
 # Setup Babel - not strictly necessary but since our virtualenv has Flask-Babel
 # we need to initialize it
@@ -157,6 +174,18 @@ def get_user():
     else:
         return jsonify({"logged_in": False, "username": ""})
 
+
+@app.route("/user", methods=["GET"])
+def user():
+    if current_user.is_anonymous:
+        return "You are not logged in."
+    
+    result = f"""
+Username: {current_user.username}<br>
+Email: {current_user.email}<br>
+<a href="/logout">Logout</a>
+"""
+    return result
 
 @app.route('/is_username_used/<username>', methods=['GET'])
 def is_username_used(username):

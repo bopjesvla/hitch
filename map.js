@@ -707,7 +707,23 @@ var UserButton = L.Control.extend({
         container.innerHTML = "👤 User";
 
         container.onclick = function (e) {
-            window.location.href = '/login';
+            fetch('/get_user')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! Status:');
+                    }
+                    return response.json(); // Parse the JSON response
+                })
+                .then(data => {
+                    if (data.logged_in) {
+                        window.location.href = '/user';
+                    } else {
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching user info:', error);
+                });
             L.DomEvent.stopPropagation(e)
         }
 
