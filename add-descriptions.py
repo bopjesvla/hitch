@@ -16,7 +16,7 @@ desc = pd.read_sql(
 
 desc = desc.drop_duplicates("id")
 desc = desc[
-    ["id", "lat", "lon", "rating", "country", "wait", "name", "comment", "datetime"]
+    ["id", "lat", "lon", "rating", "country", "wait", "nickname", "comment", "datetime"]
 ]
 desc["datetime"] += ".000000"
 desc["id"] += 1000000

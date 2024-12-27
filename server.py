@@ -305,7 +305,7 @@ def experience():
                 "rating": rating,
                 "wait": wait,
                 "comment": comment,
-                "name": nickname,
+                "nickname": nickname,
                 "datetime": now,
                 "ip": ip,
                 "reviewed": False,

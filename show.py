@@ -61,6 +61,12 @@ NOT_A_USER_ID = 0
 if "user_id" not in points.columns:
     points["user_id"] = NOT_A_USER_ID
 
+if "from_hitchwiki" not in points.columns:
+    points["from_hitchwiki"] = points["name"].str.contains("(Hitchwiki)")
+    points["name"] = points["name"].str.replace(" (Hitchwiki)", "")
+
+points.rename(columns={"name": "nickname"}, inplace=True)
+
 points.to_sql('points', sqlite3.connect(fn), index=False, if_exists='replace')
 ################
 
@@ -184,7 +190,7 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
 points["username"] = pd.merge(left=points, right=users, left_on="user_id", right_on="id", how="left")["username"]
-points["hitchhiker"] = points.apply(lambda x: x["name"] if x["name"] else x["username"], axis=1)
+points["hitchhiker"] = points.apply(lambda x: x["nickname"] if x["nickname"] else x["username"], axis=1)
 
 points["text"] = (
     e(comment_nl)
