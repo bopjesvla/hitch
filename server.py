@@ -22,8 +22,10 @@ from flask_security import (
     RegisterForm,
 )
 from flask_security.models import fsqla_v3 as fsqla
-from wtforms import StringField
+from wtforms import StringField, IntegerField, SelectField, widgets
 from wtforms.validators import DataRequired
+from wtforms.widgets import NumberInput
+from datetime import datetime
 
 
 DATABASE = (
@@ -55,12 +57,12 @@ class User(db.Model, fsqla.FsUserMixin):
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
     gender = db.Column(db.String(255))
-    year_of_birth = db.Column(db.String(255))
+    year_of_birth = db.Column(db.Integer)
 
 
 class ExtendedRegisterForm(RegisterForm):
-    gender = StringField('Gender', [DataRequired()])
-    year_of_birth = StringField('Year of Birth', [DataRequired()])
+    gender = SelectField('Gender', choices=[('f', 'Female'), ('m', 'Male'), ('d', 'Other'), ('-', 'Prefer not to say')])
+    year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
 
 # Create app
 app = Flask(__name__)

@@ -49,6 +49,20 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
 # loading data from database
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
+
+################
+# ensure database columns are up to date
+points = pd.read_sql(
+    sql="select * from points",
+    con=sqlite3.connect(fn),
+)
+
+if "user_id" not in points.columns:
+    points["user_id"] = None
+
+points.to_sql('points', sqlite3.connect(fn), index=False, if_exists='replace')
+################
+
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
     con=sqlite3.connect(fn),
@@ -164,13 +178,13 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
-points["link_name"] = points["name"].apply(lambda x: f'<a href="http://192.168.178.154:5000/#user:{x}">{x}</a>' if x else x) 
+points["link_name"] = points["name"].apply(lambda x: f'<a href="/#user:{x}">{x}</a>' if x else x) 
 
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―<a href='http://192.168.178.154:5000/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
+    + "</i><br><br>―<a href='/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
     + e(points["name"].fillna("Anonymous")) + "</a>"
     + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
@@ -178,13 +192,17 @@ points["text"] = (
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―<a href='http://192.168.178.154:5000/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
+    + "―<a href='/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
     + e(points["name"].fillna("Anonymous")) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
 # has_text = ~points.text.isnull()
 # points.loc[has_text, 'text'] = points.loc[has_text, 'text'].map(lambda x: html.escape(x).replace('\n', '<br>'))
+
+# TODO: resolve user_id to username
+points["username"] = points["user_id"]
+points["hitchhiker"] = points.apply(lambda x: x["name"] if x["name"] else x["username"], axis=1)
 
 groups = points.groupby(["lat", "lon"])
 
@@ -195,7 +213,7 @@ places["distance"] = (
     points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 )
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
-places["review_users"] = groups.name.unique().apply(list)
+places["review_users"] = groups.hitchhiker.unique().apply(list)
 places["dest_lats"] = (
     points.dropna(subset=["dest_lat", "dest_lon"])
     .groupby(["lat", "lon"])
