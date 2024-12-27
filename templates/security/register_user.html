@@ -9,15 +9,23 @@
     {{ render_form_errors(register_user_form) }}
     {{ render_field_with_errors(register_user_form.email) }}
     {% if config["SECURITY_USERNAME_ENABLE"] %}{{ render_field_with_errors(register_user_form.username) }}{% endif %}
-    <p>If you reviewed hitchhiking spots previously using your hitchwiki.org account or a nickname you can claim those reviews as your's by choosing the same username here.</p>
+    If you reviewed hitchhiking spots previously using your hitchwiki.org account or a nickname you can claim those reviews as your's by choosing the same username here.<br><br>
     {{ render_field_with_errors(register_user_form.password) }}
     {% if register_user_form.password_confirm %}
       {{ render_field_with_errors(register_user_form.password_confirm) }}
     {% endif %}
-    <p>Optional - beneficial for hitchhiking research</p>
+    <p><b>Optional - beneficial for hitchhiking research</b></p>
     {{ render_field_with_errors(register_user_form.gender) }}
     {{ render_field_with_errors(register_user_form.year_of_birth) }}
+    {{ render_field_with_errors(register_user_form.hitchhiking_since) }}
+    {{ render_field_with_errors(register_user_form.origin_country) }}
+    {{ render_field_with_errors(register_user_form.origin_city) }}
+    <p><b>Other accounts</b></p>
+    {{ render_field_with_errors(register_user_form.hitchwiki_username) }}
+    {{ render_field_with_errors(register_user_form.trustroots_npub) }}
+    <a href="https://nostr.com/" target="_blank">What is that?</a> - <a href="https://opensats.org/blog/nostr-grants-august-2024#nostroots" target="_blank">Why?</a>
     {{ render_field_errors(register_user_form.csrf_token) }}
+    <br><br>
     {{ render_field(register_user_form.submit) }}
   </form>
   {% include "security/_menu.html" %}

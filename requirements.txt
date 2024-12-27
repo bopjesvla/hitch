@@ -7,3 +7,4 @@ plotly==5.23.0
 Flask-Security==5.5.2
 Flask-SQLAlchemy==3.1.1
 zxcvbn==4.4.28
+pycountry==24.6.1

@@ -15,10 +15,10 @@ from flask_security import (
     RegisterForm,
 )
 from flask_security.models import fsqla_v3 as fsqla
-from wtforms import IntegerField, SelectField
+from wtforms import IntegerField, SelectField, StringField
 from wtforms.widgets import NumberInput
 from datetime import datetime
-
+import pycountry
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
@@ -76,10 +76,26 @@ class Role(db.Model, fsqla.FsRoleMixin):
 class User(db.Model, fsqla.FsUserMixin):
     gender = db.Column(db.String(255))
     year_of_birth = db.Column(db.Integer)
+    hitchhiking_since = db.Column(db.Integer)
+    origin_country = db.Column(db.String(255))
+    origin_city = db.Column(db.String(255))
+    trustroots_npub = db.Column(db.String(255))
+    hitchwiki_username = db.Column(db.String(255))
+
+
+class CountrySelectField(SelectField):
+    def __init__(self, *args, **kwargs):
+        super(CountrySelectField, self).__init__(*args, **kwargs)
+        self.choices = [(country.alpha_2, country.name) for country in pycountry.countries]
 
 class ExtendedRegisterForm(RegisterForm):
     gender = SelectField('Gender', choices=[('', 'None'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other'), ('-', 'Prefer not to say')])
     year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
+    hitchhiking_since = IntegerField('Hitchhiking Since', widget=NumberInput(min=1900, max=datetime.now().year))
+    origin_country = CountrySelectField('Where are you from?')
+    origin_city = StringField('Which city are you from?')
+    hitchwiki_username = StringField('Hitchwiki Username')
+    trustroots_npub = StringField('Trustroots NOSTR npub')
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -127,7 +143,11 @@ def user():
 Username: {current_user.username}<br>
 Email: {current_user.email}<br>
 Gender: {current_user.gender}<br>
-Year of Birth: {current_user.year_of_birth}<br><br>
+Year of Birth: {current_user.year_of_birth}<br>
+Hitchhiking Since: {current_user.hitchhiking_since}<br>
+Origin: {current_user.origin_city}, {current_user.origin_country}<br>
+Hitchwiki Username: {current_user.hitchwiki_username}<br>
+Trustroots NOSTR npub: {current_user.trustroots_npub}<br><br>
 <a href="/#user:{current_user.username}">See my Spots</a><br><br>
 <a href="/logout">Logout</a><br><br>
 <a href="/">Back to Map</a>
