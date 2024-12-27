@@ -58,7 +58,7 @@ points = pd.read_sql(
 )
 
 if "user_id" not in points.columns:
-    points["user_id"] = None
+    points["user_id"] = 0
 
 points.to_sql('points', sqlite3.connect(fn), index=False, if_exists='replace')
 ################
@@ -70,6 +70,10 @@ points = pd.read_sql(
 
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
+)
+
+users = pd.read_sql(
+    "select * from user", sqlite3.connect(fn)
 )
 
 print(f"{len(points)} points currently")
@@ -96,7 +100,7 @@ for island in islands:
             if node != parents[0]:
                 replace_map[node] = parents[0]
 
-print("Currently recorded duplicate spots are represented by: ", dups)
+print("Currently recorded duplicate spots are represented by:", dups)
 
 points[["lat", "lon"]] = points[["lat", "lon"]].apply(
     lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True
@@ -178,31 +182,28 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
-points["link_name"] = points["name"].apply(lambda x: f'<a href="/#user:{x}">{x}</a>' if x else x) 
+points["username"] = pd.merge(left=points, right=users, left_on="user_id", right_on="id", how="left")["username"]
+points["hitchhiker"] = points.apply(lambda x: x["name"] if x["name"] else x["username"], axis=1)
 
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―<a href='/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
-    + e(points["name"].fillna("Anonymous")) + "</a>"
+    + "</i><br><br>―<a href='/#user:" + e(points["hitchhiker"].fillna("Anonymous")) + "'>"
+    + e(points["hitchhiker"].fillna("Anonymous")) + "</a>"
     + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―<a href='/#user:" + e(points["name"].fillna("Anonymous")) + "'>"
-    + e(points["name"].fillna("Anonymous")) + "</a>"
+    + "―<a href='/#user:" + e(points["hitchhiker"].fillna("Anonymous")) + "'>"
+    + e(points["hitchhiker"].fillna("Anonymous")) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
 # has_text = ~points.text.isnull()
 # points.loc[has_text, 'text'] = points.loc[has_text, 'text'].map(lambda x: html.escape(x).replace('\n', '<br>'))
-
-# TODO: resolve user_id to username
-points["username"] = points["user_id"]
-points["hitchhiker"] = points.apply(lambda x: x["name"] if x["name"] else x["username"], axis=1)
 
 groups = points.groupby(["lat", "lon"])
 
@@ -329,13 +330,13 @@ if not LIGHT:
         "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     )
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
-    recent["name"] = recent.name.str.replace("://", "", regex=False)
+    recent["hitchhiker"] = recent.hitchhiker.str.replace("://", "", regex=False)
     recent["distance"] = recent["distance"].round(1)
     recent["datetime"] = recent["datetime"].astype(str)
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), ' 🕒', '')
 
     recent[
-        ["url", "country", "datetime", "name", "rating", "distance", "text"]
+        ["url", "country", "datetime", "hitchhiker", "rating", "distance", "text"]
     ].to_html("recent.html", render_links=True, index=False)
 
     duplicates["from_url"] = (

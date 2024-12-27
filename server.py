@@ -138,14 +138,16 @@ Username: {current_user.username}<br>
 Email: {current_user.email}<br>
 Gender: {current_user.gender}<br>
 Year of Birth: {current_user.year_of_birth}<br><br>
-<a href="/logout">Logout</a>
+<a href="/#user:{current_user.username}">See my Spots</a><br><br>
+<a href="/logout">Logout</a><br><br>
+<a href="/">Back to Map</a>
 """
     return result
 
 @app.route('/is_username_used/<username>', methods=['GET'])
 def is_username_used(username):
     print(f"Received request to check if username {username} is used.")
-    user = app.security.datastore.find_user(username=username)
+    user = security.datastore.find_user(username=username)
     if user:
         return jsonify({"used": True})
     else:
@@ -272,7 +274,7 @@ def experience():
 
     datetime_ride = data["datetime_ride"]
 
-    now = str(datetime.datetime.utcnow())
+    now = str(datetime.utcnow())
 
     if request.headers.getlist("X-Real-IP"):
         ip = request.headers.getlist("X-Real-IP")[-1]
