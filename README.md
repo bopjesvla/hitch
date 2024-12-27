@@ -36,3 +36,14 @@ File an issue if you have a feature request/found a bug.
 
 Perform a pull request if you solved an issue. (It's best to file an issue first so we can discuss it and reference it in the PR.)
 
+## Data
+If you find the data collected and provided by hitchmap.com helpful, feel free to cite it using:
+```
+@misc{hitchhiking,
+author = {Bob de Ruiter, Till Wenke},
+title = {Dataset of Hitchhiking Trips},
+year = {2024},
+url = {https://hitchmap.com},
+}
+```
+
