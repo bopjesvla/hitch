@@ -732,3 +732,50 @@ var UserButton = L.Control.extend({
 });
 
 map.addControl(new UserButton());
+
+// validate add spot form input
+document.getElementById('spot-form').addEventListener('submit', function(event) {
+    const nicknameInput = document.getElementById('nickname-input');
+    if (nicknameInput.value != ""){
+        event.preventDefault();
+        const errorMessage = document.getElementById('nickname-error-message');
+        errorMessage.textContent = '';
+
+        // nicknames that are used as usernames are not allowed
+        let url = '/is_username_used/' + nicknameInput.value;
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status:');
+                }
+                return response.json(); // Parse the JSON response
+            })
+            .then(data => {
+                if (data.used){
+                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
+                } else { 
+                    // nicknames wont be recorded if a user is logged in
+                    fetch('/get_user')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('HTTP error! Status:');
+                        }
+                        return response.json(); // Parse the JSON response
+                    })
+                    .then(data => {
+                        if (data.logged_in) {
+                            errorMessage.textContent = 'You are logged in. Please do not use a nickname';
+                        } else {
+                            this.submit();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching user info:', error);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching user info:', error);
+            });
+        };
+});

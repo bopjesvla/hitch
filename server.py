@@ -1,29 +1,21 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, g, render_template_string, jsonify
 from flask import send_file, request, redirect
 import re
-from flask import g
 import pandas as pd
 import requests
-import datetime
 import sqlite3
 import random
 import os
 import math
-
-from flask_babel import Babel
-from flask import Flask, render_template_string, current_app, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import (
     Security,
     SQLAlchemyUserDatastore,
-    auth_required,
-    hash_password,
     current_user,
     RegisterForm,
 )
 from flask_security.models import fsqla_v3 as fsqla
-from wtforms import StringField, IntegerField, SelectField, widgets
-from wtforms.validators import DataRequired
+from wtforms import IntegerField, SelectField
 from wtforms.widgets import NumberInput
 from datetime import datetime
 
@@ -70,13 +62,10 @@ app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///../{DATABASE}" # relative to /instance directory
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# As of Flask-SQLAlchemy 2.4.0 it is easy to pass in options directly to the
-# underlying engine. This option makes sure that DB connections from the pool
-# are still valid. Important for entire application since many DBaaS options
-# automatically close idle connections.
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
 ### Initiate user management ###
+
 db = SQLAlchemy(app)
 fsqla.FsModels.set_db_info(db)
 
@@ -130,7 +119,7 @@ def get_user():
 @app.route("/user", methods=["GET"])
 def user():
     if current_user.is_anonymous:
-        return "You are not logged in."
+        return "You are not logged in. <a href="/">Back to Map</a>"
     
     result = f"""
 <b>Logged in as:</b><br>

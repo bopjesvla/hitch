@@ -57,8 +57,9 @@ points = pd.read_sql(
     con=sqlite3.connect(fn),
 )
 
+NOT_A_USER_ID = 0
 if "user_id" not in points.columns:
-    points["user_id"] = 0
+    points["user_id"] = NOT_A_USER_ID
 
 points.to_sql('points', sqlite3.connect(fn), index=False, if_exists='replace')
 ################
@@ -197,8 +198,8 @@ points["text"] = (
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―<a href='/#user:" + e(points["hitchhiker"].fillna("Anonymous")) + "'>"
-    + e(points["hitchhiker"].fillna("Anonymous")) + "</a>"
+    + "―<a href='/#user:" + e(points[oldies]["hitchhiker"].fillna("Anonymous")) + "'>"
+    + e(points[oldies]["hitchhiker"].fillna("Anonymous")) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
