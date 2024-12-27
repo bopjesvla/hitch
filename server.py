@@ -56,6 +56,7 @@ app.config["SECURITY_USERNAME_ENABLE"] = True
 app.config["SECURITY_USERNAME_REQUIRED"] = True
 app.config["SECURITY_USERNAME_MIN_LENGTH"] = 1
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
+app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = ("%(username)s is already associated with an account. Please reach out to bob@hitchmap.com if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.", "error")
 
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 
@@ -77,7 +78,7 @@ class User(db.Model, fsqla.FsUserMixin):
     year_of_birth = db.Column(db.Integer)
 
 class ExtendedRegisterForm(RegisterForm):
-    gender = SelectField('Gender', choices=[('-', 'Prefer not to say'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other')])
+    gender = SelectField('Gender', choices=[('', 'None'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other'), ('-', 'Prefer not to say')])
     year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
 
 
