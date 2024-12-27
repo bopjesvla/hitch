@@ -136,7 +136,7 @@ body.planning-route .horizontal-button {
     height: 60vmin;
     background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px));
 }
-#spot-form > label, #spot-form textarea, #spot-form input[type=submit], #spot-form input[name=username] {
+#spot-form > label, #spot-form textarea, #spot-form input[type=submit], #spot-form input[name=nickname] {
     display: block;
     width: 100%;
 }

@@ -61,7 +61,7 @@ class User(db.Model, fsqla.FsUserMixin):
 
 
 class ExtendedRegisterForm(RegisterForm):
-    gender = SelectField('Gender', choices=[('f', 'Female'), ('m', 'Male'), ('d', 'Other'), ('-', 'Prefer not to say')])
+    gender = SelectField('Gender', choices=[('-', 'Prefer not to say'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other')])
     year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
 
 # Create app
@@ -304,7 +304,7 @@ def experience():
     assert rating in range(1, 6)
     comment = None if data["comment"] == "" else data["comment"]
     assert comment is None or len(comment) < 10000
-    name = data["username"] if re.match(r"^\w{1,32}$", data["username"]) else None
+    name = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
 
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
@@ -377,7 +377,6 @@ def experience():
         ],
         index=[pid],
     )
-    # , 'males': males, 'females': females, 'others': others
 
     df.to_sql("points", get_db(), index_label="id", if_exists="append")
 
@@ -415,13 +414,7 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
-
-
-# @app.route('/user/<username>')
-# def user_page(username):
-#     user = User.query.filter_by(username=username).first_or_404()
-#     reviews = pd.read_sql(f"SELECT * FROM points WHERE user_id = {user.id}", get_db())
-#     return render_template('user_page.html', user=user, reviews=reviews)
+    
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
