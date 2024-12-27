@@ -41,9 +41,11 @@
             <input type="number" name="wait" min="0" max="9999" size="4"> minutes
             <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
-            <label for="nickname">Public nickname (alphanumeric)</label>
-            <input id="nickname-input" name="nickname" maxlength="32" pattern="[a-zA-Z0-9]*">
-            <span id="nickname-error-message" class="error"></span>
+            <div id="nickname-container">
+                <label for="nickname">Public nickname (alphanumeric)</label>
+                <input id="nickname-input" name="nickname" maxlength="32" pattern="[a-zA-Z0-9]*">
+                <span id="nickname-error-message" class="error"></span>
+            </div>
             <br>
             <details closed id="extended_info">
                 <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen" style='color: red;'> (check values, then submit again)</span></summary>

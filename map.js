@@ -378,6 +378,20 @@ var addSpotStep = function (e) {
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
+            // nicknames wont be recorded if a user is logged in
+            fetch('/get_user')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! Status:');
+                    }
+                    return response.json(); // Parse the JSON response
+                })
+                .then(data => {
+                    $$("#nickname-container").classList.toggle("make-invisible", data.logged_in);
+                })
+                .catch(error => {
+                    console.error('Error fetching user info:', error);
+                });
             $$('#details-seen').classList.add("make-invisible")
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
@@ -623,6 +637,7 @@ function navigate() {
         clear()
         clearRoute()
         let username = args[0].slice(6)
+        // TODO: solve better with frontend filtering and updating the clusters
         let notUserReviews = allMarkers.filter(marker => !marker.options._row[6].includes(username))
         notUserReviews.forEach(marker => marker.setStyle({ opacity: 0.0, fillOpacity: 0.0 }))
     }
@@ -754,24 +769,7 @@ document.getElementById('spot-form').addEventListener('submit', function(event) 
                 if (data.used){
                     errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
                 } else { 
-                    // nicknames wont be recorded if a user is logged in
-                    fetch('/get_user')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('HTTP error! Status:');
-                        }
-                        return response.json(); // Parse the JSON response
-                    })
-                    .then(data => {
-                        if (data.logged_in) {
-                            errorMessage.textContent = 'You are logged in. Please do not use a nickname';
-                        } else {
-                            this.submit();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching user info:', error);
-                    });
+                    this.submit();
                 }
             })
             .catch(error => {
