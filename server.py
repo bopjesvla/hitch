@@ -32,7 +32,6 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
-
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
@@ -40,39 +39,18 @@ def get_db():
     return db
 
 
-# Create database connection object
-db = SQLAlchemy()
-
-# Define models
-fsqla.FsModels.set_db_info(db, user_table_name="myuser", role_table_name="myrole")
-
-
-class Role(db.Model, fsqla.FsRoleMixin):
-    __tablename__ = "myrole"
-
-
-class User(db.Model, fsqla.FsUserMixin):
-    __tablename__ = "myuser"
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True)
-    password = db.Column(db.String(255))
-    gender = db.Column(db.String(255))
-    year_of_birth = db.Column(db.Integer)
-
-
-class ExtendedRegisterForm(RegisterForm):
-    gender = SelectField('Gender', choices=[('-', 'Prefer not to say'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other')])
-    year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
-
 # Create app
 app = Flask(__name__)
+
+### Define user management ###
+
 app.config["DEBUG"] = True
 # generated using: secrets.token_urlsafe()
-app.config["SECRET_KEY"] = "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw"
+app.config["SECRET_KEY"] = "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw" # TODO from environ
 app.config["SECURITY_PASSWORD_HASH"] = "argon2"
 # argon2 uses double hashing by default - so provide key.
 # For python3: secrets.SystemRandom().getrandbits(128)
-app.config["SECURITY_PASSWORD_SALT"] = "146585145368132386173505678016728509634"
+app.config["SECURITY_PASSWORD_SALT"] = "146585145368132386173505678016728509634" # TODO from environ
 
 # Take password complexity seriously
 app.config["SECURITY_PASSWORD_COMPLEXITY_CHECKER"] = "zxcvbn"
@@ -89,9 +67,7 @@ app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
 
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "SQLALCHEMY_DATABASE_URI", "sqlite:///lkjdsf.sqlite"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///../{DATABASE}" # relative to /instance directory
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # As of Flask-SQLAlchemy 2.4.0 it is easy to pass in options directly to the
@@ -100,72 +76,46 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # automatically close idle connections.
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
-# Setup Flask-Security
-db.init_app(app)
+### Initiate user management ###
+db = SQLAlchemy(app)
+fsqla.FsModels.set_db_info(db)
+
+class Role(db.Model, fsqla.FsRoleMixin):
+    pass
+
+class User(db.Model, fsqla.FsUserMixin):
+    gender = db.Column(db.String(255))
+    year_of_birth = db.Column(db.Integer)
+
+class ExtendedRegisterForm(RegisterForm):
+    gender = SelectField('Gender', choices=[('-', 'Prefer not to say'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other')])
+    year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
+
+
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-app.security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
 
-# Setup Babel - not strictly necessary but since our virtualenv has Flask-Babel
-# we need to initialize it
-Babel(app)
+### One time setup for user management ###
 
-
-# one time setup
 with app.app_context():
-    if current_app.testing:
-        pass
-    with current_app.app_context():
-        security = current_app.security
-        security.datastore.db.create_all()
-        security.datastore.find_or_create_role(
-            name="admin",
-            permissions={"admin-read", "admin-write", "user-read", "user-write"},
-        )
-        security.datastore.find_or_create_role(
-            name="monitor", permissions={"admin-read", "user-read"}
-        )
-        security.datastore.find_or_create_role(
-            name="user", permissions={"user-read", "user-write"}
-        )
-        security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
-
-        if not security.datastore.find_user(email="admin@me.com"):
-            security.datastore.create_user(
-                email="admin@me.com",
-                password=hash_password("password"),
-                username="admin",
-                roles=["admin"],
-            )
-        if not security.datastore.find_user(email="ops@me.com"):
-            security.datastore.create_user(
-                email="ops@me.com",
-                password=hash_password("password"),
-                username="ops",
-                roles=["monitor"],
-            )
-        real_user = security.datastore.find_user(email="user@me.com")
-        if not real_user:
-            real_user = security.datastore.create_user(
-                email="user@me.com",
-                password=hash_password("password"),
-                username="me",
-                roles=["user"],
-            )
-        if not security.datastore.find_user(email="reader@me.com"):
-            security.datastore.create_user(
-                email="reader@me.com",
-                password=hash_password("password"),
-                username="reader",
-                roles=["reader"],
-            )
-
-        security.datastore.db.session.commit()
+    # create necessary sql tables
+    security.datastore.db.create_all()
+    # deine roles - not really needed
+    security.datastore.find_or_create_role(
+        name="admin",
+        permissions={"admin-read", "admin-write", "user-read", "user-write"},
+    )
+    security.datastore.find_or_create_role(
+        name="monitor", permissions={"admin-read", "user-read"}
+    )
+    security.datastore.find_or_create_role(
+        name="user", permissions={"user-read", "user-write"}
+    )
+    security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
+    security.datastore.db.session.commit()
 
 
-@app.route("/", methods=["GET"])
-def index():
-    return send_file("index.html")
-
+### Endpoints related to user management ###
 
 @app.route("/get_user", methods=["GET"])
 def get_user():
@@ -183,8 +133,11 @@ def user():
         return "You are not logged in."
     
     result = f"""
+<b>Logged in as:</b><br>
 Username: {current_user.username}<br>
 Email: {current_user.email}<br>
+Gender: {current_user.gender}<br>
+Year of Birth: {current_user.year_of_birth}<br><br>
 <a href="/logout">Logout</a>
 """
     return result
@@ -198,6 +151,12 @@ def is_username_used(username):
     else:
         return jsonify({"used": False})
 
+
+### App content ###
+
+@app.route("/", methods=["GET"])
+def index():
+    return send_file("index.html")
 
 
 @app.route("/light.html", methods=["GET"])
@@ -260,6 +219,8 @@ def icon():
     return send_file("hitchwiki-high-contrast-no-car-flipped.png")
 
 
+### App functionality ###
+
 @app.route("/content/report_duplicate.png", methods=["GET"])
 def report_duplicate_image():
     return send_file("content/report_duplicate.png")
@@ -304,20 +265,12 @@ def experience():
     assert rating in range(1, 6)
     comment = None if data["comment"] == "" else data["comment"]
     assert comment is None or len(comment) < 10000
-    name = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
+    nickname = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
 
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
     datetime_ride = data["datetime_ride"]
-
-    # genders = [data['males'], data['females'], data['others']]
-    # genders = [(int(g) if g != '' else 0) for g in genders]
-
-    # if sum(genders) == 0:
-    #     males = females = others = None
-    # else:
-    #     males, females, others = genders
 
     now = str(datetime.datetime.utcnow())
 
@@ -360,7 +313,7 @@ def experience():
                 "rating": rating,
                 "wait": wait,
                 "comment": comment,
-                "name": name,
+                "name": nickname,
                 "datetime": now,
                 "ip": ip,
                 "reviewed": False,
@@ -414,7 +367,7 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
-    
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
