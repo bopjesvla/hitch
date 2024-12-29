@@ -2,7 +2,6 @@
 
 The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitchwiki:Maps).
 
-
 ## Description
 
 - `show.py` builds the main HTML page. This is where the magic happens.
@@ -10,6 +9,7 @@ The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitc
 - `dump.py` runs the monthly dump
 - `cron.sh` is the crontab running above files
 - `hitchmap.conf` is the NGINX configuration
+- `./client` contains the Vue.js frontend (with instructions in a respective README)
 
 ## License
 

@@ -1,0 +1,44 @@
+@import './base.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#app {
+  font-weight: normal;
+}
+
+.leaflet-pane {
+  z-index: 20;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 25;
+}
+
+.leaflet-map-pane {
+  z-index: 20;
+}
+
+@layer base {
+  a {
+    @apply border-b border-b-blue-500;
+  }
+
+  p {
+    @apply mb-2;
+  }
+
+  h3 {
+    @apply font-bold mt-4;
+  }
+
+  h4 {
+    @apply font-bold mt-6;
+  }
+
+  button {
+    @apply border border-gray-500 rounded-sm min-w-56 bg-gray-100 text-2xl leading-8;
+  }
+}

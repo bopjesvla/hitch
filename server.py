@@ -3,6 +3,7 @@ from flask import send_file, request, redirect
 import re
 from flask import g
 import pandas as pd
+import json
 import requests
 import datetime
 import sqlite3
@@ -14,20 +15,30 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
-
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
 
-
 app = Flask(__name__)
-
 
 @app.route("/", methods=["GET"])
 def index():
     return send_file("index.html")
+
+@app.route("/api", methods=["GET"])
+def api():
+    points = pd.read_sql(
+        sql="select id,lat,lon,rating from points where not banned order by datetime is not null desc, datetime desc",
+        con=sqlite3.connect(DATABASE),
+    )
+    print(points)
+    return app.response_class(
+        response=points.to_json(orient='records'),
+        status=200,
+        mimetype="application/json"
+    )
 
 
 @app.route("/light.html", methods=["GET"])
