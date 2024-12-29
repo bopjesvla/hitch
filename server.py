@@ -79,8 +79,8 @@ class User(db.Model, fsqla.FsUserMixin):
     hitchhiking_since = db.Column(db.Integer)
     origin_country = db.Column(db.String(255))
     origin_city = db.Column(db.String(255))
-    trustroots_npub = db.Column(db.String(255))
     hitchwiki_username = db.Column(db.String(255))
+    trustroots_username = db.Column(db.String(255))
 
 
 class CountrySelectField(SelectField):
@@ -95,7 +95,7 @@ class ExtendedRegisterForm(RegisterForm):
     origin_country = CountrySelectField('Where are you from?')
     origin_city = StringField('Which city are you from?')
     hitchwiki_username = StringField('Hitchwiki Username')
-    trustroots_npub = StringField('Trustroots NOSTR npub')
+    trustroots_username = StringField('Trustroots Username')
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)

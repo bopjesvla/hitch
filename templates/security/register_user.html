@@ -22,8 +22,7 @@
     {{ render_field_with_errors(register_user_form.origin_city) }}
     <p><b>Other accounts</b></p>
     {{ render_field_with_errors(register_user_form.hitchwiki_username) }}
-    {{ render_field_with_errors(register_user_form.trustroots_npub) }}
-    <a href="https://nostr.com/" target="_blank">What is that?</a> - <a href="https://opensats.org/blog/nostr-grants-august-2024#nostroots" target="_blank">Why?</a>
+    {{ render_field_with_errors(register_user_form.trustroots_username) }}
     {{ render_field_errors(register_user_form.csrf_token) }}
     <br><br>
     {{ render_field(register_user_form.submit) }}
