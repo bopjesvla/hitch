@@ -17,6 +17,7 @@ from flask_security import (
 from flask_security.models import fsqla_v3 as fsqla
 from wtforms import IntegerField, SelectField, StringField
 from wtforms.widgets import NumberInput
+from wtforms.validators import Optional
 from datetime import datetime
 import pycountry
 
@@ -86,16 +87,16 @@ class User(db.Model, fsqla.FsUserMixin):
 class CountrySelectField(SelectField):
     def __init__(self, *args, **kwargs):
         super(CountrySelectField, self).__init__(*args, **kwargs)
-        self.choices = [(country.alpha_2, country.name) for country in pycountry.countries]
+        self.choices = [None, 'None'] + [(country.alpha_2, country.name) for country in pycountry.countries]
 
 class ExtendedRegisterForm(RegisterForm):
-    gender = SelectField('Gender', choices=[('', 'None'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other'), ('-', 'Prefer not to say')])
-    year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year))
-    hitchhiking_since = IntegerField('Hitchhiking Since', widget=NumberInput(min=1900, max=datetime.now().year))
+    gender = SelectField('Gender', choices=[(None, 'None'), ('f', 'Female'), ('m', 'Male'), ('d', 'Other'), ('-', 'Prefer not to say')])
+    year_of_birth = IntegerField('Year of Birth', widget=NumberInput(min=1900, max=datetime.now().year), validators=[Optional()])
+    hitchhiking_since = IntegerField('Hitchhiking Since', widget=NumberInput(min=1900, max=datetime.now().year), validators=[Optional()])
     origin_country = CountrySelectField('Where are you from?')
-    origin_city = StringField('Which city are you from?')
-    hitchwiki_username = StringField('Hitchwiki Username')
-    trustroots_username = StringField('Trustroots Username')
+    origin_city = StringField('Which city are you from?', validators=[Optional()])
+    hitchwiki_username = StringField('Hitchwiki Username', validators=[Optional()])
+    trustroots_username = StringField('Trustroots Username', validators=[Optional()])
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -134,20 +135,25 @@ def get_user():
 
 
 @app.route("/user", methods=["GET"])
-def user():
+def show_user():
     if current_user.is_anonymous:
         return "You are not logged in. <a href="/">Back to Map</a>"
+
+    user = current_user
     
+    origin_string = (user.origin_city if user.origin_city != "" else "") + (user.origin_country if user.origin_country != "None" else "")
+    hitchwiki_link = f"<a href='https://hitchwiki.org/en/User:{user.hitchwiki_username}'>{user.hitchwiki_username}</a>" if user.hitchwiki_username != "" else "Not set"
+    trustroots_link = f"<a href='https://www.trustroots.org/profile/{user.trustroots_username}'>{user.trustroots_username}</a>" if user.trustroots_username != "" else "Not set"
     result = f"""
-<b>Logged in as:</b><br>
-Username: {current_user.username}<br>
-Email: {current_user.email}<br>
-Gender: {current_user.gender}<br>
-Year of Birth: {current_user.year_of_birth}<br>
-Hitchhiking Since: {current_user.hitchhiking_since}<br>
-Origin: {current_user.origin_city}, {current_user.origin_country}<br>
-Hitchwiki Username: {current_user.hitchwiki_username}<br>
-Trustroots NOSTR npub: {current_user.trustroots_npub}<br><br>
+<b>User:</b><br>
+Username: {user.username}<br>
+Email: {user.email}<br>
+Gender: {user.gender if user.gender != "None" else "Not set"}<br>
+Year of Birth: {user.year_of_birth if user.year_of_birth is not None else "Not set"}<br>
+Hitchhiking Since: {user.hitchhiking_since if user.hitchhiking_since is not None else "Not set"}<br>
+Origin: {origin_string if origin_string != "" else "Not set"}<br>
+On Hitchwiki: {hitchwiki_link}<br>
+On Trustroots: {trustroots_link}<br><br>
 <a href="/#user:{current_user.username}">See my Spots</a><br><br>
 <a href="/logout">Logout</a><br><br>
 <a href="/">Back to Map</a>
@@ -162,6 +168,30 @@ def is_username_used(username):
         return jsonify({"used": True})
     else:
         return jsonify({"used": False})
+
+@app.route('/account/<username>', methods=['GET'])
+def show_account(username):
+    print(f"Received request to show user {username}.")
+    user = security.datastore.find_user(username=username)
+    if user:
+        origin_string = (user.origin_city if user.origin_city != "" else "") + (user.origin_country if user.origin_country != "None" else "")
+        hitchwiki_link = f"<a href='https://hitchwiki.org/en/User:{user.hitchwiki_username}'>{user.hitchwiki_username}</a>" if user.hitchwiki_username != "" else "Not set"
+        trustroots_link = f"<a href='https://www.trustroots.org/profile/{user.trustroots_username}'>{user.trustroots_username}</a>" if user.trustroots_username != "" else "Not set"
+        result = f"""
+<b>User:</b><br>
+Username: {user.username}<br>
+Gender: {user.gender if user.gender != "None" else "Not set"}<br>
+Year of Birth: {user.year_of_birth if user.year_of_birth is not None else "Not set"}<br>
+Hitchhiking Since: {user.hitchhiking_since if user.hitchhiking_since is not None else "Not set"}<br>
+Origin: {origin_string if origin_string != "" else "Not set"}<br>
+On Hitchwiki: {hitchwiki_link}<br>
+On Trustroots: {trustroots_link}<br><br>
+<a href="/#user:{user.username}">See their Spots</a><br><br>
+<a href="/">Back to Map</a>
+"""
+        return result
+    else:
+        result = f"User {username} not found."
 
 
 ### App content ###
