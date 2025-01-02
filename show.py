@@ -292,12 +292,12 @@ output = Template(template).substitute(
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open("map.js").read(),
+        "hitch_script": open("map.js", encoding="utf-8").read(),
         "hitch_style": open("style.css").read(),
     }
 )
 
-open(outname, "w").write(output)
+open(outname, "w", encoding="utf-8").write(output)
 
 if not LIGHT:
     recent = (
