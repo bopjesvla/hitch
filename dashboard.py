@@ -131,7 +131,7 @@ timeline_plot_hitchwiki = fig.to_html("dash.html", full_html=False)
 
 
 # Put together
-template = open("dashboard_template.html").read()
+template = open("dashboard_template.html", encoding="utf-8").read()
 
 output = Template(template).substitute(
     {
@@ -141,4 +141,4 @@ output = Template(template).substitute(
     }
 )
 
-open("dashboard.html", "w").write(output)
+open("dashboard.html", "w", encoding="utf-8").write(output)
