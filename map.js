@@ -738,7 +738,7 @@ var UserButton = L.Control.extend({
                 })
                 .then(data => {
                     if (data.logged_in) {
-                        window.location.href = '/user';
+                        window.location.href = '/me';
                     } else {
                         window.location.href = '/login';
                     }

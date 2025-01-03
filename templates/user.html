@@ -1,0 +1,39 @@
+{% if gender == "None"%}
+    {% set gender = "Not set" %}
+{% endif %}
+{% if year_of_birth == None %}
+    {% set year_of_birth = "Not set" %}
+{% endif %}
+{% if hitchhiking_since == None %}
+    {% set hitchhiking_since = "Not set" %}
+{% endif %}
+{% if origin_string == " " %}
+    {% set origin_string = "Not set" %}
+{% endif %}
+
+<a href="/">Back to Map</a></b><br><br>
+
+<b>User:</b><br>
+
+Username: {{ username }}<br>
+Email: {{ email }}<br>
+Gender: {{ gender }}<br>
+Year of Birth: {{ year_of_birth }}<br>
+Hitchhiking Since: {{ hitchhiking_since }}<br>
+Origin: {{ origin_string }}<br>
+On Hitchwiki: 
+{% if hitchwiki_username == "" %}
+Not set
+{% else %}
+<a href="https://hitchwiki.org/en/User:{{ hitchwiki_username }}">{{ hitchwiki_username }}</a>
+{% endif %}<br>
+On Trustroots: 
+{% if trustroots_username == "" %} 
+Not set
+{% else %}
+<a href="https://www.trustroots.org/profile/{{ trustroots_username }}">{{ trustroots_username }}</a>
+{% endif %}<br><br>
+
+<div class="links">
+    {% block links %} {% endblock %}
+</div>

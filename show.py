@@ -78,6 +78,8 @@ points = pd.read_sql(
     con=sqlite3.connect(fn),
 )
 
+points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
+
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
 )

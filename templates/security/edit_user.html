@@ -1,0 +1,33 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors, render_field_errors %}
+
+{% block content %}
+  {% include "security/_messages.html" %}
+  <h1>{{ _fsdomain('Register') }}</h1>
+  <form action="{{ url_for_security('register') }}" method="post" name="register_user_form">
+    {{ register_user_form.hidden_tag() }}
+    {{ render_form_errors(register_user_form) }}
+    {{ render_field_with_errors(register_user_form.email) }}
+    {% if config["SECURITY_USERNAME_ENABLE"] %}{{ render_field_with_errors(register_user_form.username) }}{% endif %}
+    If you reviewed hitchhiking spots previously using your hitchwiki.org account or a nickname you can claim those reviews as your's by choosing the same username here.<br><br>
+    {{ render_field_with_errors(register_user_form.password) }}
+    {% if register_user_form.password_confirm %}
+      {{ render_field_with_errors(register_user_form.password_confirm) }}
+    {% endif %}
+    <p><b>Details - beneficial for hitchhiking research (optional)</b></p>
+    {{ render_field_with_errors(register_user_form.gender) }}
+    {{ render_field_with_errors(register_user_form.year_of_birth) }}
+    {{ render_field_with_errors(register_user_form.hitchhiking_since) }}
+    {{ render_field_with_errors(register_user_form.origin_country) }}
+    {{ render_field_with_errors(register_user_form.origin_city) }}
+    <p><b>Other accounts (optional)</b></p>
+    {{ render_field_with_errors(register_user_form.hitchwiki_username) }}
+    {{ render_field_with_errors(register_user_form.trustroots_username) }}
+    {{ render_field_errors(register_user_form.csrf_token) }}
+    <br><br>
+    <p>Pay attention to our <a href="https://github.com/bopjesvla/hitch/blob/master/PRIVACY_POLICY.md">Privacy Policy.</a></p>
+    <br><br>
+    {{ render_field(register_user_form.submit) }}
+  </form>
+  {% include "security/_menu.html" %}
+{% endblock content %}
