@@ -115,7 +115,7 @@ class ExtendedRegisterForm(RegisterForm):
             (None, "None"),
             ("Female", "Female"),
             ("Male", "Male"),
-            ("Other", "Other"),
+            ("Non-Binary", "Non-Binary"),
             ("Prefer not to say", "Prefer not to say"),
         ],
     )
