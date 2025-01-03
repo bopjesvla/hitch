@@ -49,13 +49,43 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
 # loading data from database
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
+
+################
+# ensure database columns are up to date
+points = pd.read_sql(
+    sql="select * from points",
+    con=sqlite3.connect(fn),
+)
+
+# NOT_A_USER_ID = 0
+# if "user_id" not in points.columns:
+#     points["user_id"] = NOT_A_USER_ID
+
+
+points["user_id"] = pd.array([None] * len(points), dtype=pd.Int64Dtype())
+
+if "from_hitchwiki" not in points.columns:
+    points["from_hitchwiki"] = points["name"].str.contains("(Hitchwiki)")
+    points["name"] = points["name"].str.replace(" (Hitchwiki)", "")
+
+points.rename(columns={"name": "nickname"}, inplace=True)
+
+points.to_sql('points', sqlite3.connect(fn), index=False, if_exists='replace')
+################
+
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
     con=sqlite3.connect(fn),
 )
 
+points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
+
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
+)
+
+users = pd.read_sql(
+    "select * from user", sqlite3.connect(fn)
 )
 
 print(f"{len(points)} points currently")
@@ -82,7 +112,7 @@ for island in islands:
             if node != parents[0]:
                 replace_map[node] = parents[0]
 
-print("Currently recorded duplicate spots are represented by: ", dups)
+print("Currently recorded duplicate spots are represented by:", dups)
 
 points[["lat", "lon"]] = points[["lat", "lon"]].apply(
     lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True
@@ -164,20 +194,23 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
+points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
+points["hitchhiker"] = points["nickname"].fillna(points["username"]).fillna("Anonymous")
+
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―"
-    + e(points["name"].fillna("Anonymous"))
+    + "</i><br><br>―<a href='/#user:" + e(points["hitchhiker"]) + "'>"
+    + e(points["hitchhiker"]) + "</a>"
     + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―"
-    + e(points[oldies].name.fillna("Anonymous"))
+    + "―<a href='/#user:" + e(points[oldies]["hitchhiker"]) + "'>"
+    + e(points[oldies]["hitchhiker"]) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
@@ -193,7 +226,7 @@ places["distance"] = (
     points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 )
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
-places["review_count"] = groups.size()
+places["review_users"] = groups.hitchhiker.unique().apply(list)
 places["dest_lats"] = (
     points.dropna(subset=["dest_lat", "dest_lon"])
     .groupby(["lat", "lon"])
@@ -222,7 +255,7 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6].length > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
 
     marker.on('click', function(e) {
         maybeReportDuplicate(marker)
@@ -235,7 +268,7 @@ function (row) {
     })
 
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
-    if (row[6] >= 3) {
+    if (row[6].length >= 3) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
     }
 
@@ -256,7 +289,7 @@ cluster = folium.plugins.FastMarkerCluster(
             "text",
             "wait",
             "distance",
-            "review_count",
+            "review_users",
             "dest_lats",
             "dest_lons",
         ]
@@ -309,13 +342,13 @@ if not LIGHT:
         "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     )
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
-    recent["name"] = recent.name.str.replace("://", "", regex=False)
+    recent["hitchhiker"] = recent.hitchhiker.str.replace("://", "", regex=False)
     recent["distance"] = recent["distance"].round(1)
     recent["datetime"] = recent["datetime"].astype(str)
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), ' 🕒', '')
 
     recent[
-        ["url", "country", "datetime", "name", "rating", "distance", "text"]
+        ["url", "country", "datetime", "hitchhiker", "rating", "distance", "text"]
     ].to_html("recent.html", render_links=True, index=False)
 
     duplicates["from_url"] = (
@@ -333,4 +366,3 @@ if not LIGHT:
     duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
         "recent-dups.html", render_links=True, index=False
     )
-    

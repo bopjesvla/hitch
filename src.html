@@ -41,8 +41,11 @@
             <input type="number" name="wait" min="0" max="9999" size="4"> minutes
             <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
-            <label for="username">Public nickname (alphanumeric)</label>
-            <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
+            <div id="nickname-container">
+                <label for="nickname">Public nickname (alphanumeric)</label>
+                <input id="nickname-input" name="nickname" maxlength="32" pattern="[a-zA-Z0-9]*">
+                <span id="nickname-error-message" class="error"></span>
+            </div>
             <br>
             <details closed id="extended_info">
                 <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen" style='color: red;'> (check values, then submit again)</span></summary>
@@ -68,7 +71,6 @@
             <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
             <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
             <!-- <input value="0" type="number" name="others" min="0" max="9" size="2"> others -->
-
             <button>Submit</button>
         </form>
     </div>
@@ -110,6 +112,11 @@
         <p>Thanks for your contribution!</p>
         <p>Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.</p>
     </div>
+    <div class="sidebar failed">
+        <h3>Failed!</h3>
+
+        <p>Try to submit the review again.</p>
+    </div>
     <div class="sidebar menu">
         <ul class="no-style">
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch">Contribute</a></li>
@@ -127,9 +134,9 @@
         </p>
         <p>
             Maps and data by
-            <a href=https://openstreetmap.org>OpenStreetMap</a>,
-            <a href=https: //tinyworldmap.com>tinyworldmap</a> and
-            <a href=https://hitchwiki.org>HitchWiki</a>
+            <a href="https://openstreetmap.org">OpenStreetMap</a>,
+            <a href="https://tinyworldmap.com">tinyworldmap</a> and
+            <a href="https://hitchwiki.org">HitchWiki</a>
         </p>
         <h4>License</h4>
         <p>

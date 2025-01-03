@@ -1,14 +1,27 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, g, render_template_string, jsonify, render_template
 from flask import send_file, request, redirect
 import re
-from flask import g
 import pandas as pd
 import requests
-import datetime
 import sqlite3
 import random
 import os
 import math
+from flask_sqlalchemy import SQLAlchemy
+from flask_security import (
+    Security,
+    SQLAlchemyUserDatastore,
+    current_user,
+    RegisterForm,
+)
+from flask_security.models import fsqla_v3 as fsqla
+from wtforms import IntegerField, SelectField, StringField
+from wtforms.widgets import NumberInput
+from wtforms.validators import Optional
+from datetime import datetime
+import pycountry
+
+EMAIL = "info@hitchmap.com"
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
@@ -22,7 +35,213 @@ def get_db():
     return db
 
 
+# Create app
 app = Flask(__name__)
+
+### Define user management ###
+
+app.config["DEBUG"] = True
+# generated using: secrets.token_urlsafe()
+app.config["SECRET_KEY"] = (
+    "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw"  # TODO from environ
+)
+app.config["SECURITY_PASSWORD_HASH"] = "argon2"
+# argon2 uses double hashing by default - so provide key.
+# For python3: secrets.SystemRandom().getrandbits(128)
+app.config["SECURITY_PASSWORD_SALT"] = (
+    "146585145368132386173505678016728509634"  # TODO from environ
+)
+
+# Take password complexity seriously
+app.config["SECURITY_PASSWORD_COMPLEXITY_CHECKER"] = "zxcvbn"
+
+# Allow registration of new users without confirmation
+app.config["SECURITY_REGISTERABLE"] = True
+app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
+app.config["SECURITY_CONFIRMABLE"] = False
+
+app.config["SECURITY_USERNAME_ENABLE"] = True
+app.config["SECURITY_USERNAME_REQUIRED"] = True
+app.config["SECURITY_USERNAME_MIN_LENGTH"] = 1
+app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
+app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
+    f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
+    "error",
+)
+
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
+
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"sqlite:///../{DATABASE}"  # relative to /instance directory
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+app.config["SECURITY_CHANGE_EMAIL"] = True
+
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+
+### Initiate user management ###
+
+db = SQLAlchemy(app)
+fsqla.FsModels.set_db_info(db)
+
+
+class Role(db.Model, fsqla.FsRoleMixin):
+    pass
+
+
+class User(db.Model, fsqla.FsUserMixin):
+    gender = db.Column(db.String(255))
+    year_of_birth = db.Column(db.Integer)
+    hitchhiking_since = db.Column(db.Integer)
+    origin_country = db.Column(db.String(255))
+    origin_city = db.Column(db.String(255))
+    hitchwiki_username = db.Column(db.String(255))
+    trustroots_username = db.Column(db.String(255))
+
+
+class CountrySelectField(SelectField):
+    def __init__(self, *args, **kwargs):
+        super(CountrySelectField, self).__init__(*args, **kwargs)
+        self.choices = [(None, "None")] + [
+            (country.name, country.name) for country in pycountry.countries
+        ]
+
+
+class ExtendedRegisterForm(RegisterForm):
+    gender = SelectField(
+        "Gender",
+        choices=[
+            (None, "None"),
+            ("Female", "Female"),
+            ("Male", "Male"),
+            ("Non-Binary", "Non-Binary"),
+            ("Prefer not to say", "Prefer not to say"),
+        ],
+    )
+    year_of_birth = IntegerField(
+        "Year of Birth",
+        widget=NumberInput(min=1900, max=datetime.now().year),
+        validators=[Optional()],
+    )
+    hitchhiking_since = IntegerField(
+        "Hitchhiking Since",
+        widget=NumberInput(min=1900, max=datetime.now().year),
+        validators=[Optional()],
+    )
+    origin_country = CountrySelectField("Where are you from?")
+    origin_city = StringField("Which city are you from?", validators=[Optional()])
+    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()])
+    trustroots_username = StringField("Trustroots Username", validators=[Optional()])
+
+
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+
+### One time setup for user management ###
+
+with app.app_context():
+    # create necessary sql tables
+    security.datastore.db.create_all()
+    # deine roles - not really needed
+    security.datastore.find_or_create_role(
+        name="admin",
+        permissions={"admin-read", "admin-write", "user-read", "user-write"},
+    )
+    security.datastore.find_or_create_role(
+        name="monitor", permissions={"admin-read", "user-read"}
+    )
+    security.datastore.find_or_create_role(
+        name="user", permissions={"user-read", "user-write"}
+    )
+    security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
+    security.datastore.db.session.commit()
+
+
+### Endpoints related to user management ###
+
+
+@app.route("/user", methods=["GET"])
+def get_user():
+    print("Received request to get user.")
+    # Check if the user is logged in
+    if not current_user.is_anonymous:
+        return jsonify({"logged_in": True, "username": current_user.username})
+    else:
+        return jsonify({"logged_in": False, "username": ""})
+
+
+@app.route("/delete-user", methods=["GET"])
+def delete_user():
+    return f"To delete your account please send an email to {EMAIL} with the subject 'Delete my account'."
+
+
+@app.route("/me", methods=["GET"])
+def show_current_user():
+    if current_user.is_anonymous:
+        return "You are not logged in. <a href=" / ">Back to Map</a>"
+
+    user = current_user
+    origin_string = (
+        user.origin_city
+        + (", " if user.origin_city != "" else " ")
+        + (user.origin_country if user.origin_country != "None" else "")
+    )
+    return render_template(
+        "me.html",
+        username=user.username,
+        email=user.email,
+        gender=user.gender,
+        origin_string=origin_string,
+        hitchwiki_username=user.hitchwiki_username,
+        trustroots_username=user.trustroots_username,
+        hitchhiking_since=user.hitchhiking_since,
+        year_of_birth=user.year_of_birth,
+    )
+
+
+@app.route("/is_username_used/<username>", methods=["GET"])
+def is_username_used(username):
+    print(f"Received request to check if username {username} is used.")
+    user = security.datastore.find_user(username=username)
+    if user:
+        return jsonify({"used": True})
+    else:
+        return jsonify({"used": False})
+
+
+@app.route("/account/<username>", methods=["GET"])
+def show_account(username):
+    print(f"Received request to show user {username}.")
+    user = security.datastore.find_user(username=username)
+    if user:
+        origin_string = (
+            user.origin_city
+            + (", " if user.origin_city != "" else " ")
+            + (user.origin_country if user.origin_country != "None" else "")
+        )
+
+        return render_template(
+            "account.html",
+            username=user.username,
+            email=user.email,
+            gender=user.gender,
+            origin_string=origin_string,
+            hitchwiki_username=user.hitchwiki_username,
+            trustroots_username=user.trustroots_username,
+            hitchhiking_since=user.hitchhiking_since,
+            year_of_birth=user.year_of_birth,
+        )
+    else:
+        result = f"User not found."
+
+
+@app.route("/support", methods=["GET"])
+def support():
+    return f"To get support please send an email to {EMAIL}."
+
+
+### App content ###
 
 
 @app.route("/", methods=["GET"])
@@ -33,7 +252,7 @@ def index():
 @app.route("/light.html", methods=["GET"])
 def light():
     light_map = "light.html"
-    if os.path.exists(light_map):  
+    if os.path.exists(light_map):
         return send_file(light_map)
     else:
         return "No light map available."
@@ -47,6 +266,7 @@ def lines():
 @app.route("/dashboard.html", methods=["GET"])
 def dashboard():
     return send_file("dashboard.html")
+
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
@@ -92,9 +312,14 @@ def favicon():
 def icon():
     return send_file("hitchwiki-high-contrast-no-car-flipped.png")
 
+
+### App functionality ###
+
+
 @app.route("/content/report_duplicate.png", methods=["GET"])
 def report_duplicate_image():
     return send_file("content/report_duplicate.png")
+
 
 @app.route("/content/route_planner.png", methods=["GET"])
 def route_planner_image():
@@ -120,9 +345,10 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
-@app.route('/content/<path:path>')
+
+@app.route("/content/<path:path>")
 def send_report(path):
-    return send_from_directory('content', path)
+    return send_from_directory("content", path)
 
 
 @app.route("/experience", methods=["POST"])
@@ -134,22 +360,18 @@ def experience():
     assert rating in range(1, 6)
     comment = None if data["comment"] == "" else data["comment"]
     assert comment is None or len(comment) < 10000
-    name = data["username"] if re.match(r"^\w{1,32}$", data["username"]) else None
+    nickname = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
+
+    # do not submit review if nickname is taken
+    if security.datastore.find_user(username=nickname):
+        return redirect("/#failed")
 
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
     datetime_ride = data["datetime_ride"]
 
-    # genders = [data['males'], data['females'], data['others']]
-    # genders = [(int(g) if g != '' else 0) for g in genders]
-
-    # if sum(genders) == 0:
-    #     males = females = others = None
-    # else:
-    #     males, females, others = genders
-
-    now = str(datetime.datetime.utcnow())
+    now = str(datetime.utcnow())
 
     if request.headers.getlist("X-Real-IP"):
         ip = request.headers.getlist("X-Real-IP")[-1]
@@ -172,7 +394,7 @@ def experience():
                 "lon": lon,
                 "format": "json",
                 "zoom": 3,
-                "email": "info@hitchmap.com",
+                "email": EMAIL,
             },
         )
         if resp.ok:
@@ -190,7 +412,7 @@ def experience():
                 "rating": rating,
                 "wait": wait,
                 "comment": comment,
-                "name": name,
+                "nickname": nickname,
                 "datetime": now,
                 "ip": ip,
                 "reviewed": False,
@@ -202,11 +424,11 @@ def experience():
                 "country": country,
                 "signal": signal,
                 "ride_datetime": datetime_ride,
+                "user_id": current_user.id if not current_user.is_anonymous else None,
             }
         ],
         index=[pid],
     )
-    # , 'males': males, 'females': females, 'others': others
 
     df.to_sql("points", get_db(), index_label="id", if_exists="append")
 
@@ -244,6 +466,7 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

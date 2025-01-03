@@ -380,6 +380,20 @@ var addSpotStep = function (e) {
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
+            // nicknames wont be recorded if a user is logged in
+            fetch('/user')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! Status:');
+                    }
+                    return response.json(); // Parse the JSON response
+                })
+                .then(data => {
+                    $$("#nickname-container").classList.toggle("make-invisible", data.logged_in);
+                })
+                .catch(error => {
+                    console.error('Error fetching user info:', error);
+                });
             $$('#details-seen').classList.add("make-invisible")
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
@@ -422,6 +436,7 @@ var addSpotStep = function (e) {
 
     document.body.classList.toggle('adding-spot', addSpotPoints.length > 0)
 }
+
 
 function planRouteStep(e) {
     if (e.target.tagName != 'BUTTON') return
@@ -619,6 +634,15 @@ function navigate() {
             }
         }
     }
+    // make markers that do not contain the username invisible
+    else if (args[0].startsWith('#user:')) {
+        clear()
+        clearRoute()
+        let username = args[0].slice(6)
+        // TODO: solve better with frontend filtering and updating the clusters
+        let notUserReviews = allMarkers.filter(marker => !marker.options._row[6].includes(username))
+        notUserReviews.forEach(marker => marker.setStyle({ opacity: 0.0, fillOpacity: 0.0 }))
+    }
     else {
         clear()
         clearRoute()
@@ -637,6 +661,11 @@ if (window.location.hash == '#success') {
 if (window.location.hash == '#success-duplicate') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.success-duplicate')
+}
+
+if (window.location.hash == '#failed') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.failed')
 }
 
 function exportAsGPX() {
@@ -688,3 +717,70 @@ function exportAsGPX() {
 
 // $$('.report-button').onclick = _ => $$('.report-options').classList.toggle('.visible')
 // $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')
+
+var UserButton = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button user-button');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "👤 User";
+
+        container.onclick = function (e) {
+            fetch('/user')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! Status:');
+                    }
+                    return response.json(); // Parse the JSON response
+                })
+                .then(data => {
+                    if (data.logged_in) {
+                        window.location.href = '/me';
+                    } else {
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching user info:', error);
+                });
+            L.DomEvent.stopPropagation(e)
+        }
+
+        return controlDiv;
+    }
+});
+
+map.addControl(new UserButton());
+
+// validate add spot form input
+document.getElementById('spot-form').addEventListener('submit', function(event) {
+    const nicknameInput = document.getElementById('nickname-input');
+    if (nicknameInput.value != ""){
+        event.preventDefault();
+        const errorMessage = document.getElementById('nickname-error-message');
+        errorMessage.textContent = '';
+
+        // nicknames that are used as usernames are not allowed
+        let url = '/is_username_used/' + nicknameInput.value;
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status:');
+                }
+                return response.json(); // Parse the JSON response
+            })
+            .then(data => {
+                if (data.used){
+                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
+                } else { 
+                    this.submit();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching user info:', error);
+            });
+        };
+});
