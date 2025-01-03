@@ -214,7 +214,11 @@ def index():
 
 @app.route("/light.html", methods=["GET"])
 def light():
-    return send_file("light.html")
+    light_map = "light.html"
+    if os.path.exists(light_map):  
+        return send_file(light_map)
+    else:
+        return "No light map available."
 
 
 @app.route("/lines.html", methods=["GET"])

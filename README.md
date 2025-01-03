@@ -18,6 +18,8 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 ## Installation
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 
@@ -30,7 +32,18 @@ curl https://hitchmap.com/dump.sqlite > points.sqlite
 ## Contributing
 Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhCtydy3DOOCKEAE_tsR6g9s).
 
-File an issue if you have a feature request/found a bug.
+File an [issue](https://github.com/bopjesvla/hitch/issues) if you have a feature request or found a bug.
 
-Perform a pull request if you solved an issue. (It's best to file an issue first so we can discuss it and reference it in the PR.)
+Perform a [pull request](https://github.com/bopjesvla/hitch/pulls) from your [fork](https://github.com/bopjesvla/hitch/fork) of the repository if you solved an issue. (It's best to file an issue first so we can discuss it and reference it in the PR.)
+
+## Data
+If you find the data collected and provided by hitchmap.com helpful, feel free to cite it using:
+```
+@misc{hitchhiking,
+author = {Bob de Ruiter, Till Wenke},
+title = {Dataset of Hitchhiking Trips},
+year = {2024},
+url = {https://hitchmap.com},
+}
+```
 

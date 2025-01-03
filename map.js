@@ -269,6 +269,7 @@ function planRoute(lat1, lon1, lat2, lon2) {
     map.fitBounds(bounds, {})
 }
 
+////// Define the search bar for the map //////
 var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11 };
 
 var customGeocoder = L.Control.Geocoder.photon();
@@ -304,6 +305,7 @@ geocoderController.on('markgeocode', function (e) {
     updateRadius()
 })
 
+////// Add interaction buttons to the map //////
 map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new RouteButton());
