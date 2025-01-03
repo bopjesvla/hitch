@@ -34,7 +34,7 @@ def index():
 def light():
     light_map = "light.html"
     if os.path.exists(light_map):  
-        return send_file()
+        return send_file(light_map)
     else:
         return "No light map available."
 
