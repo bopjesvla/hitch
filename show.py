@@ -285,7 +285,7 @@ body = m.get_root().html.render()
 script = m.get_root().script.render()
 
 outname = "light.html" if LIGHT else "new.html" if NEW else "index.html"
-template = open("src.html").read()
+template = open("src.html", encoding="utf-8").read()
 
 output = Template(template).substitute(
     {
@@ -293,7 +293,7 @@ output = Template(template).substitute(
         "folium_body": body,
         "folium_script": script,
         "hitch_script": open("map.js", encoding="utf-8").read(),
-        "hitch_style": open("style.css").read(),
+        "hitch_style": open("style.css", encoding="utf-8").read(),
     }
 )
 
