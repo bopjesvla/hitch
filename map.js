@@ -379,7 +379,7 @@ var addSpotStep = function (e) {
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
             // nicknames wont be recorded if a user is logged in
-            fetch('/get_user')
+            fetch('/user')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP error! Status:');
@@ -661,6 +661,11 @@ if (window.location.hash == '#success-duplicate') {
     bar('.sidebar.success-duplicate')
 }
 
+if (window.location.hash == '#failed') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.failed')
+}
+
 function exportAsGPX() {
     var script = document.createElement("script");
     script.src = 'https://cdn.jsdelivr.net/npm/togpx@0.5.4/togpx.js';
@@ -722,7 +727,7 @@ var UserButton = L.Control.extend({
         container.innerHTML = "👤 User";
 
         container.onclick = function (e) {
-            fetch('/get_user')
+            fetch('/user')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('HTTP error! Status:');

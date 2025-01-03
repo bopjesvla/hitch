@@ -21,6 +21,8 @@ from wtforms.validators import Optional
 from datetime import datetime
 import pycountry
 
+EMAIL = "info@hitchmap.com"
+
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
@@ -57,7 +59,7 @@ app.config["SECURITY_USERNAME_ENABLE"] = True
 app.config["SECURITY_USERNAME_REQUIRED"] = True
 app.config["SECURITY_USERNAME_MIN_LENGTH"] = 1
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
-app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = ("%(username)s is already associated with an account. Please reach out to bob@hitchmap.com if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.", "error")
+app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.", "error")
 
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 
@@ -124,7 +126,7 @@ with app.app_context():
 
 ### Endpoints related to user management ###
 
-@app.route("/get_user", methods=["GET"])
+@app.route("/user", methods=["GET"])
 def get_user():
     print("Received request to get user.")
     # Check if the user is logged in
@@ -133,9 +135,13 @@ def get_user():
     else:
         return jsonify({"logged_in": False, "username": ""})
 
+@app.route("/delete-user", methods=["GET"])
+def delete_user():
+    return f"To delete your account please send an email to {EMAIL} with the subject 'Delete my account'."
 
-@app.route("/user", methods=["GET"])
-def show_user():
+
+@app.route("/me", methods=["GET"])
+def show_current_user():
     if current_user.is_anonymous:
         return "You are not logged in. <a href="/">Back to Map</a>"
 
@@ -157,6 +163,7 @@ On Trustroots: {trustroots_link}<br><br>
 <a href="/#user:{current_user.username}">See my Spots</a><br><br>
 <a href="/logout">Logout</a><br><br>
 <a href="/">Back to Map</a>
+<a href="/delete-user" style="color: red;">Delete my account</a>
 """
     return result
 
@@ -192,6 +199,10 @@ On Trustroots: {trustroots_link}<br><br>
         return result
     else:
         result = f"User {username} not found."
+
+@app.route('/support', methods=['GET'])
+def support():
+    return f"To get support please send an email to {EMAIL}."
 
 
 ### App content ###
@@ -309,6 +320,11 @@ def experience():
     assert comment is None or len(comment) < 10000
     nickname = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
 
+    # do not submit review if nickname is taken
+    if security.datastore.find_user(username=nickname):
+        return redirect("/#failed")
+
+
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
@@ -337,7 +353,7 @@ def experience():
                 "lon": lon,
                 "format": "json",
                 "zoom": 3,
-                "email": "info@hitchmap.com",
+                "email": EMAIL,
             },
         )
         if resp.ok:

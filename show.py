@@ -57,9 +57,12 @@ points = pd.read_sql(
     con=sqlite3.connect(fn),
 )
 
-NOT_A_USER_ID = 0
-if "user_id" not in points.columns:
-    points["user_id"] = NOT_A_USER_ID
+# NOT_A_USER_ID = 0
+# if "user_id" not in points.columns:
+#     points["user_id"] = NOT_A_USER_ID
+
+
+points["user_id"] = pd.array([None] * len(points), dtype=pd.Int64Dtype())
 
 if "from_hitchwiki" not in points.columns:
     points["from_hitchwiki"] = points["name"].str.contains("(Hitchwiki)")
@@ -189,23 +192,23 @@ comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
-points["username"] = pd.merge(left=points, right=users, left_on="user_id", right_on="id", how="left")["username"]
-points["hitchhiker"] = points.apply(lambda x: x["nickname"] if x["nickname"] else x["username"], axis=1)
+points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
+points["hitchhiker"] = points["nickname"].fillna(points["username"]).fillna("Anonymous")
 
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―<a href='/#user:" + e(points["hitchhiker"].fillna("Anonymous")) + "'>"
-    + e(points["hitchhiker"].fillna("Anonymous")) + "</a>"
+    + "</i><br><br>―<a href='/#user:" + e(points["hitchhiker"]) + "'>"
+    + e(points["hitchhiker"]) + "</a>"
     + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―<a href='/#user:" + e(points[oldies]["hitchhiker"].fillna("Anonymous")) + "'>"
-    + e(points[oldies]["hitchhiker"].fillna("Anonymous")) + "</a>"
+    + "―<a href='/#user:" + e(points[oldies]["hitchhiker"]) + "'>"
+    + e(points[oldies]["hitchhiker"]) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
