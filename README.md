@@ -15,7 +15,7 @@ The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitc
 
 The software provided in this repository is licensed under AGPL 3.0. The Hitchmap database is licensed under the ODBL, the license used by OpenStreetMap.
 
-## Installation
+## Installation (on Linux)
 
 ```bash
 python3 -m venv .venv
