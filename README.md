@@ -29,7 +29,7 @@ conda install folium==0.16.0 networkx==3.2.1
 curl https://hitchmap.com/dump.sqlite > points.sqlite
 ```
 
-## Getting Started
+## Getting started
 Running
 
 ```
