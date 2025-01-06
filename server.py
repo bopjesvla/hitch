@@ -136,7 +136,7 @@ class ExtendedRegisterForm(RegisterForm):
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+security = Security(app, user_datastore)
 
 ### One time setup for user management ###
 
@@ -173,8 +173,25 @@ def get_user():
 
 @app.route("/delete-user", methods=["GET"])
 def delete_user():
+    updated_user = security.datastore.find_user(username=current_user.username)
+    updated_user.gender = None
+    updated_user.year_of_birth = None
+    updated_user.hitchhiking_since = None
+    updated_user.origin_country = None
+    updated_user.origin_city = None
+    updated_user.hitchwiki_username = None
+    updated_user.trustroots_username = None
+    security.datastore.put(updated_user)
+    security.datastore.commit()
     return f"To delete your account please send an email to {EMAIL} with the subject 'Delete my account'."
 
+def get_origin_string(user):
+    origin_string = (
+        (user.origin_city if user.origin_city is not None else "")
+        + (", " if (user.origin_city != "" and user.origin_city is not None) else " ")
+        + (user.origin_country if user.origin_country is not None else "")
+    )
+    return origin_string 
 
 @app.route("/me", methods=["GET"])
 def show_current_user():
@@ -182,11 +199,8 @@ def show_current_user():
         return "You are not logged in. <a href=" / ">Back to Map</a>"
 
     user = current_user
-    origin_string = (
-        user.origin_city
-        + (", " if user.origin_city != "" else " ")
-        + (user.origin_country if user.origin_country != "None" else "")
-    )
+    origin_string = get_origin_string(user)
+
     return render_template(
         "me.html",
         username=user.username,
@@ -215,11 +229,7 @@ def show_account(username):
     print(f"Received request to show user {username}.")
     user = security.datastore.find_user(username=username)
     if user:
-        origin_string = (
-            user.origin_city
-            + (", " if user.origin_city != "" else " ")
-            + (user.origin_country if user.origin_country != "None" else "")
-        )
+        origin_string = get_origin_string(user)
 
         return render_template(
             "account.html",
