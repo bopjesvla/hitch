@@ -8,7 +8,7 @@
     </h2>
     <p>
       Rating: {{ point.rating }}/5<br>
-      Waiting time: - <!-- TODO --><br>
+      Waiting time: {{ point.wait ? `${point.wait} min` : '-' }}<br>
       Ride distance: - <!-- TODO -->
     </p>
     <h3>Comments</h3>

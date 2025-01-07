@@ -14,7 +14,6 @@ import networkx
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
 
-
 def haversine_np(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points

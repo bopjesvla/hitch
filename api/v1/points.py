@@ -12,7 +12,17 @@ DATABASE = (
 
 def find_all_points():
   results = pd.read_sql(
-    sql="select id,lat,lon,rating from points where not banned order by datetime is not null desc, datetime desc",
+    sql="""
+        SELECT 
+          Points.ID as id, 
+          Latitude as lat, 
+          Longitude as lon, 
+          ROUND(AVG(Rating)) as rating,
+          ROUND(AVG(Duration)) as wait
+        FROM Points 
+        INNER JOIN Reviews ON Points.ID = Reviews.PointId 
+        GROUP BY Reviews.PointId;
+      """,
     con=sqlite3.connect(DATABASE),
   )
   return results
@@ -22,12 +32,11 @@ def find_point_by_id(point_id):
   results = pd.read_sql(
     sql="""
       SELECT
-        id, lat, lon, rating
+        *
       FROM
-        points
+        Points
       WHERE
-        NOT banned
-        AND ID = %i
+        ID = %i
     """ % point_id,
     con=sqlite3.connect(DATABASE),
   )

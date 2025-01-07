@@ -7,6 +7,7 @@ type Point = {
   lat: number;
   lon: number;
   rating?: number;
+  wait?: number;
   reviewCount?: number;
 };
 

@@ -4,6 +4,7 @@
 ##
 ## Add custom entries below here.
 ##
+.DS_STORE
 dst-env/
 .cache/v/cache/lastfailed
 tests/.cache/v/cache/lastfailed
@@ -467,7 +468,7 @@ junit/
 light.html
 recent.html
 index.html
-points.sqlite
+points.sqlite*
 recent-dups.html
 lines.html
 dashboard.html
