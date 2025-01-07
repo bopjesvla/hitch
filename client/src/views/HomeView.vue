@@ -4,6 +4,6 @@ import Sidebar from '@/components/Sidebar/Sidebar.vue';
 </script>
 
 <template>
-<Map />
 <Sidebar />
+<Map />
 </template>

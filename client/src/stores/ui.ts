@@ -27,7 +27,13 @@ export const useUiStore = defineStore('ui', {
      * @param component - The name of the component to display in the sidebar.
      */
     toggleSidebar(component: string) {
-      if (this.isSidebarOpen) return this.reset();
+      // If the component should  change, reset and allow;
+      // Else: Reset to close everything.
+      if (component !== this.currentComponent) {
+        this.reset();
+      } else if (this.isSidebarOpen) {
+        return this.closeSidebar();
+      }
 
       this.openSidebar(component);
     },
@@ -60,6 +66,6 @@ export const useUiStore = defineStore('ui', {
       this.currentMapAction = null;
       this.selectedCoords = null;
       this.selectedDestCoords = null;
-    }
+    },
   },
 });
