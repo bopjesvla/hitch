@@ -20,7 +20,7 @@ export const usePointsStore = defineStore('points', () => {
   const fetchPoints = async () => {
     loading.value = true;
 
-    const response = await axios.get('http://localhost:5000/api');
+    const response = await axios.get('http://localhost:5000/api/v1/points');
     items.value = response.data as Point[];
 
     loading.value = false;
