@@ -6,8 +6,9 @@ type Point = {
   ID: number;
   Latitude: number;
   Longitude: number;
-  rating: number;
-  wait: number;
+  Rating: number;
+  Duration: number;
+  ReviewCount: number;
   Reviews: Review[];
 };
 
@@ -72,7 +73,12 @@ export const usePointsStore = defineStore('points', () => {
     );
 
     const pointIndex = items.value.findIndex((p) => p.ID === response.data.PointId);
-    items.value[pointIndex].Reviews = [...(items.value[pointIndex].Reviews || []), response.data];
+    const point = items.value[pointIndex];
+
+    point.Reviews = [...(point.Reviews || []), response.data];
+    point.Rating = Math.round(
+      point.Rating + (response.data.Rating - point.Rating) / (point.ReviewCount + 1),
+    );
 
     loading.value = false;
     return response.data;
