@@ -21,6 +21,7 @@ def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///../{DATABASE}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ECHO"] = True
     
     register_extensions(app)
     register_blueprints(app)

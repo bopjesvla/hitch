@@ -1,14 +1,7 @@
 import os
 
 from flask import Blueprint, Response, jsonify
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload, noload
-import pandas as pd
-import sqlite3
-import json
-
-from extensions import db
-from models import Point, Review, Comment
+from models import Point
 
 points_bp = Blueprint('points', __name__)
 

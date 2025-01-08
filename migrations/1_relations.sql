@@ -30,25 +30,15 @@ CREATE TABLE
     ID INTEGER PRIMARY KEY,
     Rating INTEGER,
     Duration INTEGER, -- Wait Time
+    Name TEXT,
+    Comment TEXT,
+    Signal TEXT,
+    RideAt TEXT,
     CreatedBy TEXT, -- IP Address / Username?
     CreatedAt TEXT,
     PointId INTEGER NOT NULL,
     OldPointId INTEGER, -- Will be removed later
     FOREIGN KEY (PointId) REFERENCES Temp_Points (ID)
-  );
-
--- Comments Table
-CREATE TABLE
-  Comments (
-    ID INTEGER PRIMARY KEY,
-    Name TEXT,
-    Comment TEXT,
-    Signal TEXT,
-    RideAt TEXT,
-    PointId INTEGER NOT NULL,
-    ReviewId INTEGER NOT NULL,
-    FOREIGN KEY (PointId) REFERENCES Temp_Points (ID),
-    FOREIGN KEY (ReviewId) REFERENCES Reviews (ID)
   );
 
 -- Destinations Table
@@ -69,6 +59,10 @@ INSERT INTO
   Reviews (
     Rating,
     Duration,
+    Name,
+    Comment,
+    Signal,
+    RideAt,
     CreatedBy,
     CreatedAt,
     PointId,
@@ -77,6 +71,10 @@ INSERT INTO
 SELECT
   CAST(points.rating as INTEGER),
   CAST(points.wait as INTEGER),
+  points.name,
+  points.comment,
+  points.signal,
+  points.ride_datetime,
   points.ip,
   points.datetime,
   Temp_Points.ID,
@@ -114,29 +112,6 @@ WHERE
     points.dest_lat NOT NULL
     AND points.dest_lon NOT NULL
   )
-  AND (
-    points.lon = Temp_Points.Longitude
-    AND points.lat = Temp_Points.Latitude
-  )
-  AND Reviews.OldPointId = points.id;
-
--- Loop through all Points to create Comments
--- TODO: Calculate Distance!
-INSERT INTO
-  Comments (Name, Comment, Signal, RideAt, PointId, ReviewId)
-SELECT
-  points.name,
-  points.comment,
-  points.signal,
-  points.ride_datetime,
-  Temp_Points.ID,
-  Reviews.ID
-FROM
-  points,
-  Reviews,
-  Temp_Points
-WHERE
-  points.comment NOT NULL
   AND (
     points.lon = Temp_Points.Longitude
     AND points.lat = Temp_Points.Latitude
@@ -223,7 +198,7 @@ ALTER TABLE Reviews
 DROP COLUMN OldPointId;
 
 -- Anonymous == NULL
-UPDATE Comments
+UPDATE Reviews
 SET
   Name = NULL
 WHERE
