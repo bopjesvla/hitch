@@ -31,7 +31,7 @@ def create_app():
     app.config["CACHE_DEFAULT_TIMEOUT"] = 60*5
     
     # CORS
-    app.config["CORS_RESOURCES"] = {r"/api/*": {"origins": "*"}}
+    app.config["CORS_ORIGINS"] = "*"
     
     register_extensions(app)
     register_blueprints(app)
@@ -51,7 +51,7 @@ def register_extensions(app):
     compress.cache_key = get_cache_key
         
 def register_blueprints(app):
-    app.register_blueprint(api_bp, url_prefix='/api/v1')
+    app.register_blueprint(api_bp)
 
 app = create_app()
 

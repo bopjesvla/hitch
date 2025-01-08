@@ -4,7 +4,7 @@ from flask import Blueprint, Response, jsonify, request
 from models import Point, Review
 from extensions import db, cache
 
-points_bp = Blueprint('points', __name__)
+points_bp = Blueprint('points', __name__, url_prefix='/points')
 
 DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
@@ -21,6 +21,8 @@ def create():
   data = request.json
   dataReview = data.get('Review')
   
+  # TODO: Somehow, this can accept the wrong values. I don't know why.
+  # An easy way to fuck up the database is by inserting a string as Review.Duration.
   point = Point(
     ID=None,
     Latitude=data.get('Latitude'),
@@ -54,6 +56,8 @@ def create_review(point_id):
   point = Point.query.get_or_404(point_id)
   data = request.json
     
+  # TODO: Somehow, this can accept the wrong values. I don't know why.
+  # An easy way to fuck up the database is by inserting a string as Review.Duration.
   review = Review(
     ID=None,
     Rating=data.get('Rating'),
