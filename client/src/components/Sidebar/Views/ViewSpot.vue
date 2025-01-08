@@ -59,7 +59,11 @@ import { computed } from 'vue';
 
 const pointsStore = usePointsStore();
 const point = computed(() => pointsStore.getSelectedPoint);
-const reviewsWithComments = computed(() => point.value.Reviews.filter((r) => !!r.Comment));
+const reviewsWithComments = computed(() =>
+  point.value.Reviews.filter((r) => !!r.Comment).sort(
+    (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt),
+  ),
+);
 </script>
 
 <style lang="scss" scoped>
