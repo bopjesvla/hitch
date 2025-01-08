@@ -58,7 +58,7 @@ onMounted(async () => {
   });
 
   pointsStore.items.map((point) => {
-    const marker = L.circleMarker(L.latLng(point.lat, point.lon), {
+    const marker = L.circleMarker(L.latLng(point.Latitude, point.Longitude), {
       radius: 5,
       weight: point.reviewCount ? 1 + (point.reviewCount > 2 ? 1 : 0) : 1,
       color: 'black',

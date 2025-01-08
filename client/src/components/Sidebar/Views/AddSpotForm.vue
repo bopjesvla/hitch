@@ -29,8 +29,8 @@ const submitForm = () => {
   if (lat && lon) {
     const newPoint = {
       id: Date.now(),
-      lat,
-      lon,
+      Latitude: lat,
+      Longitude: lon,
       // Add other properties if needed
     };
 

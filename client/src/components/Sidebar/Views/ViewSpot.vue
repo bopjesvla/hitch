@@ -1,9 +1,9 @@
 <template>
   <div v-if="point">
     <h2 class="ViewSpot__Header">
-      <a target="_blank" :href="`https://www.google.com/maps/place/${point.lat},${point.lon}`">
+      <a target="_blank" :href="`https://www.google.com/maps/place/${point.Latitude},${point.Longitude}`">
         <!-- TODO: Shorten the strings, add link icon -->
-        {{ point.lat }}, {{ point.lon }}
+        {{ point.Latitude }}, {{ point.Longitude }}
       </a>
     </h2>
     <p>

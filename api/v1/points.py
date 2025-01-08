@@ -1,8 +1,13 @@
 import os
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, jsonify
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload, noload
 import pandas as pd
 import sqlite3
+
+from extensions import db
+from models import Point, Review, Comment
 
 points_bp = Blueprint('points', __name__)
 
@@ -14,9 +19,9 @@ def find_all_points():
   results = pd.read_sql(
     sql="""
         SELECT 
-          Points.ID as id, 
-          Latitude as lat, 
-          Longitude as lon, 
+          Points.ID, 
+          Latitude, 
+          Longitude, 
           ROUND(AVG(Rating)) as rating,
           ROUND(AVG(Duration)) as wait
         FROM Points 
@@ -41,15 +46,16 @@ def find_point_by_id(point_id):
     con=sqlite3.connect(DATABASE),
   )
   
-  if len(results) is 0:
+  if len(results) == 0:
     return
-  
+    
   return results.sample(1)
 
 @points_bp.route('/')
 def index():
+  # points = db.session.query(Point).all()
   points = find_all_points()
-  return Response(points.to_json(orient='records'), status=200, mimetype='application/json')
+  return jsonify(points.to_json(orient="records"))
 
 @points_bp.route('/', methods=['POST'])
 def create():

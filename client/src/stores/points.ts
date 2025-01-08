@@ -3,12 +3,11 @@ import { ref, computed, shallowRef } from 'vue';
 import axios from 'axios';
 
 type Point = {
-  id: number;
-  lat: number;
-  lon: number;
-  rating?: number;
-  wait?: number;
-  reviewCount?: number;
+  ID: number;
+  Latitude: number;
+  Longitude: number;
+  rating: number;
+  wait: number;
 };
 
 export const usePointsStore = defineStore('points', () => {
@@ -22,7 +21,7 @@ export const usePointsStore = defineStore('points', () => {
     loading.value = true;
 
     const response = await axios.get('http://localhost:5000/api/v1/points');
-    items.value = response.data as Point[];
+    items.value = JSON.parse(response.data) as Point[];
 
     loading.value = false;
   };

@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import folium
-import json
 import folium.plugins
 import sqlite3
 import os
