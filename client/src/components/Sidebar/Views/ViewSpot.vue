@@ -2,7 +2,6 @@
   <div v-if="point">
     <h2 class="ViewSpot__Header">
       <a
-        class="block max-w-[90%] mx-auto"
         target="_blank"
         :href="`https://www.google.com/maps/place/${point.Latitude},${point.Longitude}`"
       >
@@ -68,7 +67,7 @@ const reviewsWithComments = computed(() =>
 
 <style lang="scss" scoped>
 .ViewSpot__Header {
-  @apply font-bold text-center border-b-2 border-gray-200 pb-4 mb-4;
+  @apply font-bold text-center border-b-2 border-gray-200 pb-4 px-4 mb-4;
 
   a {
     @apply border-none underline decoration-dotted !important;
