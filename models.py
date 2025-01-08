@@ -24,10 +24,12 @@ class Point(db.Model):
   def ReviewCount(self) -> int:
     return len(self.Reviews)
 
+  # TODO: Surely there is a more efficient way
   @property
   def Rating(self) -> int:
-    return sum([r.Rating for r in self.Reviews]) / len(self.Reviews)
+    return round(sum([r.Rating for r in self.Reviews]) / len(self.Reviews))
   
+  # TODO: Surely there is a more efficient way
   @property
   def Duration(self) -> int:
     durations = []
@@ -39,7 +41,7 @@ class Point(db.Model):
     if len(durations) == 0:
       return None
     
-    return sum(durations) / len(durations)
+    return round(sum(durations) / len(durations))
 
 class Review(db.Model):
   __tablename__ = "Reviews"
