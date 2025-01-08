@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload, noload
 import pandas as pd
 import sqlite3
+import json
 
 from extensions import db
 from models import Point, Review, Comment
@@ -15,47 +16,10 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
-def find_all_points():
-  results = pd.read_sql(
-    sql="""
-        SELECT 
-          Points.ID, 
-          Latitude, 
-          Longitude, 
-          ROUND(AVG(Rating)) as rating,
-          ROUND(AVG(Duration)) as wait
-        FROM Points 
-        INNER JOIN Reviews ON Points.ID = Reviews.PointId 
-        GROUP BY Reviews.PointId;
-      """,
-    con=sqlite3.connect(DATABASE),
-  )
-  return results
-
-def find_point_by_id(point_id):
-  # FIX: Check if this is properly sanitized
-  results = pd.read_sql(
-    sql="""
-      SELECT
-        *
-      FROM
-        Points
-      WHERE
-        ID = %i
-    """ % point_id,
-    con=sqlite3.connect(DATABASE),
-  )
-  
-  if len(results) == 0:
-    return
-    
-  return results.sample(1)
-
 @points_bp.route('/')
 def index():
-  # points = db.session.query(Point).all()
-  points = find_all_points()
-  return jsonify(points.to_json(orient="records"))
+  points = Point.query.all()
+  return jsonify(points)
 
 @points_bp.route('/', methods=['POST'])
 def create():
@@ -64,14 +28,13 @@ def create():
 
 @points_bp.route('/<int:point_id>')
 def show(point_id):
-  point = find_point_by_id(point_id)
+  point = Point.query.get(point_id)
 
   # Fix: Proper Error Handling and consistent messages
   if point is None:
     return Response(status=404)
   
-  # Return a specific point with all information
-  return Response(point.to_json(), status=200, mimetype='application/json')
+  return jsonify(point)
 
 @points_bp.route('/<int:point_id>/review', methods=['POST'])
 def create_review(point_id):

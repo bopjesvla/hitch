@@ -21,7 +21,7 @@ export const usePointsStore = defineStore('points', () => {
     loading.value = true;
 
     const response = await axios.get('http://localhost:5000/api/v1/points');
-    items.value = JSON.parse(response.data) as Point[];
+    items.value = response.data as Point[];
 
     loading.value = false;
   };

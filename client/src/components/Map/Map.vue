@@ -60,10 +60,10 @@ onMounted(async () => {
   pointsStore.items.map((point) => {
     const marker = L.circleMarker(L.latLng(point.Latitude, point.Longitude), {
       radius: 5,
-      weight: point.reviewCount ? 1 + (point.reviewCount > 2 ? 1 : 0) : 1,
+      weight: point.ReviewCount ? 1 + (point.ReviewCount > 2 ? 1 : 0) : 1,
       color: 'black',
-      fillOpacity: OPACITY_BY_RATING[point.rating as keyof typeof OPACITY_BY_RATING],
-      fillColor: COLOR_BY_RATING[point.rating as keyof typeof COLOR_BY_RATING],
+      fillOpacity: OPACITY_BY_RATING[point.Rating as keyof typeof OPACITY_BY_RATING],
+      fillColor: COLOR_BY_RATING[point.Rating as keyof typeof COLOR_BY_RATING],
     });
 
     marker.on('click', () => {
