@@ -1,7 +1,8 @@
 import os
 
-from flask import Blueprint, Response, jsonify
-from models import Point
+from flask import Blueprint, Response, jsonify, request
+from models import Point, Review
+from extensions import db, cache
 
 points_bp = Blueprint('points', __name__)
 
@@ -10,35 +11,65 @@ DATABASE = (
 )
 
 @points_bp.route('/')
+@cache.cached(timeout=60*5)
 def index():
   points = Point.query.all()
   return jsonify(points)
 
-@points_bp.route('/', methods=['POST'])
+@points_bp.route('', methods=['POST'])
 def create():
-  # Create a point
-  return Response("POST /api/v1/points", status=404, mimetype='application/json')
-
-@points_bp.route('/<int:point_id>')
-def show(point_id):
-  point = Point.query.get(point_id)
-
-  # Fix: Proper Error Handling and consistent messages
-  if point is None:
-    return Response(status=404)
+  data = request.json
+  dataReview = data.get('Review')
+  
+  point = Point(
+    ID=None,
+    Latitude=data.get('Latitude'),
+    Longitude=data.get('Longitude'),
+    Reviews=[
+      Review(
+        ID=None,
+        Rating=dataReview.get('Rating'),
+        Duration=dataReview.get('Duration'),
+        Name=dataReview.get('Name'),
+        Comment=dataReview.get('Comment'),
+        Signal=dataReview.get('Signal'),
+        RideAt=dataReview.get('RideAt'),
+        CreatedBy=request.remote_addr,
+      )
+    ]
+  )
+  
+  db.session.add(point)
+  db.session.commit()
   
   return jsonify(point)
 
-@points_bp.route('/<int:point_id>/review', methods=['POST'])
+@points_bp.route('/<int:point_id>')
+def show(point_id):
+  point = Point.query.get_or_404(point_id)
+  return jsonify(point)
+
+@points_bp.route('/<int:point_id>/review', methods=['GET', 'POST'])
 def create_review(point_id):
-  point = find_point_by_id(point_id)
+  point = Point.query.get_or_404(point_id)
+  data = request.json
+    
+  review = Review(
+    ID=None,
+    Rating=data.get('Rating'),
+    Duration=data.get('Duration'),
+    Name=data.get('Name'),
+    Comment=data.get('Comment'),
+    Signal=data.get('Signal'),
+    RideAt=data.get('RideAt'),
+    CreatedBy=request.remote_addr,
+    PointId=point.ID
+  )
   
-   # Fix: Proper Error Handling and consistent messages
-  if point is None:
-    return Response(status=404)
+  db.session.add(review)
+  db.session.commit()
   
-  # Create a review for a point
-  return Response("POST /api/v1/points/" + str(point_id) + "/review", status=404, mimetype='application/json')
+  return jsonify(review)
 
 @points_bp.route('/<int:point_id>/duplicate', methods=['POST'])
 def report_duplicate(point_id):

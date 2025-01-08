@@ -1,6 +1,6 @@
 <template>
   <div v-if="currentComponent !== 'AddSpotForm'" class="AddSpot">
-    <p v-if="!selectedCoords">
+    <p v-if="!selectedCoords && !selectedPoint">
       Zoom the crosshairs into your hitchhiking spot. Be as precise as possible!
     </p>
     <p v-else>
@@ -13,12 +13,16 @@
 </template>
 
 <script setup lang="ts">
+import { usePointsStore } from '@/stores/points';
 import { useUiStore } from '@/stores/ui';
 import { computed } from 'vue';
 import Map from '../Leaflet';
 import { storeToRefs } from 'pinia';
 
 const map = Map.getMap();
+
+const pointsStore = usePointsStore();
+const selectedPoint = computed(() => pointsStore.getSelectedPoint);
 
 const uiStore = useUiStore();
 const { selectedCoords, selectedDestCoords, currentComponent } = storeToRefs(uiStore);
@@ -45,7 +49,7 @@ const cancel = () => {
 };
 
 const actions = computed(() => {
-  if (!selectedCoords.value) {
+  if (!selectedCoords.value && !selectedPoint.value) {
     return [
       { label: 'Done', onClick: selectCoords },
       { label: 'Cancel', onClick: cancel },
@@ -65,7 +69,7 @@ const actions = computed(() => {
   @apply absolute flex flex-col items-center w-full bottom-6 z-50 text-black text-center block;
 
   &__Actions {
-    @apply space-x-2;
+    @apply flex space-x-2;
   }
 
   p {

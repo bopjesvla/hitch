@@ -8,6 +8,25 @@ type Point = {
   Longitude: number;
   rating: number;
   wait: number;
+  Reviews: Review[];
+};
+
+type PointInput = {
+  Latitude: number;
+  Longitude: number;
+};
+
+type Review = {
+  ID: number;
+  // TODO: Remaining attributes
+};
+
+type ReviewInput = {
+  Rating: number;
+  Duration: number;
+  Comment: string;
+  Name: string;
+  PointId: number;
 };
 
 export const usePointsStore = defineStore('points', () => {
@@ -30,8 +49,33 @@ export const usePointsStore = defineStore('points', () => {
     selectedPoint.value = point;
   };
 
-  const createPoint = (point: Point) => {
-    items.value.push(point);
+  const createPoint = async (
+    pointInput: PointInput & {
+      Review: ReviewInput;
+    },
+  ) => {
+    loading.value = true;
+
+    const response = await axios.post('http://localhost:5000/api/v1/points', pointInput);
+    items.value = [...items.value, response.data];
+
+    loading.value = false;
+    return response.data;
+  };
+
+  const createReview = async (reviewInput: ReviewInput) => {
+    loading.value = true;
+
+    const response = await axios.post(
+      `http://localhost:5000/api/v1/points/${reviewInput.PointId}/review`,
+      reviewInput,
+    );
+
+    const pointIndex = items.value.findIndex((p) => p.ID === response.data.PointId);
+    items.value[pointIndex].Reviews = [...(items.value[pointIndex].Reviews || []), response.data];
+
+    loading.value = false;
+    return response.data;
   };
 
   return {
@@ -42,5 +86,6 @@ export const usePointsStore = defineStore('points', () => {
     fetchPoints,
     selectPoint,
     createPoint,
+    createReview,
   };
 });

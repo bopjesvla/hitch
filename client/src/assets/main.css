@@ -39,6 +39,11 @@
   }
 
   button {
-    @apply border border-gray-500 rounded-sm min-w-56 bg-gray-100 text-2xl leading-8;
+    @apply block w-full border border-gray-500 rounded-sm min-w-56 bg-gray-100 text-sm leading-8;
+  }
+
+  textarea,
+  input {
+    @apply w-full bg-white border p-2;
   }
 }

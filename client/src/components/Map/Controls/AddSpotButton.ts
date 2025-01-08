@@ -1,3 +1,4 @@
+import { usePointsStore } from '@/stores/points';
 import { useUiStore } from '@/stores/ui';
 import L from 'leaflet';
 
@@ -13,8 +14,12 @@ const AddSpotButton = L.Control.extend({
 
     container.onclick = function (e) {
       const uiStore = useUiStore();
+      const pointsStore = usePointsStore();
+
       uiStore.closeSidebar();
       uiStore.currentMapAction = 'AddSpot';
+      pointsStore.selectedPoint = undefined;
+
       L.DomEvent.stopPropagation(e);
     }
 

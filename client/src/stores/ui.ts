@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { usePointsStore } from './points';
 
 interface UiState {
   isSidebarOpen: boolean;
@@ -44,11 +45,8 @@ export const useUiStore = defineStore('ui', {
      * @param component - The name of the component to display in the sidebar.
      */
     openSidebar(component: string) {
-      // TODO: Add AddSpotForm / Maybe other exceptions?
-      // Perhaps allow only certain combinations?
-      if (this.currentMapAction && component !== 'AddSpotForm') return;
-
       this.isSidebarOpen = true;
+      this.currentMapAction = null;
       this.currentComponent = component;
     },
     /**

@@ -4,6 +4,7 @@ from extensions import db
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.ext.hybrid import hybrid_property
   
 class Point(db.Model):
   __tablename__ = "Points"
@@ -11,7 +12,7 @@ class Point(db.Model):
   ID: Mapped[int] = mapped_column(primary_key=True)
   Latitude: Mapped[float] = mapped_column()
   Longitude: Mapped[float] = mapped_column()
-  CreatedAt: Mapped[datetime] = mapped_column(default=datetime.now, index=True)
+  CreatedAt: Mapped[datetime] = mapped_column(default=datetime.now(), index=True)
   Reviews: Mapped[List["Review"]] = relationship(
     default_factory=list,
     lazy="selectin"
@@ -19,19 +20,28 @@ class Point(db.Model):
   ReviewCount: Mapped[int]
   Rating: Mapped[int]
   Duration: Mapped[int]
-  
+    
+  # TODO: Surely there is a more efficient way
   @property
-  def ReviewCount(self) -> int:
+  def ReviewCount(self):
     return len(self.Reviews)
+  
+  @ReviewCount.setter
+  def ReviewCount(self, value):
+    pass
 
   # TODO: Surely there is a more efficient way
   @property
-  def Rating(self) -> int:
+  def Rating(self):
     return round(sum([r.Rating for r in self.Reviews]) / len(self.Reviews))
+
+  @Rating.setter
+  def Rating(self, value):
+    pass
   
   # TODO: Surely there is a more efficient way
   @property
-  def Duration(self) -> int:
+  def Duration(self):
     durations = []
     
     for r in self.Reviews:
@@ -42,6 +52,10 @@ class Point(db.Model):
       return None
     
     return round(sum(durations) / len(durations))
+  
+  @Duration.setter
+  def Duration(self, value):
+    pass
 
 class Review(db.Model):
   __tablename__ = "Reviews"
@@ -54,5 +68,5 @@ class Review(db.Model):
   Signal: Mapped[str] = mapped_column()
   RideAt: Mapped[str] = mapped_column()
   CreatedBy: Mapped[str] = mapped_column()
-  CreatedAt: Mapped[datetime] = mapped_column(default=datetime.now, index=True)
+  CreatedAt: Mapped[datetime] = mapped_column(default=datetime.now(), index=True)
   PointId: Mapped[int] = mapped_column(ForeignKey("Points.ID"), default=None)

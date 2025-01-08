@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, type Component } from 'vue';
+import { onMounted, type Component, computed } from 'vue';
 import L from 'leaflet';
 import Map from './Leaflet.ts';
 
@@ -24,10 +24,20 @@ const pointsStore = usePointsStore();
 const uiStore = useUiStore();
 
 const { currentMapAction } = storeToRefs(uiStore);
+const points = computed(() => pointsStore.items);
 
 const MapActionComponents: { [key: string]: Component } = {
   AddSpot,
 };
+
+const circleMarker = (point: Point) =>
+  L.circleMarker(L.latLng(point.Latitude, point.Longitude), {
+    radius: 5,
+    weight: point.ReviewCount ? 1 + (point.ReviewCount > 2 ? 1 : 0) : 1,
+    color: 'black',
+    fillOpacity: OPACITY_BY_RATING[point.Rating as keyof typeof OPACITY_BY_RATING],
+    fillColor: COLOR_BY_RATING[point.Rating as keyof typeof COLOR_BY_RATING],
+  });
 
 onMounted(async () => {
   const map = Map.getMap();
@@ -57,14 +67,8 @@ onMounted(async () => {
     disableClusteringAtZoom: 7, // Any higher and it crashes early
   });
 
-  pointsStore.items.map((point) => {
-    const marker = L.circleMarker(L.latLng(point.Latitude, point.Longitude), {
-      radius: 5,
-      weight: point.ReviewCount ? 1 + (point.ReviewCount > 2 ? 1 : 0) : 1,
-      color: 'black',
-      fillOpacity: OPACITY_BY_RATING[point.Rating as keyof typeof OPACITY_BY_RATING],
-      fillColor: COLOR_BY_RATING[point.Rating as keyof typeof COLOR_BY_RATING],
-    });
+  points.value.map((point) => {
+    const marker = circleMarker(point);
 
     marker.on('click', () => {
       pointsStore.selectPoint(point);
@@ -72,6 +76,17 @@ onMounted(async () => {
     });
 
     markers.addLayer(marker);
+  });
+
+  pointsStore.$onAction(({ name, after }) => {
+    if (name !== 'createPoint') return;
+
+    console.log('createPoint');
+
+    after((result: Point) => {
+      const marker = circleMarker(result);
+      markers.addLayer(marker);
+    });
   });
 
   map.addLayer(markers);

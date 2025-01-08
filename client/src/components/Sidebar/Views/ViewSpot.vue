@@ -1,14 +1,9 @@
 <template>
   <div v-if="point">
-    <h2 class="ViewSpot__Header">
-      <a
-        target="_blank"
-        :href="`https://www.google.com/maps/place/${point.Latitude},${point.Longitude}`"
-      >
-        <!-- TODO: Shorten the strings, add link icon -->
-        {{ point.Latitude }}, {{ point.Longitude }}
-      </a>
-    </h2>
+    <SidebarHeader
+      :title="`${parseFloat(point.Latitude).toFixed(8)}, ${parseFloat(point.Longitude).toFixed(8)}`"
+      :link="`https://www.google.com/maps/place/${point.Latitude},${point.Longitude}`"
+    />
     <p>
       Rating: {{ point.Rating }}/5<br />
       Waiting time: {{ point.Duration ? `${point.Duration} min` : '-' }}<br />
@@ -49,20 +44,31 @@
         </div>
       </div>
     </div>
+    <button @click="handleAddReview">Review Spot</button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useUiStore } from '@/stores/ui';
 import { usePointsStore } from '@/stores/points';
 import { computed } from 'vue';
 
+import SidebarHeader from '../SidebarHeader.vue';
+
+const uiStore = useUiStore();
 const pointsStore = usePointsStore();
+
 const point = computed(() => pointsStore.getSelectedPoint);
 const reviewsWithComments = computed(() =>
   point.value.Reviews.filter((r) => !!r.Comment).sort(
     (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt),
   ),
 );
+
+const handleAddReview = () => {
+  uiStore.closeSidebar();
+  uiStore.currentMapAction = 'AddSpot';
+};
 </script>
 
 <style lang="scss" scoped>

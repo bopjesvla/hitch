@@ -9,7 +9,7 @@ import sqlite3
 import random
 import math
 
-from extensions import db
+from extensions import db, compress, cache, cors
 from api.api import api_bp
 
 # Database
@@ -19,9 +19,19 @@ DATABASE = (
 
 def create_app():
     app = Flask(__name__)
+    
+    # TODO: Move into dotenv
+    # SQLAlchemy
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///../{DATABASE}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SQLALCHEMY_ECHO"] = True
+    
+    # Cache
+    app.config["CACHE_TYPE"] = "SimpleCache"
+    app.config["CACHE_DEFAULT_TIMEOUT"] = 60*5
+    
+    # CORS
+    app.config["CORS_RESOURCES"] = {r"/api/*": {"origins": "*"}}
     
     register_extensions(app)
     register_blueprints(app)
@@ -30,6 +40,15 @@ def create_app():
 
 def register_extensions(app):
     db.init_app(app)
+    compress.init_app(app)
+    cache.init_app(app)
+    cors.init_app(app)
+    
+    def get_cache_key(request):
+        return request.url
+    
+    compress.cache = cache
+    compress.cache_key = get_cache_key
         
 def register_blueprints(app):
     app.register_blueprint(api_bp, url_prefix='/api/v1')
