@@ -14,8 +14,31 @@ DATABASE = (
 
 # Spots
 df = pd.read_sql(
-    "select * from points where not banned and datetime is not null",
-    sqlite3.connect(DATABASE),
+    sql="""
+        SELECT 
+            Reviews.ID as id, 
+            Points.Latitude as lat, 
+            Points.Longitude as lon, 
+            Rating as rating, 
+            Duration as wait, 
+            Name as name, 
+            Comment as comment, 
+            Reviews.CreatedAt as datetime, 
+            0 as reviewed, 
+            0 as banned, Reviews.CreatedBy as ip, 
+            Destinations.Latitude as dest_lat, 
+            Destinations.Longitude as dest_lon, 
+            Signal as signal, 
+            RideAt as ride_datetime 
+        FROM Reviews
+        LEFT JOIN
+            Points ON Reviews.PointId = Points.ID
+        LEFT JOIN
+            Destinations ON Destinations.ReviewId = Reviews.ID
+		WHERE
+			Reviews.CreatedAt NOT NULL;
+    """,
+    con=sqlite3.connect(DATABASE),
 )
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
@@ -53,7 +76,26 @@ timeline_plot = fig.to_html("dash.html", full_html=False)
 
 # Duplicates
 df = pd.read_sql(
-    "select * from duplicates",
+    """
+    SELECT
+        Duplicates.ID as id,
+        FromPoint.Latitude as from_lat,
+        FromPoint.Longitude as from_lon,
+        ToPoint.Latitude as to_lat,
+        ToPoint.Longitude as to_lon,
+        0 as accepted,
+        0 as reviewed,
+        Duplicates.CreatedBy as ip,
+        Duplicates.CreatedAt as datetime
+    FROM
+        Duplicates
+    LEFT JOIN Points as FromPoint
+        ON Duplicates.FromPointId = FromPoint.ID
+    LEFT JOIN Points as ToPoint
+        ON Duplicates.ToPointId = ToPoint.ID
+    WHERE
+        Duplicates.CreatedAt NOT NULL;
+    """,
     sqlite3.connect(DATABASE),
 )
 
@@ -92,7 +134,22 @@ timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
 # Hitchwiki
 df = pd.read_sql(
-    "select * from hitchwiki",
+    """
+    SELECT
+        Hitchwiki.ID as id,
+        Points.Latitude as from_lat,
+        Points.Longitude as from_lon,
+        0 as accepted,
+        0 as reviewed,
+        Hitchwiki.CreatedBy as ip,
+        Hitchwiki.CreatedAt as datetime
+    FROM
+        Hitchwiki
+    LEFT JOIN Points
+        ON Hitchwiki.PointId = Points.ID
+    WHERE
+        Hitchwiki.CreatedAt NOT NULL;
+    """,
     sqlite3.connect(DATABASE),
 )
 
@@ -131,7 +188,7 @@ timeline_plot_hitchwiki = fig.to_html("dash.html", full_html=False)
 
 
 # Put together
-template = open("dashboard_template.html").read()
+template = open("templates/dashboard_template.html").read()
 
 output = Template(template).substitute(
     {
@@ -141,4 +198,4 @@ output = Template(template).substitute(
     }
 )
 
-open("dashboard.html", "w").write(output)
+open("dist/dashboard.html", "w").write(output)

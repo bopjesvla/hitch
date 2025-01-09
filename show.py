@@ -6,7 +6,6 @@ import sqlite3
 import os
 import html
 import sys
-from branca.element import Element
 from string import Template
 import networkx
 
@@ -44,16 +43,53 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
     return brng
 
-
 # loading data from database
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 points = pd.read_sql(
-    sql="select * from points where not banned order by datetime is not null desc, datetime desc",
+    sql="""
+    SELECT 
+        Reviews.ID as id, 
+        Points.Latitude as lat, 
+        Points.Longitude as lon, 
+        Rating as rating, 
+        Duration as wait, 
+        Name as name, 
+        Comment as comment, 
+        Reviews.CreatedAt as datetime, 
+        0 as reviewed, 
+        0 as banned, Reviews.CreatedBy as ip, 
+        Destinations.Latitude as dest_lat, 
+        Destinations.Longitude as dest_lon, 
+        Signal as signal, 
+        RideAt as ride_datetime 
+    FROM Reviews 
+    LEFT JOIN
+        Points ON Reviews.PointId = Points.ID
+    LEFT JOIN
+        Destinations ON Destinations.ReviewId = Reviews.ID;
+    """,
     con=sqlite3.connect(fn),
 )
 
 duplicates = pd.read_sql(
-    "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
+    """
+    SELECT
+        Duplicates.ID as id,
+        FromPoint.Latitude as from_lat,
+        FromPoint.Longitude as from_lon,
+        ToPoint.Latitude as to_lat,
+        ToPoint.Longitude as to_lon,
+        0 as accepted,
+        0 as reviewed,
+        Duplicates.CreatedBy as ip,
+        Duplicates.CreatedAt as datetime
+    FROM
+        Duplicates
+    LEFT JOIN Points as FromPoint
+        ON Duplicates.FromPointId = FromPoint.ID
+    LEFT JOIN Points as ToPoint
+        ON Duplicates.ToPointId = ToPoint.ID;
+    """, sqlite3.connect(fn)
 )
 
 print(f"{len(points)} points currently")
@@ -184,7 +220,7 @@ points.loc[oldies, "text"] = (
 
 groups = points.groupby(["lat", "lon"])
 
-places = groups[["country"]].first()
+places = groups[["id"]].first()
 places["rating"] = groups.rating.mean().round()
 places["wait"] = points[~points.wait.isnull()].groupby(["lat", "lon"]).wait.mean()
 places["distance"] = (
@@ -282,8 +318,8 @@ header = header.replace(
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
-outname = "light.html" if LIGHT else "new.html" if NEW else "index.html"
-template = open("src.html").read()
+outname = "dist/" + ("light.html" if LIGHT else "new.html" if NEW else "index.html")
+template = open("templates/index_template.html").read()
 
 output = Template(template).substitute(
     {
@@ -313,7 +349,7 @@ if not LIGHT:
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), ' 🕒', '')
 
     recent[
-        ["url", "country", "datetime", "name", "rating", "distance", "text"]
+        ["url", "datetime", "name", "rating", "distance", "text"]
     ].to_html("recent.html", render_links=True, index=False)
 
     duplicates["from_url"] = (

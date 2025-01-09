@@ -1,11 +1,10 @@
+import os
+
 import numpy as np
 import pandas as pd
 import sqlite3
 import folium
-from folium.raster_layers import ImageOverlay
 from matplotlib import cm, colors
-import scipy.stats
-
 
 def haversine_np(lon1, lat1, lon2, lat2):
     """
@@ -26,10 +25,32 @@ def haversine_np(lon1, lat1, lon2, lat2):
     km = 6367 * c
     return km
 
-
-fn = "/home/bob/dump(1).sqlite"
+fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 points = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
+    """
+        SELECT 
+            Reviews.ID as id, 
+            Points.Latitude as lat, 
+            Points.Longitude as lon, 
+            Rating as rating, 
+            Duration as wait, 
+            Name as name, 
+            Comment as comment, 
+            Reviews.CreatedAt as datetime, 
+            0 as reviewed, 
+            0 as banned, Reviews.CreatedBy as ip, 
+            Destinations.Latitude as dest_lat, 
+            Destinations.Longitude as dest_lon, 
+            Signal as signal, 
+            RideAt as ride_datetime 
+        FROM Reviews
+        LEFT JOIN
+            Points ON Reviews.PointId = Points.ID
+        LEFT JOIN
+            Destinations ON Destinations.ReviewId = Reviews.ID
+		WHERE
+			Reviews.CreatedAt NOT NULL;
+    """,
     sqlite3.connect(fn),
 )
 
@@ -88,6 +109,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(f"heatmap-{VAR}-per-{DIVIDER}.html")
+    m.save(f"dist/heatmap-{VAR}-per-{DIVIDER}.html")
 else:
-    m.save(f"heatmap-{VAR}.html")
+    m.save(f"dist/heatmap-{VAR}.html")

@@ -63,7 +63,7 @@ def get_db():
 
 @app.route("/", methods=["GET"])
 def index():
-    return send_file("index.html")
+    return send_file("dist/index.html")
 
 # Vue Client
 @app.route("/beta", defaults={'path': ''}, methods=["GET"])
@@ -71,26 +71,26 @@ def index():
 @app.route("/beta/<path:path>")
 def client(path):
     if (path):
-        return send_from_directory('./dist/', path)
-    return send_file('./dist/index.html')
+        return send_from_directory('./dist_client/', path)
+    return send_file('./dist_client/index.html')
 
 @app.route("/light.html", methods=["GET"])
 def light():
-    return send_file("light.html")
+    return send_file("dist/light.html")
 
 
 @app.route("/lines.html", methods=["GET"])
 def lines():
-    return send_file("lines.html")
+    return send_file("dist/lines.html")
 
 
 @app.route("/dashboard.html", methods=["GET"])
 def dashboard():
-    return send_file("dashboard.html")
+    return send_file("dist/dashboard.html")
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
-    return send_file("heatmap.html")
+    return send_file("dist/heatmap.html")
 
 
 @app.route("/tiny-world-map.json", methods=["GET"])
@@ -100,27 +100,27 @@ def tinyworldmap():
 
 @app.route("/heatmap-wait.html", methods=["GET"])
 def heatmapwait():
-    return send_file("heatmap-wait.html")
+    return send_file("dist/heatmap-wait.html")
 
 
 @app.route("/heatmap-distance.html", methods=["GET"])
 def heatmapdistance():
-    return send_file("heatmap-distance.html")
+    return send_file("dist/heatmap-distance.html")
 
 
 @app.route("/new.html", methods=["GET"])
 def new():
-    return send_file("new.html")
+    return send_file("dist/new.html")
 
 
 @app.route("/recent.html", methods=["GET"])
 def recent():
-    return send_file("recent.html")
+    return send_file("dist/recent.html")
 
 
 @app.route("/recent-dups.html", methods=["GET"])
 def recent_dups():
-    return send_file("recent-dups.html")
+    return send_file("dist/recent-dups.html")
 
 
 @app.route("/favicon.ico", methods=["GET"])
@@ -131,14 +131,6 @@ def favicon():
 @app.route("/icon.png", methods=["GET"])
 def icon():
     return send_file("hitchwiki-high-contrast-no-car-flipped.png")
-
-@app.route("/content/report_duplicate.png", methods=["GET"])
-def report_duplicate_image():
-    return send_file("content/report_duplicate.png")
-
-@app.route("/content/route_planner.png", methods=["GET"])
-def route_planner_image():
-    return send_file("content/route_planner.png")
 
 
 @app.route("/manifest.json", methods=["GET"])

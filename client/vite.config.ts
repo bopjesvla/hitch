@@ -8,7 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   base: '/beta/',
   build: {
-    outDir: '../dist',
+    outDir: '../dist_client',
     assetsDir: '',
     emptyOutDir: true,
   },
