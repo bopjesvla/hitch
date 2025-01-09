@@ -24,7 +24,7 @@ import { storeToRefs } from 'pinia';
 const pointsStore = usePointsStore();
 const uiStore = useUiStore();
 
-const { currentMapAction } = storeToRefs(uiStore);
+const { currentMapAction, currentComponent } = storeToRefs(uiStore);
 const points = computed(() => pointsStore.items);
 
 const originMarker = shallowRef<L.Marker>();
@@ -43,6 +43,7 @@ const circleMarker = (point: Point) =>
     color: 'black',
     fillOpacity: OPACITY_BY_RATING[point.Rating as keyof typeof OPACITY_BY_RATING],
     fillColor: COLOR_BY_RATING[point.Rating as keyof typeof COLOR_BY_RATING],
+    bubblingMouseEvents: false,
   });
 
 onMounted(async () => {
@@ -86,6 +87,12 @@ onMounted(async () => {
   });
 
   map.addLayer(markers);
+
+  // When clicking on map, close sidebar unless the user is actively editing.
+  map.on('click', () => {
+    if (currentMapAction.value || currentComponent.value === 'AddSpotForm') return;
+    uiStore.closeSidebar();
+  });
 
   // Listen for points being added and add them to the map immediately
   pointsStore.$onAction(({ name, after }) => {
