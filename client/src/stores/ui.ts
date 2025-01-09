@@ -81,8 +81,7 @@ export const useUiStore = defineStore('ui', {
       this.isSidebarOpen = false;
       this.currentComponent = null;
       this.currentMapAction = null;
-      this.selectCoords(null);
-      this.selectDestCoords(null);
+      this.resetCoords();
     },
   },
 });

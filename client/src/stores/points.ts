@@ -37,19 +37,20 @@ type ReviewInput = {
 };
 
 export const usePointsStore = defineStore('points', () => {
-  const loading = ref(false);
+  const isLoading = ref(false);
+  const isSubmitting = ref(false);
   const items = shallowRef<Point[]>([]);
   const selectedPoint = ref<Point | undefined>(undefined);
 
   const getSelectedPoint = computed(() => selectedPoint.value);
 
   const fetchPoints = async () => {
-    loading.value = true;
+    isLoading.value = true;
 
     const response = await axios.get('http://localhost:5000/api/v1/points');
     items.value = response.data as Point[];
 
-    loading.value = false;
+    isLoading.value = false;
   };
 
   const selectPoint = (point: Point) => {
@@ -61,17 +62,17 @@ export const usePointsStore = defineStore('points', () => {
       Review: ReviewInput;
     },
   ) => {
-    loading.value = true;
+    isSubmitting.value = true;
 
     const response = await axios.post('http://localhost:5000/api/v1/points', pointInput);
     items.value = [...items.value, response.data];
 
-    loading.value = false;
+    isSubmitting.value = false;
     return response.data;
   };
 
   const createReview = async (reviewInput: ReviewInput) => {
-    loading.value = true;
+    isSubmitting.value = true;
 
     const response = await axios.post(
       `http://localhost:5000/api/v1/points/${reviewInput.PointId}/review`,
@@ -86,12 +87,13 @@ export const usePointsStore = defineStore('points', () => {
       point.Rating + (response.data.Rating - point.Rating) / (point.ReviewCount + 1),
     );
 
-    loading.value = false;
+    isSubmitting.value = false;
     return response.data;
   };
 
   return {
-    loading,
+    isLoading,
+    isSubmitting,
     items,
     selectedPoint,
     getSelectedPoint,

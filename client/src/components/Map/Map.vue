@@ -1,4 +1,5 @@
 <template>
+  <div v-if="isLoading" class="LoadingIndicator">Loading...</div>
   <component v-if="currentMapAction" :is="MapActionComponents[currentMapAction]" />
   <div id="map"></div>
 </template>
@@ -25,6 +26,7 @@ const pointsStore = usePointsStore();
 const uiStore = useUiStore();
 
 const { currentMapAction, currentComponent } = storeToRefs(uiStore);
+const isLoading = computed(() => pointsStore.isLoading);
 const points = computed(() => pointsStore.items);
 
 const originMarker = shallowRef<L.Marker>();
@@ -139,11 +141,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.LoadingIndicator,
 #map {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+.LoadingIndicator {
+  @apply flex text-center text-xl z-30 bg-black/50 text-white items-center justify-center;
 }
 </style>

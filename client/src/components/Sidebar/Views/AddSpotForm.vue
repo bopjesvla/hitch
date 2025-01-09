@@ -1,7 +1,7 @@
 <template>
   <div>
+    <SidebarHeader :title="selectedPoint ? `New Review` : `New Spot`" />
     <form class="space-y-4" @submit.prevent="submitForm">
-      <SidebarHeader :title="selectedPoint ? `New Review` : `New Spot`" />
       <span class="block font-sm text-center bg-slate-100">{{
         `${[Number(lat).toFixed(4), Number(lon).toFixed(4)].join(', ')} &#8594; ${
           destLat && destLon
@@ -20,6 +20,7 @@
               :value="5 - x"
               name="star-radio"
               class="peer hidden"
+              :disabled="isSubmitting"
             />
             <label
               :for="`st-${x}`"
@@ -33,19 +34,26 @@
         <b>How long did you wait?</b>
         <span class="AddSpotForm__Hint block">Leave blank if you don't remember.</span>
         <div class="flex items-end">
-          <input v-model="duration" type="number" class="border-r-0 text-right" />
+          <input
+            v-model="duration"
+            type="number"
+            class="border-r-0 text-right"
+            :disabled="isSubmitting"
+          />
           <span class="border border-l-0 p-2">minutes</span>
         </div>
       </div>
       <div class="AddSpotForm__InputGroup">
         <b>Comment <span class="AddSpotForm__Hint">(optional)</span></b>
-        <textarea v-model="comment" />
+        <textarea v-model="comment" :disabled="isSubmitting" />
       </div>
       <div class="AddSpotForm__InputGroup">
         <b>Public nickname <span class="AddSpotForm__Hint">(alphanumeric)</span></b>
-        <input v-model="name" type="text" />
+        <input v-model="name" type="text" :disabled="isSubmitting" />
       </div>
-      <button type="submit">Submit</button>
+      <button type="submit" :disabled="isSubmitting">
+        {{ isSubmitting ? `Submitting...` : `Submit` }}
+      </button>
     </form>
   </div>
 </template>
@@ -63,6 +71,7 @@ const pointsStore = usePointsStore();
 
 const { selectedCoords, selectedDestCoords } = storeToRefs(uiStore);
 const selectedPoint = computed(() => pointsStore.getSelectedPoint);
+const isSubmitting = computed(() => pointsStore.isSubmitting);
 
 const lat = computed(() => selectedPoint.value?.Latitude || selectedCoords.value?.lat || '');
 const lon = computed(() => selectedPoint.value?.Longitude || selectedCoords.value?.lng || '');
@@ -90,17 +99,17 @@ const submitForm = async () => {
       PointId: selectedPoint.value.ID,
       ...reviewInput,
     });
+  } else {
+    const point = await pointsStore.createPoint({
+      Latitude: lat.value,
+      Longitude: lon.value,
+      Review: reviewInput,
+    });
 
-    return uiStore.openSidebar('ViewSpot');
+    if (point) pointsStore.selectPoint(point);
   }
 
-  const point = await pointsStore.createPoint({
-    Latitude: lat.value,
-    Longitude: lon.value,
-    Review: reviewInput,
-  });
-
-  pointsStore.selectPoint(point);
+  uiStore.resetCoords();
   return uiStore.openSidebar('ViewSpot');
 };
 </script>
