@@ -1,7 +1,7 @@
 <template>
   <div v-if="point">
     <SidebarHeader
-      :title="`${parseFloat(point.Latitude).toFixed(8)}, ${parseFloat(point.Longitude).toFixed(8)}`"
+      :title="`${point.Latitude.toFixed(8)}, ${point.Longitude.toFixed(8)}`"
       :link="`https://www.google.com/maps/place/${point.Latitude},${point.Longitude}`"
     />
     <p>
@@ -10,9 +10,9 @@
       Ride distance: -
       <!-- TODO: Avg Distance -->
     </p>
-    <div v-if="reviewsWithComments.length !== 0">
+    <div v-if="reviewsWithComments?.length !== 0">
       <h3>Comments</h3>
-      <div class="divide-y" v-if="reviewsWithComments.length !== 0">
+      <div class="divide-y">
         <div class="py-4" v-for="Review in reviewsWithComments" :key="Review.ID">
           <p class="mb-4">{{ Review.Comment }}</p>
           <span class="text-xs text-right w-full block text-opacity-50">
@@ -60,8 +60,8 @@ const pointsStore = usePointsStore();
 
 const point = computed(() => pointsStore.getSelectedPoint);
 const reviewsWithComments = computed(() =>
-  point.value.Reviews.filter((r) => !!r.Comment).sort(
-    (a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt),
+  point.value?.Reviews.filter((r) => !!r.Comment).sort(
+    (a, b) => new Date(b.CreatedAt).valueOf() - new Date(a.CreatedAt).valueOf(),
   ),
 );
 

@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, redirect, g, send_file, request, redirect
+from flask import Flask, redirect, g, send_file, send_from_directory, request, redirect
 import re
 import pandas as pd
 import requests
@@ -64,6 +64,15 @@ def get_db():
 @app.route("/", methods=["GET"])
 def index():
     return send_file("index.html")
+
+# Vue Client
+@app.route("/beta", defaults={'path': ''}, methods=["GET"])
+@app.route("/beta/", defaults={'path': ''}, methods=["GET"])
+@app.route("/beta/<path:path>")
+def client(path):
+    if (path):
+        return send_from_directory('./dist/', path)
+    return send_file('./dist/index.html')
 
 @app.route("/light.html", methods=["GET"])
 def light():

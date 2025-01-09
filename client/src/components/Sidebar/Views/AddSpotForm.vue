@@ -3,9 +3,9 @@
     <form class="space-y-4" @submit.prevent="submitForm">
       <SidebarHeader :title="selectedPoint ? `New Review` : `New Spot`" />
       <span class="block font-sm text-center bg-slate-100">{{
-        `${[parseFloat(lat).toFixed(4), parseFloat(lon).toFixed(4)].join(', ')} &#8594; ${
+        `${[Number(lat).toFixed(4), Number(lon).toFixed(4)].join(', ')} &#8594; ${
           destLat && destLon
-            ? [parseFloat(destLat).toFixed(4), parseFloat(destLon).toFixed(4)].join(', ')
+            ? [destLat.toFixed(4), destLon.toFixed(4)].join(', ')
             : 'unknown destination'
         }`
       }}</span>

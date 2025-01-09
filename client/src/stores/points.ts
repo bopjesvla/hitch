@@ -10,6 +10,7 @@ export type Point = {
   Duration: number;
   ReviewCount: number;
   Reviews: Review[];
+  CreatedAt: Date;
 };
 
 type PointInput = {
@@ -19,15 +20,20 @@ type PointInput = {
 
 type Review = {
   ID: number;
-  // TODO: Remaining attributes
-};
-
-type ReviewInput = {
   Rating: number;
   Duration: number;
   Comment: string;
   Name: string;
   PointId: number;
+  CreatedAt: Date;
+};
+
+type ReviewInput = {
+  Rating: number;
+  Duration?: number;
+  Comment?: string;
+  Name?: string;
+  PointId?: number;
 };
 
 export const usePointsStore = defineStore('points', () => {
