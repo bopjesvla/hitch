@@ -20,16 +20,16 @@ import { useUiStore } from '@/stores/ui';
 import Menu from './Views/Menu.vue';
 import ViewSpot from './Views/ViewSpot.vue';
 import AddSpotForm from './Views/AddSpotForm.vue';
-// import SpotFormContainer from '@/components/SpotFormContainer.vue';
-// import ShowSpot from '@/components/ShowSpot.vue';
+import DuplicateSubmitted from './Views/DuplicateSubmitted.vue';
 // import SuccessMessage from '@/components/SuccessMessage.vue';
-// import SuccessDuplicateMessage from '@/components/SuccessDuplicateMessage.vue';
+
 const uiStore = useUiStore();
 
 const MenuViews = {
   Menu,
   ViewSpot,
   AddSpotForm,
+  DuplicateSubmitted,
 };
 
 const isSpotFormContainer = ref(false);
@@ -56,7 +56,7 @@ const { isSidebarOpen, currentComponent } = storeToRefs(uiStore);
 }
 
 .Sidebar__Close {
-  @apply absolute top-6 right-6 border-none cursor-pointer;
+  @apply absolute z-20 top-6 right-6 border-none cursor-pointer;
 }
 
 .spot-form-container {

@@ -3,7 +3,9 @@
     <SidebarHeader
       :title="`${point.Latitude.toFixed(8)}, ${point.Longitude.toFixed(8)}`"
       :link="`https://www.google.com/maps/place/${point.Latitude},${point.Longitude}`"
-    />
+    >
+      <button class="border-none" @click="handleMarkDuplicate">Merge into nearby spot</button>
+    </SidebarHeader>
     <p>
       Rating: {{ point.Rating }}/5<br />
       Waiting time: {{ point.Duration ? `${point.Duration} min` : '-' }}<br />
@@ -69,6 +71,11 @@ const handleAddReview = () => {
   uiStore.closeSidebar();
   uiStore.currentMapAction = 'AddSpot';
 };
+
+const handleMarkDuplicate = () => {
+  uiStore.closeSidebar();
+  uiStore.currentMapAction = 'MarkDuplicate';
+}
 </script>
 
 <style lang="scss" scoped>

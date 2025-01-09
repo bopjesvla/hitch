@@ -1,13 +1,13 @@
 <template>
   <div v-if="isLoading" class="LoadingIndicator">Loading...</div>
-  <component v-if="currentMapAction" :is="MapActionComponents[currentMapAction]" />
-  <div :class="(currentZoom < 9 || originMarker || destMarker) ? 'Map--dimmed' : ''">
+  <MapAction v-if="currentMapAction" />
+  <div :class="currentZoom < 9 || originMarker || destMarker ? 'Map--dimmed' : ''">
     <div id="map"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, type Component, computed, shallowRef } from 'vue';
+import { onMounted, computed, shallowRef } from 'vue';
 import L from 'leaflet';
 import Map from './Leaflet.ts';
 
@@ -16,7 +16,7 @@ import AddSpotButton from './Controls/AddSpotButton';
 import MenuButton from './Controls/MenuButton';
 // import RouteButton from './Controls/RouteButton';
 
-import AddSpot from './Views/AddSpot.vue';
+import MapAction from './MapAction.vue';
 
 // Stores
 import { usePointsStore, type Point } from '@/stores/points';
@@ -33,10 +33,6 @@ const points = computed(() => pointsStore.items);
 
 const originMarker = shallowRef<L.Marker>();
 const destMarker = shallowRef<L.Marker>();
-
-const MapActionComponents: { [key: string]: Component } = {
-  AddSpot,
-};
 
 const targetMarker = (point: L.LatLng) => L.marker(point);
 
@@ -84,7 +80,16 @@ onMounted(async () => {
   points.value.map((point) => {
     const marker = circleMarker(point);
 
-    marker.on('click', () => {
+    marker.on('click', async () => {
+      if (uiStore.currentMapAction === 'MarkDuplicate') {
+        const confirmed = confirm('Are you sure you want to report a duplicate?');
+
+        if (!confirmed) return;
+
+        await pointsStore.markDuplicate(point);
+        return uiStore.openSidebar('DuplicateSubmitted');
+      }
+
       pointsStore.selectPoint(point);
       uiStore.openSidebar('ViewSpot');
     });

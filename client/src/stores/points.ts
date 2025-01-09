@@ -91,6 +91,20 @@ export const usePointsStore = defineStore('points', () => {
     return response.data;
   };
 
+  const markDuplicate = async (point: Point) => {
+    if (!selectedPoint.value) {
+      return alert('There was an error.');
+    }
+
+    isSubmitting.value = true;
+
+    await axios.post(`http://localhost:5000/api/v1/points/${selectedPoint.value.ID}/duplicate`, {
+      duplicateId: point.ID,
+    });
+
+    isSubmitting.value = false;
+  };
+
   return {
     isLoading,
     isSubmitting,
@@ -101,5 +115,6 @@ export const usePointsStore = defineStore('points', () => {
     selectPoint,
     createPoint,
     createReview,
+    markDuplicate,
   };
 });

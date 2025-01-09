@@ -67,6 +67,15 @@ class Review(db.Model):
   Comment: Mapped[str] = mapped_column()
   Signal: Mapped[str] = mapped_column()
   RideAt: Mapped[str] = mapped_column()
+  PointId: Mapped[int] = mapped_column(ForeignKey("Points.ID"))
   CreatedBy: Mapped[str] = mapped_column()
   CreatedAt: Mapped[datetime] = mapped_column(default=datetime.now(), index=True)
-  PointId: Mapped[int] = mapped_column(ForeignKey("Points.ID"), default=None)
+  
+class Duplicate(db.Model):
+  __tablename__ = "Duplicates"
+  
+  ID: Mapped[int] = mapped_column(primary_key=True)
+  FromPointId: Mapped[int] = mapped_column(ForeignKey("Points.ID"))
+  ToPointId: Mapped[int] = mapped_column(ForeignKey("Points.ID"))
+  CreatedBy: Mapped[str] = mapped_column()
+  CreatedAt: Mapped[datetime] = mapped_column(default=datetime.now(), index=True)

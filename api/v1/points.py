@@ -1,7 +1,7 @@
 import os
 
 from flask import Blueprint, Response, jsonify, request
-from models import Point, Review
+from models import Point, Review, Duplicate
 from extensions import db, cache
 
 points_bp = Blueprint('points', __name__, url_prefix='/points')
@@ -30,6 +30,7 @@ def create():
     Reviews=[
       Review(
         ID=None,
+        PointId=None,
         Rating=dataReview.get('Rating'),
         Duration=dataReview.get('Duration'),
         Name=dataReview.get('Name'),
@@ -77,11 +78,19 @@ def create_review(point_id):
 
 @points_bp.route('/<int:point_id>/duplicate', methods=['POST'])
 def report_duplicate(point_id):
-  point = find_point_by_id(point_id)
+  point = Point.query.get_or_404(point_id)
+  data = request.json
+    
+  # TODO: Somehow, this can accept the wrong values. I don't know why.
+  # An easy way to fuck up the database is by inserting a string as Review.Duration.
+  duplicate = Duplicate(
+    ID=None,
+    FromPointId=point.ID,
+    ToPointId=data.get('duplicateId'),
+    CreatedBy=request.remote_addr,
+  )
   
-   # Fix: Proper Error Handling and consistent messages
-  if point is None:
-    return Response(status=404)
+  db.session.add(duplicate)
+  db.session.commit()
   
-  # Report duplicate points
-  return Response("POST /api/v1/points/" + str(point_id) + "/duplicate", status=404, mimetype='application/json')
+  return jsonify(duplicate)
