@@ -1,7 +1,7 @@
 <template>
   <div v-if="isLoading" class="LoadingIndicator">Loading...</div>
   <component v-if="currentMapAction" :is="MapActionComponents[currentMapAction]" />
-  <div :class="currentZoom < 9 ? 'Map--dimmed' : ''">
+  <div :class="(currentZoom < 9 || originMarker || destMarker) ? 'Map--dimmed' : ''">
     <div id="map"></div>
   </div>
 </template>
