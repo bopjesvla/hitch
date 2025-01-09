@@ -29,6 +29,10 @@
   background-size: 80%;
 }
 
+.Map--dimmed .leaflet-overlay-pane {
+  opacity: 0.3;
+}
+
 /* Base styles */
 @layer base {
   a {

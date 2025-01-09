@@ -1,7 +1,9 @@
 <template>
   <div v-if="isLoading" class="LoadingIndicator">Loading...</div>
   <component v-if="currentMapAction" :is="MapActionComponents[currentMapAction]" />
-  <div id="map"></div>
+  <div :class="currentZoom < 9 ? 'Map--dimmed' : ''">
+    <div id="map"></div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -18,14 +20,14 @@ import AddSpot from './Views/AddSpot.vue';
 
 // Stores
 import { usePointsStore, type Point } from '@/stores/points';
-import { COLOR_BY_RATING, OPACITY_BY_RATING } from './MapConstants';
+import { COLOR_BY_RATING, OPACITY_BY_RATING, INITIAL_ZOOM } from './MapConstants';
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
 
 const pointsStore = usePointsStore();
 const uiStore = useUiStore();
 
-const { currentMapAction, currentComponent } = storeToRefs(uiStore);
+const { currentMapAction, currentComponent, currentZoom } = storeToRefs(uiStore);
 const isLoading = computed(() => pointsStore.isLoading);
 const points = computed(() => pointsStore.items);
 
@@ -68,6 +70,8 @@ onMounted(async () => {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
+  uiStore.currentZoom = INITIAL_ZOOM; // From Leaflet.ts
+
   // Fetch points and put them on the map!
   await pointsStore.fetchPoints();
 
@@ -89,6 +93,10 @@ onMounted(async () => {
   });
 
   map.addLayer(markers);
+
+  map.on('zoom', () => {
+    uiStore.currentZoom = map.getZoom();
+  });
 
   // When clicking on map, close sidebar unless the user is actively editing.
   map.on('click', () => {

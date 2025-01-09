@@ -1,3 +1,5 @@
+import { LatLng } from 'leaflet';
+
 export const OPACITY_BY_RATING = {
   1: 0.3,
   2: 0.4,
@@ -13,3 +15,6 @@ export const COLOR_BY_RATING = {
   4: 'lightgreen',
   5: 'lightgreen',
 };
+
+export const INITIAL_POS = new LatLng(51.505, -0.09);
+export const INITIAL_ZOOM = 13;

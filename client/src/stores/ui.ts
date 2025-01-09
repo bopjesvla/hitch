@@ -6,6 +6,7 @@ interface UiState {
   currentMapAction: string | null;
   selectedCoords: L.LatLng | null;
   selectedDestCoords: L.LatLng | null;
+  currentZoom: number | null;
 }
 
 /**
@@ -18,6 +19,7 @@ export const useUiStore = defineStore('ui', {
     currentMapAction: null,
     selectedCoords: null,
     selectedDestCoords: null,
+    currentZoom: null,
   }),
   actions: {
     resetCoords() {
