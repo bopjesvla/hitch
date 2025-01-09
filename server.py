@@ -125,22 +125,22 @@ def recent_dups():
 
 @app.route("/favicon.ico", methods=["GET"])
 def favicon():
-    return send_file("favicon.ico")
+    return send_file("assets/favicon.ico")
 
 
 @app.route("/icon.png", methods=["GET"])
 def icon():
-    return send_file("hitchwiki-high-contrast-no-car-flipped.png")
+    return send_file("assets/hitchwiki-high-contrast-no-car-flipped.png")
 
 
 @app.route("/manifest.json", methods=["GET"])
 def manifest():
-    return send_file("manifest.json")
+    return send_file("assets/manifest.json")
 
 
 @app.route("/sw.js", methods=["GET"])
 def sw():
-    return send_file("sw.js")
+    return send_file("assets/sw.js")
 
 
 @app.route("/.well-known/assetlinks.json", methods=["GET"])

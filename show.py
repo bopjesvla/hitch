@@ -326,8 +326,8 @@ output = Template(template).substitute(
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open("map.js").read(),
-        "hitch_style": open("style.css").read(),
+        "hitch_script": open("assets/map.js").read(),
+        "hitch_style": open("static/style.css").read(),
     }
 )
 
