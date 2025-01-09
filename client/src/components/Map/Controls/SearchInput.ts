@@ -1,4 +1,5 @@
 import Geocoder, { geocoders } from 'leaflet-control-geocoder';
+import Map from '../Leaflet';
 
 export default class SearchInput extends Geocoder {
   constructor() {
@@ -12,13 +13,24 @@ export default class SearchInput extends Geocoder {
       placeholder: 'Jump to city, search comments',
       geocoder: geocoders.photon(),
     };
+
+    // TODO: When typing, highlight points with relevant comments (old code below)
+    // (UI for this isn't super obvious, I didn't know it was possible...)
+    // - Leon, 9.1.2025
+
+    this.markGeocode = (e) => {
+      const map = Map.getMap();
+      map.setView(e.geocode.center, map.getZoom() || 11);
+
+      // Reset query
+      this.setQuery("");
+
+      // TODO: Highlight points (see above)
+
+      return this;
+    };
   }
 }
-
-// var geocoderOpts = {
-//   provider: 'photon',
-//   zoom: 11,
-// };
 
 // let oldMarkers = []
 // let updateRadius = e => {
@@ -34,11 +46,3 @@ export default class SearchInput extends Geocoder {
 //     }
 //     oldMarkers = markers
 // }
-
-// geocoderInput.addEventListener('input', updateRadius)
-// geocoderController.on('markgeocode', function (e) {
-//     var zoom = geocoderOpts['zoom'] || map.getZoom();
-//     map.setView(e.geocode.center, zoom);
-//     $$('.leaflet-control-geocoder input').value = ''
-//     updateRadius()
-// })
