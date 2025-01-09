@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, type Component, computed } from 'vue';
+import { onMounted, type Component, computed, shallowRef } from 'vue';
 import L from 'leaflet';
 import Map from './Leaflet.ts';
 
@@ -15,7 +15,7 @@ import MenuButton from './Controls/MenuButton';
 import AddSpot from './Views/AddSpot.vue';
 
 // Stores
-import { usePointsStore } from '@/stores/points';
+import { usePointsStore, type Point } from '@/stores/points';
 import { COLOR_BY_RATING, OPACITY_BY_RATING } from './MapConstants';
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
@@ -26,9 +26,14 @@ const uiStore = useUiStore();
 const { currentMapAction } = storeToRefs(uiStore);
 const points = computed(() => pointsStore.items);
 
+const originMarker = shallowRef<L.Marker>();
+const destMarker = shallowRef<L.Marker>();
+
 const MapActionComponents: { [key: string]: Component } = {
   AddSpot,
 };
+
+const targetMarker = (point: L.LatLng) => L.marker(point);
 
 const circleMarker = (point: Point) =>
   L.circleMarker(L.latLng(point.Latitude, point.Longitude), {
@@ -78,10 +83,11 @@ onMounted(async () => {
     markers.addLayer(marker);
   });
 
+  map.addLayer(markers);
+
+  // Listen for points being added and add them to the map immediately
   pointsStore.$onAction(({ name, after }) => {
     if (name !== 'createPoint') return;
-
-    console.log('createPoint');
 
     after((result: Point) => {
       const marker = circleMarker(result);
@@ -89,7 +95,32 @@ onMounted(async () => {
     });
   });
 
-  map.addLayer(markers);
+  // Add markers on the map when selecting target and destination coords
+  const addMarker = async (result: any, name: any) => {
+    let curMarker;
+
+    if (name === 'selectCoords') {
+      curMarker = originMarker;
+    } else if (name === 'selectDestCoords') {
+      curMarker = destMarker;
+    }
+
+    if (!curMarker) return;
+
+    if (!result && curMarker.value) {
+      return map.removeLayer(curMarker.value);
+    } else if (!result) {
+      return;
+    }
+
+    curMarker.value = targetMarker(result);
+    map.addLayer(curMarker.value);
+  };
+
+  uiStore.$onAction(({ name, after }) => {
+    if (name !== 'selectCoords' && name !== 'selectDestCoords') return;
+    after((result: L.LatLng | null) => addMarker(result, name));
+  });
 
   // TODO: Center on Coords if available
   // if (!window.location.hash.includes(',')) {

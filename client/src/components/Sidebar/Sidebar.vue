@@ -12,8 +12,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
+
+import { useUiStore } from '@/stores/ui';
 
 // Import your components here
 import Menu from './Views/Menu.vue';
@@ -40,9 +41,9 @@ const isMenu = ref(false);
 const sidebarClass = computed(() => ({
   'spot-form-container': isSpotFormContainer.value,
   'show-spot': isShowSpot.value,
-  'success': isSuccess.value,
+  success: isSuccess.value,
   'success-duplicate': isSuccessDuplicate.value,
-  'menu': isMenu.value,
+  menu: isMenu.value,
 }));
 
 const { isSidebarOpen, currentComponent } = storeToRefs(uiStore);

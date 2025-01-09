@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed, shallowRef } from 'vue';
 import axios from 'axios';
 
-type Point = {
+export type Point = {
   ID: number;
   Latitude: number;
   Longitude: number;

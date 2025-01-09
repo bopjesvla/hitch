@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { usePointsStore } from './points';
 
 interface UiState {
   isSidebarOpen: boolean;
@@ -21,6 +20,26 @@ export const useUiStore = defineStore('ui', {
     selectedDestCoords: null,
   }),
   actions: {
+    resetCoords() {
+      this.selectCoords(null);
+      this.selectDestCoords(null);
+    },
+    /**
+     * Select target coordinates for adding a spot
+     * @param coords - L.LatLng
+     */
+    selectCoords(coords: UiState['selectedCoords']) {
+      this.selectedCoords = coords;
+      return coords;
+    },
+    /**
+     * Select destination coordinates for adding a destination
+     * @param coords - L.LatLng
+     */
+    selectDestCoords(coords: UiState['selectedDestCoords']) {
+      this.selectedDestCoords = coords;
+      return coords;
+    },
     /**
      * Toggles the sidebar. If the sidebar is open, it resets the state.
      * Otherwise, it opens the sidebar with the specified component.
@@ -44,7 +63,7 @@ export const useUiStore = defineStore('ui', {
      *
      * @param component - The name of the component to display in the sidebar.
      */
-    openSidebar(component: string) {
+    async openSidebar(component: string) {
       this.isSidebarOpen = true;
       this.currentMapAction = null;
       this.currentComponent = component;
@@ -62,8 +81,8 @@ export const useUiStore = defineStore('ui', {
       this.isSidebarOpen = false;
       this.currentComponent = null;
       this.currentMapAction = null;
-      this.selectedCoords = null;
-      this.selectedDestCoords = null;
+      this.selectCoords(null);
+      this.selectDestCoords(null);
     },
   },
 });

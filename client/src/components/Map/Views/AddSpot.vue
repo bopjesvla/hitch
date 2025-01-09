@@ -7,17 +7,22 @@
       Where did your ride take you? Move the crosshairs near that location, then press done.
     </p>
     <div class="AddSpot__Actions">
-      <button v-for="action in actions" @click="action.onClick" :key="action.label">{{ action.label }}</button>
+      <button v-for="action in actions" @click="action.onClick" :key="action.label">
+        {{ action.label }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import L from 'leaflet';
+
 import { usePointsStore } from '@/stores/points';
 import { useUiStore } from '@/stores/ui';
-import { computed } from 'vue';
+
 import Map from '../Leaflet';
-import { storeToRefs } from 'pinia';
 
 const map = Map.getMap();
 
@@ -27,17 +32,12 @@ const selectedPoint = computed(() => pointsStore.getSelectedPoint);
 const uiStore = useUiStore();
 const { selectedCoords, selectedDestCoords, currentComponent } = storeToRefs(uiStore);
 
-const selectCoords = () => {
-  selectedCoords.value = map.getCenter();
-
-  // TODO: Add Marker to Map
-  // TODO: Set Opacity of other Markers to 0.5
-};
-
-const selectDestCoords = () => {
-  selectedDestCoords.value = map.getCenter();
-  uiStore.openSidebar('AddSpotForm');
-};
+onMounted(() => {
+  if (!selectedPoint.value) return;
+  const coords = new L.LatLng(selectedPoint.value.Latitude, selectedPoint.value.Longitude);
+  map.setView(coords);
+  uiStore.selectCoords(coords);
+});
 
 const skip = () => {
   uiStore.openSidebar('AddSpotForm');
@@ -46,19 +46,36 @@ const skip = () => {
 const cancel = () => {
   uiStore.currentComponent = null;
   uiStore.currentMapAction = null;
+  uiStore.resetCoords();
 };
 
 const actions = computed(() => {
   if (!selectedCoords.value && !selectedPoint.value) {
     return [
-      { label: 'Done', onClick: selectCoords },
+      { label: 'Done', onClick: () => uiStore.selectCoords(map.getCenter()) },
       { label: 'Cancel', onClick: cancel },
     ];
   }
 
   return [
     { label: 'Skip', onClick: skip },
-    { label: 'Done', onClick: selectDestCoords },
+    {
+      label: 'Done',
+      onClick: async () => {
+        uiStore.selectDestCoords(map.getCenter());
+        await uiStore.openSidebar('AddSpotForm');
+
+        if (selectedCoords.value && selectedDestCoords.value) {
+          const bounds = L.latLngBounds(selectedCoords.value, selectedDestCoords.value).pad(0.7);
+          map.fitBounds(bounds, {
+            paddingBottomRight: [
+              document.querySelector('.Sidebar')?.getBoundingClientRect().width || 384,
+              0,
+            ],
+          });
+        }
+      },
+    },
     { label: 'Cancel', onClick: cancel },
   ];
 });
