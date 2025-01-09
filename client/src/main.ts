@@ -1,6 +1,8 @@
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.default.css';
+import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
+
 import './assets/main.css'
 
 import { createApp } from 'vue'

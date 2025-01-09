@@ -8,6 +8,7 @@
   font-weight: normal;
 }
 
+/* Leaflet overrides */
 .leaflet-pane {
   z-index: 20;
 }
@@ -21,6 +22,11 @@
   z-index: 20;
 }
 
+.leaflet-control-geocoder-icon {
+  min-width: auto !important;
+}
+
+/* Base styles */
 @layer base {
   a {
     @apply border-b border-b-blue-500;

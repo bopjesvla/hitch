@@ -16,6 +16,7 @@
   "dependencies": {
     "axios": "^1.7.9",
     "leaflet": "^1.9.4",
+    "leaflet-control-geocoder": "^3.1.0",
     "leaflet.markercluster": "^1.5.3",
     "pinia": "^2.3.0",
     "sass-embedded": "^1.83.0",

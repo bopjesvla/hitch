@@ -8,6 +8,7 @@ import { onMounted, type Component, computed, shallowRef } from 'vue';
 import L from 'leaflet';
 import Map from './Leaflet.ts';
 
+import SearchInput from './Controls/SearchInput';
 import AddSpotButton from './Controls/AddSpotButton';
 import MenuButton from './Controls/MenuButton';
 // import RouteButton from './Controls/RouteButton';
@@ -50,6 +51,7 @@ onMounted(async () => {
   // Initialize Controls
   L.control.scale().addTo(map);
 
+  new SearchInput().addTo(map);
   new MenuButton().addTo(map);
   new AddSpotButton().addTo(map);
   // new RouteButton().addTo(map);

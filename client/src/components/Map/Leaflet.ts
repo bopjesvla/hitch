@@ -1,6 +1,8 @@
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 
+import 'leaflet-control-geocoder';
+
 const Map = (function () {
   let map: L.Map;
 
@@ -26,3 +28,4 @@ const Map = (function () {
 })();
 
 export default Map;
+export { L };
