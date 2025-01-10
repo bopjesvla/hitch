@@ -48,6 +48,12 @@ def lines():
 def dashboard():
     return send_file("dashboard.html")
 
+
+@app.route("/hitchhiking.html", methods=["GET"])
+def hitchhiking():
+    return send_file("hitchhiking.html")
+
+
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
     return send_file("heatmap.html")

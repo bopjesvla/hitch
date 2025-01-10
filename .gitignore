@@ -463,15 +463,20 @@ __pycache__/
 OpenCover/
 junit/
 
-# custom
+# Custom
+*.sqlite
+
 light.html
 recent.html
 index.html
-points.sqlite
 recent-dups.html
 lines.html
 dashboard.html
+hitchhiking.html
+
 *.ipynb
 *.kml
 *.gpx
 *_hidden.py
+
+cache/
