@@ -2,23 +2,26 @@ import L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import 'leaflet-control-geocoder';
 
-import { INITIAL_POS, INITIAL_ZOOM } from './MapConstants';
+import { useUiStore } from '@/stores/ui';
 
 const Map = (function () {
   let map: L.Map;
 
-  const createMap = function () {
+  const createMap = () => {
+    const uiStore = useUiStore();
+    uiStore.parseHash();
+
     // Initialize Map
     return L.map('map', {
       preferCanvas: true,
       worldCopyJump: true,
       zoomControl: false, // Adding manually for ordering
       minZoom: 1,
-    }).setView(INITIAL_POS, INITIAL_ZOOM);
+    }).setView(uiStore.currentPos, uiStore.currentZoom);
   };
 
   return {
-    getMap: function () {
+    getMap: () => {
       if (!map) {
         map = createMap();
       }

@@ -20,7 +20,7 @@ import MapAction from './MapAction.vue';
 
 // Stores
 import { usePointsStore, type Point } from '@/stores/points';
-import { COLOR_BY_RATING, OPACITY_BY_RATING, INITIAL_ZOOM } from './MapConstants';
+import { COLOR_BY_RATING, OPACITY_BY_RATING } from './MapConstants';
 import { useUiStore } from '@/stores/ui';
 import { storeToRefs } from 'pinia';
 
@@ -66,8 +66,6 @@ onMounted(async () => {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
-  uiStore.currentZoom = INITIAL_ZOOM; // From Leaflet.ts
-
   // Fetch points and put them on the map!
   await pointsStore.fetchPoints();
 
@@ -100,7 +98,11 @@ onMounted(async () => {
   map.addLayer(markers);
 
   map.on('zoom', () => {
-    uiStore.currentZoom = map.getZoom();
+    uiStore.setZoom(map.getZoom());
+  });
+
+  map.on('moveend', () => {
+    uiStore.setPos(map.getCenter());
   });
 
   // When clicking on map, close sidebar unless the user is actively editing.
@@ -142,8 +144,13 @@ onMounted(async () => {
   };
 
   uiStore.$onAction(({ name, after }) => {
-    if (name !== 'selectCoords' && name !== 'selectDestCoords') return;
-    after((result: L.LatLng | null) => addMarker(result, name));
+    if (name == 'selectCoords' || name == 'selectDestCoords') {
+      return after((result: L.LatLng | null) => addMarker(result, name));
+    }
+
+    if (name == 'setPos' || name == 'setZoom') {
+      return after(uiStore.setHash);
+    }
   });
 
   // TODO: Center on Coords if available

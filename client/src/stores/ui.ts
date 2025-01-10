@@ -1,4 +1,7 @@
+import L from 'leaflet';
 import { defineStore } from 'pinia';
+
+import { INITIAL_POS, INITIAL_ZOOM } from '@/components/Map/MapConstants';
 
 interface UiState {
   isSidebarOpen: boolean;
@@ -6,7 +9,8 @@ interface UiState {
   currentMapAction: string | null;
   selectedCoords: L.LatLng | null;
   selectedDestCoords: L.LatLng | null;
-  currentZoom: number | null;
+  currentPos: L.LatLng;
+  currentZoom: number;
 }
 
 /**
@@ -19,12 +23,50 @@ export const useUiStore = defineStore('ui', {
     currentMapAction: null,
     selectedCoords: null,
     selectedDestCoords: null,
-    currentZoom: null,
+    currentPos: INITIAL_POS,
+    currentZoom: INITIAL_ZOOM,
   }),
   actions: {
     resetCoords() {
       this.selectCoords(null);
       this.selectDestCoords(null);
+    },
+    /**
+     * Set the current position of the map
+     * @param coords
+     * @returns
+     */
+    setPos(coords: UiState['currentPos']) {
+      this.currentPos = coords;
+      return coords;
+    },
+    /**
+     * Parses the current hash on initial load
+     */
+    parseHash() {
+      if (!window.location.hash) return;
+
+      const params = new URLSearchParams(window.location.hash.substring(1)).get('map')?.split('/');
+
+      if (!params) return;
+
+      this.currentZoom = Number(params[0]);
+      this.currentPos = new L.LatLng(Number(params[1]), Number(params[2]));
+    },
+    /**
+     * Sets the current hash on the window for the map
+     */
+    setHash() {
+      window.location.hash = `#map=${this.currentZoom}/${this.currentPos?.lat}/${this.currentPos?.lng}`;
+    },
+    /**
+     * Sets the current zoom of the map
+     * @param zoom
+     * @returns
+     */
+    setZoom(zoom: UiState['currentZoom']) {
+      this.currentZoom = zoom;
+      return zoom;
     },
     /**
      * Select target coordinates for adding a spot
