@@ -152,11 +152,6 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
-@app.route('/content/<path:path>')
-def send_report(path):
-    return send_from_directory('content', path)
-
-
 @app.route("/experience", methods=["POST"])
 def experience():
     data = request.form
