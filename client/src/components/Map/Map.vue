@@ -12,7 +12,7 @@ import L from 'leaflet';
 import Map from './Leaflet.ts';
 
 const props = defineProps<{
-  noButtons?: boolean;
+  embed?: boolean;
 }>();
 
 import SearchInput from './Controls/SearchInput';
@@ -53,7 +53,7 @@ const circleMarker = (point: Point) =>
 onMounted(async () => {
   const map = Map.getMap();
 
-  if (!props.noButtons) {
+  if (!props.embed) {
     // Initialize Controls
     L.control.scale().addTo(map);
 
@@ -73,7 +73,9 @@ onMounted(async () => {
   }).addTo(map);
 
   // Fetch points and put them on the map!
-  await pointsStore.fetchPoints();
+  await pointsStore.fetchPoints({
+    bounds: props.embed ? map.getBounds() : undefined,
+  });
 
   const markers = (L as any).markerClusterGroup({
     bubblingMouseEvents: false,

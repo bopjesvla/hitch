@@ -10,6 +10,6 @@ onMounted(() => {
 
 <template>
   <a :href="`http://localhost:5173/beta/${hash}`">
-    <Map noButtons />
+    <Map embed />
   </a>
 </template>

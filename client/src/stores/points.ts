@@ -44,10 +44,15 @@ export const usePointsStore = defineStore('points', () => {
 
   const getSelectedPoint = computed(() => selectedPoint.value);
 
-  const fetchPoints = async () => {
+  const fetchPoints = async (params: { bounds?: L.LatLngBounds } | null = null) => {
     isLoading.value = true;
 
-    const response = await axios.get('http://localhost:5000/api/v1/points');
+    const response = await axios.get('http://localhost:5000/api/v1/points', {
+      params: {
+        ...params,
+        bounds: params?.bounds ? JSON.stringify(params.bounds) : undefined,
+      },
+    });
     items.value = response.data as Point[];
 
     isLoading.value = false;

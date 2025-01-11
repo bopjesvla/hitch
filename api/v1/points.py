@@ -1,4 +1,5 @@
 import os
+import json
 
 from flask import Blueprint, Response, jsonify, request
 from models import Point, Review, Duplicate
@@ -11,9 +12,25 @@ DATABASE = (
 )
 
 @points_bp.route('/')
-@cache.cached(timeout=60*5)
+@cache.cached(timeout=60*5, query_string=True)
 def index():
-  points = Point.query.all()
+  bounds = request.args.get('bounds')
+  
+  if bounds:
+    bounds = json.loads(bounds)
+    points = Point.query.filter(
+      Point.Latitude.between(bounds['_southWest']['lat'], 
+                             bounds['_northEast']['lat']
+                             )
+      ).filter(
+        Point.Longitude.between(
+          bounds['_southWest']['lng'],
+          bounds['_northEast']['lng']
+          )
+        ).all()
+  else:
+    points = Point.query.all()
+    
   return jsonify(points)
 
 @points_bp.route('', methods=['POST'])
