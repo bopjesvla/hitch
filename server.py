@@ -52,9 +52,6 @@ app.config["SECURITY_PASSWORD_SALT"] = (
     "146585145368132386173505678016728509634"  # TODO from environ
 )
 
-# Take password complexity seriously
-app.config["SECURITY_PASSWORD_COMPLEXITY_CHECKER"] = "zxcvbn"
-
 # Allow registration of new users without confirmation
 app.config["SECURITY_REGISTERABLE"] = True
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
@@ -68,6 +65,9 @@ app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
     f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
     "error",
 )
+
+# Lax = CSRF protection for POST requests, Strict would also include GET requests
+app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 
@@ -196,7 +196,7 @@ def get_origin_string(user):
 @app.route("/me", methods=["GET"])
 def show_current_user():
     if current_user.is_anonymous:
-        return "You are not logged in. <a href=" / ">Back to Map</a>"
+        return "You are not logged in. <a href='/'>Back to Map</a>"
 
     user = current_user
     origin_string = get_origin_string(user)
