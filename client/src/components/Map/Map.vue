@@ -11,6 +11,10 @@ import { onMounted, computed, shallowRef } from 'vue';
 import L from 'leaflet';
 import Map from './Leaflet.ts';
 
+const props = defineProps<{
+  noButtons?: boolean;
+}>();
+
 import SearchInput from './Controls/SearchInput';
 import AddSpotButton from './Controls/AddSpotButton';
 import MenuButton from './Controls/MenuButton';
@@ -49,16 +53,18 @@ const circleMarker = (point: Point) =>
 onMounted(async () => {
   const map = Map.getMap();
 
-  // Initialize Controls
-  L.control.scale().addTo(map);
+  if (!props.noButtons) {
+    // Initialize Controls
+    L.control.scale().addTo(map);
 
-  new SearchInput().addTo(map);
-  new MenuButton().addTo(map);
-  new AddSpotButton().addTo(map);
-  // new RouteButton().addTo(map);
-  // new RouteViewButton().addTo(map);
-  // new CancelRouteButton().addTo(map);
-  L.control.zoom().addTo(map);
+    new SearchInput().addTo(map);
+    new MenuButton().addTo(map);
+    new AddSpotButton().addTo(map);
+    // new RouteButton().addTo(map);
+    // new RouteViewButton().addTo(map);
+    // new CancelRouteButton().addTo(map);
+    L.control.zoom().addTo(map);
+  }
 
   // Initialize Tile Layer
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
