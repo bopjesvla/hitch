@@ -7,14 +7,15 @@ import matplotlib.colors as colors
 import numpy as np
 import xyzservices.providers as xyz
 
+BUCKETS = BUCKETS[:-1]
+BOUNDARIES = BOUNDARIES[:-1]
 
 tiles = xyz.CartoDB.Positron
-
 m = folium.Map(
     tiles=folium.TileLayer(no_wrap=True, tiles=tiles),
     attr="Heatchmap",
     min_zoom=1,
-    max_zoom=8,
+    max_zoom=5,
 )
 
 
@@ -38,23 +39,15 @@ uncertainties = gpmap.uncertainties
 uncertainties = np.where(
     gpmap.landmass_raster, uncertainties, uncertainties.max()
 )
-
 # Normalize uncertainties
 uncertainties = (uncertainties - uncertainties.min()) / (
     uncertainties.max() - uncertainties.min()
 )
 uncertainties = 1 - uncertainties
-# if discrete_uncertainties:
-#     # threshold for uncertainty decided by experiment
-#     uncertainties = np.where(uncertainties < 0.25, 0.0, 1.0)
-
-# let certainty have no influence on sea color
-# uncertainties = np.where(gpmap.landmass_raster, 1, uncertainties)
 
 # Combine RGB values with the opacity
 rgba_array = np.empty_like(colors)
 rgba_array[:, :, :3] = colors[:, :, :3]  # RGB
-# TODO: get with uncertainty
 rgba_array[:, :, 3] = uncertainties
 
 folium.raster_layers.ImageOverlay(
@@ -85,7 +78,7 @@ output = Template(template).substitute(
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open("map.js", encoding="utf-8").read(),
+        "hitch_script": open("map.js", encoding="utf-8").read() + "\n" + open("heatmap.js", encoding="utf-8").read(),
         "hitch_style": open("style.css", encoding="utf-8").read(),
     }
 )
