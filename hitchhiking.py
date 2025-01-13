@@ -55,6 +55,11 @@ folium.raster_layers.ImageOverlay(
     bounds=[[-56, -180], [80, 180]],
 ).add_to(m)
 
+
+colormap = cm.linear.Set1_09.scale(0, 35).to_step(10)
+colormap.caption = "A colormap caption"
+m.add_child(colormap)
+
 ### from show.py ###
 m.get_root().render()
 
