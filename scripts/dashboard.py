@@ -1,21 +1,36 @@
+import os
 import sqlite3
+from string import Template
+
 import pandas as pd
 import plotly.express as px
-from string import Template
-import os
 
 # see
 # https://realpython.com/python-dash/
 # https://stackoverflow.com/a/47715493
 
-DATABASE = (
-    "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-)
+
+rootDir = os.path.join(os.path.dirname(__file__), "..")
+
+dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+templateDir = os.path.abspath(os.path.join(rootDir, "templates"))
+
+os.makedirs(distDir, exist_ok=True)
+
+templatePath = os.path.join(templateDir, "dashboard_template.html")
+template = open(templatePath, encoding="utf-8").read()
+
+outname = os.path.join(distDir, "dashboard.html")
+
+# TODO: Use dotenv?
+if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
+    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+else:
+    DATABASE = os.path.join(dbDir, "points.sqlite")
 
 # Spots
 df = pd.read_sql(
-    "select * from points where not banned and datetime is not null",
-    sqlite3.connect(DATABASE),
 )
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
@@ -53,7 +68,24 @@ timeline_plot = fig.to_html("dash.html", full_html=False)
 
 # Duplicates
 df = pd.read_sql(
-    "select * from duplicates",
+    """
+    SELECT
+        Duplicates.ID as id,
+        FromPoint.Latitude as from_lat,
+        FromPoint.Longitude as from_lon,
+        ToPoint.Latitude as to_lat,
+        ToPoint.Longitude as to_lon,
+        0 as accepted,
+        0 as reviewed,
+        Duplicates.CreatedBy as ip,
+        Duplicates.CreatedAt as datetime
+    FROM
+        Duplicates
+    LEFT JOIN Points as FromPoint
+        ON Duplicates.FromPointId = FromPoint.ID
+    LEFT JOIN Points as ToPoint
+        ON Duplicates.ToPointId = ToPoint.ID;
+    """,
     sqlite3.connect(DATABASE),
 )
 
@@ -92,7 +124,22 @@ timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
 # Hitchwiki
 df = pd.read_sql(
-    "select * from hitchwiki",
+    """
+    SELECT
+        Hitchwiki.ID as id,
+        Points.Latitude as from_lat,
+        Points.Longitude as from_lon,
+        0 as accepted,
+        0 as reviewed,
+        Hitchwiki.CreatedBy as ip,
+        Hitchwiki.CreatedAt as datetime
+    FROM
+        Hitchwiki
+    LEFT JOIN Points
+        ON Hitchwiki.PointId = Points.ID
+    WHERE
+        Hitchwiki.CreatedAt NOT NULL;
+    """,
     sqlite3.connect(DATABASE),
 )
 
@@ -130,9 +177,6 @@ fig.update_layout(yaxis_title="# of entries")
 timeline_plot_hitchwiki = fig.to_html("dash.html", full_html=False)
 
 
-# Put together
-template = open("dashboard_template.html", encoding="utf-8").read()
-
 output = Template(template).substitute(
     {
         "timeline": timeline_plot,
@@ -141,4 +185,4 @@ output = Template(template).substitute(
     }
 )
 
-open("dashboard.html", "w", encoding="utf-8").write(output)
+open(outname, "w", encoding="utf-8").write(output)

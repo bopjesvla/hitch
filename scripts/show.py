@@ -1,19 +1,55 @@
-import pandas as pd
-import numpy as np
-import folium
-import json
-import folium.plugins
-import sqlite3
-import os
 import html
+import os
+import sqlite3
 import sys
-from branca.element import Element
 from string import Template
+
+import folium
+import folium.plugins
 import networkx
+import numpy as np
+import pandas as pd
+
+rootDir = os.path.join(os.path.dirname(__file__), "..")
+
+dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+templateDir = os.path.abspath(os.path.join(rootDir, "templates"))
+
+os.makedirs(distDir, exist_ok=True)
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
 
+if LIGHT:
+    outname = os.path.join(distDir, "light.html")
+elif NEW:
+    outname = os.path.join(distDir, "new.html")
+else:
+    outname = os.path.join(distDir, "index.html")
+
+outname_recent = os.path.join(distDir, "recent.html")
+outname_dups = os.path.join(distDir, "recent-dups.html")
+
+
+template_path = os.path.join(templateDir, "index_template.html")
+template = open(template_path, encoding="utf-8").read()
+
+
+# TODO: Use dotenv?
+if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
+    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+else:
+    DATABASE = os.path.join(dbDir, "points.sqlite")
+
+points = pd.read_sql(
+    sql="select * from points where not banned order by datetime is not null desc, datetime desc",
+    con=sqlite3.connect(DATABASE),
+)
+
+duplicates = pd.read_sql(
+    "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
+)
 
 def haversine_np(lon1, lat1, lon2, lat2):
     """
@@ -35,6 +71,7 @@ def haversine_np(lon1, lat1, lon2, lat2):
     # 1.25 because the road distance is, on average, 25% larger than a straight flight
     return 1.25 * km
 
+
 def get_bearing(lon1, lat1, lon2, lat2):
     dLon = lon2 - lon1
     x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
@@ -46,17 +83,6 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
     return brng
 
-
-# loading data from database
-fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-points = pd.read_sql(
-    sql="select * from points where not banned order by datetime is not null desc, datetime desc",
-    con=sqlite3.connect(fn),
-)
-
-duplicates = pd.read_sql(
-    "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
-)
 
 print(f"{len(points)} points currently")
 
@@ -97,7 +123,9 @@ points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
 )
 
 points["datetime"] = pd.to_datetime(points.datetime)
-points["ride_datetime"] = pd.to_datetime(points.ride_datetime, errors = 'coerce') # handels invalid dates
+points["ride_datetime"] = pd.to_datetime(
+    points.ride_datetime, errors="coerce"
+)  # handels invalid dates
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
@@ -170,7 +198,9 @@ points["text"] = (
     + e(points["extra_text"])
     + "</i><br><br>―"
     + e(points["name"].fillna("Anonymous"))
-    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
+    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(
+        review_submit_datetime
+    )
 )
 
 oldies = points.datetime.dt.year <= 2021
@@ -186,7 +216,7 @@ points.loc[oldies, "text"] = (
 
 groups = points.groupby(["lat", "lon"])
 
-places = groups[["country"]].first()
+places = groups[["id"]].first()
 places["rating"] = groups.rating.mean().round()
 places["wait"] = points[~points.wait.isnull()].groupby(["lat", "lon"]).wait.mean()
 places["distance"] = (
@@ -284,16 +314,13 @@ header = header.replace(
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
-outname = "light.html" if LIGHT else "new.html" if NEW else "index.html"
-template = open("src.html", encoding="utf-8").read()
-
 output = Template(template).substitute(
     {
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open("map.js", encoding="utf-8").read(),
-        "hitch_style": open("style.css", encoding="utf-8").read(),
+        "hitch_script": open(os.path.join(rootDir, "static", "map.js"), encoding="utf-8").read(),
+        "hitch_style": open(os.path.join(rootDir, "static", "style.css"), encoding="utf-8").read(),
     }
 )
 
@@ -312,11 +339,11 @@ if not LIGHT:
     recent["name"] = recent.name.str.replace("://", "", regex=False)
     recent["distance"] = recent["distance"].round(1)
     recent["datetime"] = recent["datetime"].astype(str)
-    recent["datetime"] += np.where(~recent.ride_datetime.isnull(), ' 🕒', '')
+    recent["datetime"] += np.where(~recent.ride_datetime.isnull(), " 🕒", "")
 
-    recent[
-        ["url", "country", "datetime", "name", "rating", "distance", "text"]
-    ].to_html("recent.html", render_links=True, index=False)
+    recent[["url", "datetime", "name", "rating", "distance", "text"]].to_html(
+        outname_recent, render_links=True, index=False
+    )
 
     duplicates["from_url"] = (
         "https://hitchmap.com/#"
@@ -330,7 +357,6 @@ if not LIGHT:
         + ","
         + duplicates.to_lon.astype(str)
     )
-    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
-        "recent-dups.html", render_links=True, index=False
-    )
-    
+    duplicates[
+        ["id", "from_url", "to_url", "distance", "reviewed", "accepted"]
+    ].to_html(outname_dups, render_links=True, index=False)
