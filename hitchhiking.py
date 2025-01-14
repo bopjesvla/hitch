@@ -85,4 +85,66 @@ output = Template(template).substitute(
 
 open(outname, "w", encoding="utf-8").write(output)
 print(f"Map saved to {outname}")
+
+### Heatmap info ###
+
+import matplotlib.colors as colors
+
+norm_uncertainties = plt.Normalize(0, 1)
+cmap_uncertainties = colors.LinearSegmentedColormap.from_list(
+    "", ["#00c800", background_color]
+)
+
+# from https://stackoverflow.com/a/56900830
+cax = fig.add_axes(
+    [
+        ax.get_position().x1 + 0.01,
+        ax.get_position().y0
+        + (ax.get_position().height * 2 / 3)
+        - (ax.get_position().height / 20),
+        0.02,
+        (ax.get_position().height / 3),
+    ]
+)
+
+cbar_uncertainty = fig.colorbar(
+    cm.ScalarMappable(norm=norm_uncertainties, cmap=cmap_uncertainties),
+    cax=cax,
+)
+cbar_uncertainty.ax.tick_params(labelsize=figsize)
+cbar_uncertainty.ax.set_ylabel(
+    "Uncertainty in waiting time estimation",
+    rotation=90,
+    fontsize=figsize * 2 / 3,
+)
+
+# from https://stackoverflow.com/a/56900830
+cax = fig.add_axes(
+[
+    ax.get_position().x1 + 0.01,
+    ax.get_position().y0 + (ax.get_position().height / 20),
+    0.02,
+    (ax.get_position().height / 3),
+]
+)
+cbar = fig.colorbar(
+cm.ScalarMappable(norm=norm, cmap=cmap),
+cax=cax,
+)
+boundary_labels = [
+"0 min",
+"10",
+"20",
+"30",
+"40",
+"50",
+"60",
+"70",
+"80",
+"90",
+"> 100",
+]
+cbar.ax.set_yticks(ticks=boundaries, labels=boundary_labels)
+cbar.ax.tick_params(labelsize=figsize)
+        
 print("Done.")
