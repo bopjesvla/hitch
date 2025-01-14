@@ -1,12 +1,10 @@
-import pandas as pd
-import numpy as np
-import folium
-import json
-import folium.plugins
 import sqlite3
 from html import unescape
-import os
-import datetime
+
+import folium
+import folium.plugins
+import numpy as np
+import pandas as pd
 
 fn = "hw.sqlite"
 desc = pd.read_sql(

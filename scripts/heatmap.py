@@ -1,10 +1,22 @@
+import os
+import sqlite3
+
+import folium
 import numpy as np
 import pandas as pd
-import sqlite3
-import folium
 from folium.raster_layers import ImageOverlay
 from matplotlib import cm, colors
-import scipy.stats
+
+rootDir = os.path.join(os.path.dirname(__file__), "..")
+
+dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+
+
+points = pd.read_sql(
+    "select * from points where not banned order by datetime is not null desc, datetime desc",
+    sqlite3.connect(DATABASE),
+)
 
 
 def haversine_np(lon1, lat1, lon2, lat2):
@@ -26,12 +38,6 @@ def haversine_np(lon1, lat1, lon2, lat2):
     km = 6367 * c
     return km
 
-
-fn = "/home/bob/dump(1).sqlite"
-points = pd.read_sql(
-    "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(fn),
-)
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
