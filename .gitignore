@@ -467,7 +467,6 @@ junit/
 light.html
 recent.html
 index.html
-points.sqlite
 recent-dups.html
 lines.html
 dashboard.html
@@ -475,3 +474,6 @@ dashboard.html
 *.kml
 *.gpx
 *_hidden.py
+
+# Database
+*.sqlite*

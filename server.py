@@ -1,18 +1,26 @@
-from flask import Flask, redirect
-from flask import send_file, request, redirect
+import datetime
+import math
+import os
+import random
 import re
-from flask import g
+import sqlite3
+
 import pandas as pd
 import requests
-import datetime
-import sqlite3
-import random
-import os
-import math
+from flask import Flask, g, redirect, request, send_file
 
-DATABASE = (
-    "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-)
+
+rootDir = os.path.dirname(__file__)
+
+
+dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+
+# TODO: Use dotenv?
+if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
+    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+else:
+    DATABASE = os.path.join(dbDir, "points.sqlite")
 
 
 def get_db():
@@ -22,18 +30,18 @@ def get_db():
     return db
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="")
 
 
 @app.route("/", methods=["GET"])
 def index():
-    return send_file("index.html")
+    return send_file(os.path.join(distDir, "index.html"))
 
 
 @app.route("/light.html", methods=["GET"])
 def light():
-    light_map = "light.html"
-    if os.path.exists(light_map):  
+    light_map = os.path.join(distDir, "light.html")
+    if os.path.exists(light_map):
         return send_file(light_map)
     else:
         return "No light map available."
@@ -41,74 +49,47 @@ def light():
 
 @app.route("/lines.html", methods=["GET"])
 def lines():
-    return send_file("lines.html")
+    return send_file(os.path.join(distDir, "lines.html"))
 
 
 @app.route("/dashboard.html", methods=["GET"])
 def dashboard():
-    return send_file("dashboard.html")
+    return send_file(os.path.join(distDir, "dashboard.html"))
+
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
-    return send_file("heatmap.html")
+    return send_file(os.path.join(distDir, "heatmap.html"))
 
 
 @app.route("/tiny-world-map.json", methods=["GET"])
 def tinyworldmap():
-    return send_file("tiny-world-map.json")
+    return send_file(os.path.join(distDir, "tiny-world-map.json"))
 
 
 @app.route("/heatmap-wait.html", methods=["GET"])
 def heatmapwait():
-    return send_file("heatmap-wait.html")
+    return send_file(os.path.join(distDir, "heatmap-wait.html"))
 
 
 @app.route("/heatmap-distance.html", methods=["GET"])
 def heatmapdistance():
-    return send_file("heatmap-distance.html")
+    return send_file(os.path.join(distDir, "heatmap-distance.html"))
 
 
 @app.route("/new.html", methods=["GET"])
 def new():
-    return send_file("new.html")
+    return send_file(os.path.join(distDir, "new.html"))
 
 
 @app.route("/recent.html", methods=["GET"])
 def recent():
-    return send_file("recent.html")
+    return send_file(os.path.join(distDir, "recent.html"))
 
 
 @app.route("/recent-dups.html", methods=["GET"])
 def recent_dups():
-    return send_file("recent-dups.html")
-
-
-@app.route("/favicon.ico", methods=["GET"])
-def favicon():
-    return send_file("favicon.ico")
-
-
-@app.route("/icon.png", methods=["GET"])
-def icon():
-    return send_file("hitchwiki-high-contrast-no-car-flipped.png")
-
-@app.route("/content/report_duplicate.png", methods=["GET"])
-def report_duplicate_image():
-    return send_file("content/report_duplicate.png")
-
-@app.route("/content/route_planner.png", methods=["GET"])
-def route_planner_image():
-    return send_file("content/route_planner.png")
-
-
-@app.route("/manifest.json", methods=["GET"])
-def manifest():
-    return send_file("manifest.json")
-
-
-@app.route("/sw.js", methods=["GET"])
-def sw():
-    return send_file("sw.js")
+    return send_file(os.path.join(distDir, "recent-dups.html"))
 
 
 @app.route("/.well-known/assetlinks.json", methods=["GET"])
@@ -120,11 +101,8 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
-@app.route('/content/<path:path>')
-def send_report(path):
-    return send_from_directory('content', path)
 
-
+# TODO: Fix SQL
 @app.route("/experience", methods=["POST"])
 def experience():
     data = request.form
@@ -213,6 +191,7 @@ def experience():
     return redirect("/#success")
 
 
+# TODO: Fix SQL
 @app.route("/report-duplicate", methods=["POST"])
 def report_duplicate():
     data = request.form
@@ -244,6 +223,7 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
