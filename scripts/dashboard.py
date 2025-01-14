@@ -31,6 +31,8 @@ else:
 
 # Spots
 df = pd.read_sql(
+    "select * from points where not banned and datetime is not null",
+    sqlite3.connect(DATABASE),
 )
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
@@ -68,24 +70,7 @@ timeline_plot = fig.to_html("dash.html", full_html=False)
 
 # Duplicates
 df = pd.read_sql(
-    """
-    SELECT
-        Duplicates.ID as id,
-        FromPoint.Latitude as from_lat,
-        FromPoint.Longitude as from_lon,
-        ToPoint.Latitude as to_lat,
-        ToPoint.Longitude as to_lon,
-        0 as accepted,
-        0 as reviewed,
-        Duplicates.CreatedBy as ip,
-        Duplicates.CreatedAt as datetime
-    FROM
-        Duplicates
-    LEFT JOIN Points as FromPoint
-        ON Duplicates.FromPointId = FromPoint.ID
-    LEFT JOIN Points as ToPoint
-        ON Duplicates.ToPointId = ToPoint.ID;
-    """,
+    "select * from duplicates",
     sqlite3.connect(DATABASE),
 )
 
@@ -124,22 +109,7 @@ timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
 # Hitchwiki
 df = pd.read_sql(
-    """
-    SELECT
-        Hitchwiki.ID as id,
-        Points.Latitude as from_lat,
-        Points.Longitude as from_lon,
-        0 as accepted,
-        0 as reviewed,
-        Hitchwiki.CreatedBy as ip,
-        Hitchwiki.CreatedAt as datetime
-    FROM
-        Hitchwiki
-    LEFT JOIN Points
-        ON Hitchwiki.PointId = Points.ID
-    WHERE
-        Hitchwiki.CreatedAt NOT NULL;
-    """,
+    "select * from hitchwiki",
     sqlite3.connect(DATABASE),
 )
 
