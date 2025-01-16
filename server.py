@@ -102,7 +102,6 @@ def android_app():
     return send_file("android/Hitchmap.apk")
 
 
-# TODO: Fix SQL
 @app.route("/experience", methods=["POST"])
 def experience():
     data = request.form
@@ -191,7 +190,6 @@ def experience():
     return redirect("/#success")
 
 
-# TODO: Fix SQL
 @app.route("/report-duplicate", methods=["POST"])
 def report_duplicate():
     data = request.form

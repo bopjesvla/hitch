@@ -51,6 +51,7 @@ duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
 )
 
+
 def haversine_np(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points
@@ -216,7 +217,7 @@ points.loc[oldies, "text"] = (
 
 groups = points.groupby(["lat", "lon"])
 
-places = groups[["id"]].first()
+places = groups[["country"]].first()
 places["rating"] = groups.rating.mean().round()
 places["wait"] = points[~points.wait.isnull()].groupby(["lat", "lon"]).wait.mean()
 places["distance"] = (
@@ -319,8 +320,12 @@ output = Template(template).substitute(
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open(os.path.join(rootDir, "static", "map.js"), encoding="utf-8").read(),
-        "hitch_style": open(os.path.join(rootDir, "static", "style.css"), encoding="utf-8").read(),
+        "hitch_script": open(
+            os.path.join(rootDir, "static", "map.js"), encoding="utf-8"
+        ).read(),
+        "hitch_style": open(
+            os.path.join(rootDir, "static", "style.css"), encoding="utf-8"
+        ).read(),
     }
 )
 
@@ -341,9 +346,9 @@ if not LIGHT:
     recent["datetime"] = recent["datetime"].astype(str)
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), " 🕒", "")
 
-    recent[["url", "datetime", "name", "rating", "distance", "text"]].to_html(
-        outname_recent, render_links=True, index=False
-    )
+    recent[
+        ["url", "country", "datetime", "name", "rating", "distance", "text"]
+    ].to_html(outname_recent, render_links=True, index=False)
 
     duplicates["from_url"] = (
         "https://hitchmap.com/#"
