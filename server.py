@@ -1,5 +1,6 @@
 from flask import Flask, redirect, g, render_template_string, jsonify, render_template
 from flask import send_file, request, redirect
+import secrets
 import re
 import pandas as pd
 import requests
@@ -21,6 +22,7 @@ from wtforms.widgets import NumberInput
 from wtforms.validators import Optional
 from datetime import datetime
 import pycountry
+from flask_mailman import Mail
 
 EMAIL = "info@hitchmap.com"
 
@@ -28,6 +30,24 @@ DATABASE = (
     "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 )
 
+# generated using: secrets.token_urlsafe()
+HOME_DIR = os.path.expanduser("~")  # Get the user's home directory
+SECRET_KEY_FILE = os.path.join(HOME_DIR, ".flask_secret_key")
+
+def get_or_create_secret_key():
+    # Check if the secret key file already exists
+    if os.path.exists(SECRET_KEY_FILE):
+        # Read the key from the file
+        with open(SECRET_KEY_FILE, "r") as file:
+            secret_key = file.read().strip()
+    else:
+        # Generate a new random secret key
+        secret_key = secrets.token_hex(32)
+        # Write the key to the file
+        with open(SECRET_KEY_FILE, "w") as file:
+            file.write(secret_key)
+        print(f"Generated new SECRET_KEY and saved to {SECRET_KEY_FILE}")
+    return secret_key
 
 def get_db():
     db = getattr(g, "_database", None)
@@ -35,22 +55,18 @@ def get_db():
         db = g._database = sqlite3.connect(DATABASE)
     return db
 
-
 # Create app
 app = Flask(__name__)
 
 ### Define user management ###
 
-app.config["DEBUG"] = True
-# generated using: secrets.token_urlsafe()
-app.config["SECRET_KEY"] = (
-    "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw"  # TODO from environ
-)
+app.config["DEBUG"] = DATABASE == "prod-points.sqlite"
+
+# Retrieve the secret key, creating it if necessary
+app.config['SECRET_KEY'] = get_or_create_secret_key()
 app.config["SECURITY_PASSWORD_HASH"] = "argon2"
-# argon2 uses double hashing by default - so provide key.
-# For python3: secrets.SystemRandom().getrandbits(128)
 app.config["SECURITY_PASSWORD_SALT"] = (
-    "146585145368132386173505678016728509634"  # TODO from environ
+    "146585145368132386173505678016728509634"  # can be published
 )
 
 # Allow registration of new users without confirmation
@@ -74,7 +90,7 @@ app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
 # Lax = CSRF protection for POST requests, Strict also includes GET requests
 app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 
-app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/#registered"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///../{DATABASE}"  # relative to /instance directory
@@ -84,6 +100,17 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECURITY_CHANGE_EMAIL"] = True
 
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
+
+# Flask-Mailman configuration
+app.config['MAIL_SERVER'] = 'mail.smtp2go.com'
+app.config['MAIL_PORT'] = 587  # or 2525 if required
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'hitchmap.com'  # SMTP2GO username
+app.config['MAIL_PASSWORD'] = os.getenv('HITCHMAP_MAIL_PASSWORD', 'fake-password')  # Load password from env
+app.config['MAIL_DEFAULT_SENDER'] = ('Hitchmap', 'no-reply@hitchmap.com')
+
+mail = Mail(app)
 
 ### Initiate user management ###
 

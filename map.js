@@ -769,3 +769,8 @@ if (window.location.hash == '#failed') {
     history.replaceState(null, null, ' ')
     bar('.sidebar.failed')
 }
+
+if (window.location.hash == '#registered') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.registered')
+}
