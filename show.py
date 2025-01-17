@@ -57,6 +57,9 @@ points = pd.read_sql(
     con=sqlite3.connect(fn),
 )
 
+# no links for old anonymous reviews
+points.loc[points.nickname == 'Anonymous', 'nickname'] = None
+
 # NOT_A_USER_ID = 0
 # if "user_id" not in points.columns:
 #     points["user_id"] = NOT_A_USER_ID
@@ -212,8 +215,7 @@ points["text"] = (
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―<a href='/#user-filter," + e(points[oldies]["hitchhiker"]) + "'>"
-    + e(points[oldies]["hitchhiker"]) + "</a>"
+    + '―' + points.loc[oldies, 'user_link']
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
