@@ -139,7 +139,7 @@ body.adding-spot .horizontal-button {
     display: block;
     width: 100%;
 }
-#spot-form > label, .sidebar.filters label, #spot-form input[type=submit] {
+#spot-form > label, label[for=nickname], .sidebar.filters label, #spot-form input[type=submit] {
     margin-top: 18px;
 }
 #spot-form details select, #spot-form details input {
