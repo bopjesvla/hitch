@@ -190,26 +190,29 @@ points["extra_text"] = (
 )
 
 comment_nl = points["comment"] + "\n\n"
-comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
+
+# show review without comments in the sidebar if they're new; old reviews may be aggregate ratings that don't make sense
+comment_nl.loc[(points.datetime.dt.year > 2021) & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
 points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
-points["hitchhiker"] = points["nickname"].fillna(points["username"]).fillna("Anonymous")
+points["hitchhiker"] = points["nickname"].fillna(points["username"])
+
+points['user_link'] = ("<a href='/?user=" + e(points["hitchhiker"]) + "'>" + e(points["hitchhiker"]) + "</a>").fillna('Anonymous')
 
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―<a href='/#user:" + e(points["hitchhiker"]) + "'>"
-    + e(points["hitchhiker"]) + "</a>"
+    + "</i><br><br>―" + points["user_link"]
     + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―<a href='/#user:" + e(points[oldies]["hitchhiker"]) + "'>"
+    + "―<a href='/#user-filter," + e(points[oldies]["hitchhiker"]) + "'>"
     + e(points[oldies]["hitchhiker"]) + "</a>"
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
@@ -226,7 +229,12 @@ places["distance"] = (
     points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 )
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
-places["review_users"] = groups.hitchhiker.unique().apply(list)
+
+# to prevent confusion, only add a review user if their review is listed
+places["review_users"] = (
+    points.dropna(subset=['text', 'hitchhiker']).groupby(["lat", "lon"]).hitchhiker.unique().apply(list)
+)
+
 places["dest_lats"] = (
     points.dropna(subset=["dest_lat", "dest_lon"])
     .groupby(["lat", "lon"])
@@ -255,16 +263,10 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6].length > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6].length > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row});
 
     marker.on('click', function(e) {
-        maybeReportDuplicate(marker)
-        if (window.location.hash.includes('#route'))
-            markerClick(marker)
-        else
-            window.location.hash = `${point.lat},${point.lng}`
-        
-        L.DomEvent.stopPropagation(e)
+       handleMarkerClick(marker, point, e)
     })
 
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
@@ -317,8 +319,15 @@ header = header.replace(
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
+## write
+
 outname = "light.html" if LIGHT else "new.html" if NEW else "index.html"
 template = open("src.html").read()
+
+# We embed everything directly into the HTML page so our service worker can't serve inconsistent files
+# For example, if we add a new attribute to the spot which is shown in the front-end, but the user only gets the new
+# presentation layer, not the new data, the application would break
+# Because the HTML file contains everything, this is not a problem
 
 output = Template(template).substitute(
     {

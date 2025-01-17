@@ -1,3 +1,6 @@
+{% extends "security/base.html" %}
+
+{% block content %}
 {% if gender == "None"%}
     {% set gender = "Not set" %}
 {% endif %}
@@ -11,9 +14,7 @@
     {% set origin_string = "Not set" %}
 {% endif %}
 
-<a href="/">Back to Map</a></b><br><br>
-
-<b>User:</b><br>
+<h1>User</h1>
 
 Username: {{ username }}<br>
 Email: {{ email }}<br>
@@ -21,19 +22,21 @@ Gender: {{ gender }}<br>
 Year of Birth: {{ year_of_birth }}<br>
 Hitchhiking Since: {{ hitchhiking_since }}<br>
 Origin: {{ origin_string }}<br>
-On Hitchwiki: 
-{% if hitchwiki_username == "" %}
+On Hitchwiki:
+{% if hitchwiki_username is none %}
 Not set
 {% else %}
 <a href="https://hitchwiki.org/en/User:{{ hitchwiki_username }}">{{ hitchwiki_username }}</a>
 {% endif %}<br>
-On Trustroots: 
-{% if trustroots_username == "" %} 
+On Trustroots:
+{% if trustroots_username is none %}
 Not set
 {% else %}
 <a href="https://www.trustroots.org/profile/{{ trustroots_username }}">{{ trustroots_username }}</a>
-{% endif %}<br><br>
+{% endif %}<br>
+<br>
 
 <div class="links">
     {% block links %} {% endblock %}
 </div>
+{% endblock %}

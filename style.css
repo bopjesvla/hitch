@@ -76,23 +76,21 @@ input[type=radio] + label {
     z-index: 2000;
     line-height: 1;
 }
-body.adding-spot .horizontal-button,
-body.has-route .horizontal-button,
-body.planning-route .horizontal-button {
+body.adding-spot .horizontal-button {
     display: none;
 }
-.horizontal-button, .replacement-button {
+.horizontal-button {
     padding: 5px 10px;
     background: #fff !important;
     white-space: nowrap;
     padding: 0 !important;
 }
-.horizontal-button a, .replacement-button a {
+.horizontal-button a {
     width: auto !important;
     height: auto !important;
     padding: 5px 10px;
 }
-.plan-route, .cancel-route, .horizontal-button.add-spot {
+.filter-button, .horizontal-button.add-spot, .your-account {
     clear: none !important;
 }
 .horizontal-button.menu {
@@ -136,11 +134,12 @@ body.planning-route .horizontal-button {
     height: 60vmin;
     background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px)), linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% - 1px), rgba(255, 0, 0, .5) calc(50% + 1px), transparent calc(50% + 1px));
 }
-#spot-form > label, #spot-form textarea, #spot-form input[type=submit], #spot-form input[name=nickname] {
+#spot-form > label, #spot-form textarea, #spot-form input[type=submit], #spot-form input[name=nickname],
+.sidebar.filters > label, .sidebar.filters input[type=text] {
     display: block;
     width: 100%;
 }
-#spot-form > label, #spot-form input[type=submit] {
+#spot-form > label, .sidebar.filters label, #spot-form input[type=submit] {
     margin-top: 18px;
 }
 #spot-form details select, #spot-form details input {
@@ -195,14 +194,14 @@ body.zoomed-out .leaflet-overlay-pane {
 body.has-points .leaflet-overlay-pane {
     opacity: 0.3;
 }
-body.directions .leaflet-overlay-pane, body.directions .leaflet-marker-pane {
+body.filtering .leaflet-overlay-pane, body.filtering .leaflet-marker-pane {
     display: none;
 }
-body:not(.directions) .leaflet-directions-pane {
+body:not(.filtering) .leaflet-filtering-pane {
     display: none;
 }
-body:not(.has-route) .replacement-button {
-    display: none;
+body.filtering .filter-button {
+    border-color: rgba(255, 0, 0, .5);
 }
 @media only screen and (max-width: 700px) {
     .topbar {
@@ -228,36 +227,6 @@ body:not(.has-route) .replacement-button {
 .leaflet-control-attribution {
     text-align: right;
 }
-
-.route-view-toggle {
-	  cursor: pointer;
-	  text-indent: -9999px;
-	  width: 24px;
-	  height: 13px;
-	  background: grey;
-	  display: inline-block;
-	  border-radius: 100px;
-	  position: relative;
-    top: 2px;
-}
-.route-view-toggle:after {
-	  content: '';
-	  position: absolute;
-	  top: 1px;
-	  left: 1px;
-	  width: 11px;
-	  height: 11px;
-	  background: #fff;
-	  border-radius: 11px;
-	  transition: 0.1s;
-}
-body.directions .route-view-toggle {
-	  background: #bada55;
-}
-body.directions .route-view-toggle:after {
-	  left: calc(100% - 1px);
-	  transform: translateX(-100%);
-}
 body.reporting-duplicate .sidebar,
 body.reporting-duplicate .horizontal-button,
 body.reporting-duplicate .replacement-button {
@@ -272,9 +241,6 @@ body.reporting-duplicate .topbar.duplicate {
 a:hover {
     background-color: none !important;
     text-decoration: none;
-}
-.leaflet-back-pane {
-    z-index: 50;
 }
 .report {
     position: absolute;
@@ -358,7 +324,7 @@ details[open] summary {
     border-bottom: 1px solid #aaa;
     margin-bottom: 0.5em;
 }
-  
+
 ul.no-style {
     list-style-type: none;
     margin: 0;
@@ -384,4 +350,108 @@ ul.no-style {
 .error {
     color: red;
     font-size: 0.9em;
+}
+
+/* knob */
+
+
+.knob-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.knob {
+    width: 100px;
+    height: 100px;
+    background: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.knob-line {
+    width: 2px;
+    height: 50px;
+    background: #000;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) rotate(0deg);
+    transform-origin: bottom center;
+}
+
+.knob-cone {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
+    transform-origin: center;
+}
+
+.rotation-value {
+    margin-top: 30px;
+    font-size: 16px;
+}
+
+.spread-input-container {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+}
+
+.spread-input-container input {
+    width: 60px;
+    margin: 0 5px;
+    text-align: center;
+}
+
+.direction {
+    position: absolute;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: Arial;
+}
+
+.direction.north {
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.direction.south {
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.direction.west {
+    left: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.direction.east {
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.knob-container, .knob-container * {
+    box-sizing: content-box;
+}
+#knob-toggle:not(:checked) ~ .knob-container {
+    pointer-events: none;
+    opacity: 0.5;
+}
+#knob-toggle {
+    margin: 50px 0 20px;
+}
+#knob-toggle + label {
+    font-weight: normal;
 }

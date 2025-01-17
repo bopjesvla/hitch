@@ -13,6 +13,7 @@ from flask_security import (
     SQLAlchemyUserDatastore,
     current_user,
     RegisterForm,
+    utils
 )
 from flask_security.models import fsqla_v3 as fsqla
 from wtforms import IntegerField, SelectField, StringField
@@ -56,18 +57,22 @@ app.config["SECURITY_PASSWORD_SALT"] = (
 app.config["SECURITY_REGISTERABLE"] = True
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
 app.config["SECURITY_CONFIRMABLE"] = False
+app.config["SECURITY_RECOVERABLE"] = True
 
 app.config["SECURITY_USERNAME_ENABLE"] = True
 app.config["SECURITY_USERNAME_REQUIRED"] = True
-app.config["SECURITY_USERNAME_MIN_LENGTH"] = 1
+app.config["SECURITY_USERNAME_MIN_LENGTH"] = 3
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
+app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
+    {'username': {'mapper': utils.uia_username_mapper, 'case_insensitive': True}}
+]
 app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
     f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
     "error",
 )
 
-# Lax = CSRF protection for POST requests, Strict would also include GET requests
-app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
+# Lax = CSRF protection for POST requests, Strict also includes GET requests
+app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/login"
 
@@ -191,15 +196,17 @@ def get_origin_string(user):
         + (", " if (user.origin_city != "" and user.origin_city is not None) else " ")
         + (user.origin_country if user.origin_country is not None else "")
     )
-    return origin_string 
+    return origin_string
 
 @app.route("/me", methods=["GET"])
 def show_current_user():
     if current_user.is_anonymous:
-        return "You are not logged in. <a href='/'>Back to Map</a>"
+        return redirect('/login')
 
     user = current_user
     origin_string = get_origin_string(user)
+
+    print(user.hitchwiki_username is None)
 
     return render_template(
         "me.html",

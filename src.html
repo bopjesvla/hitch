@@ -62,7 +62,7 @@
                 <label for="datetime_ride">When did you get the ride?<span id="no-ride"> If you didn't get a ride, when did you stop soliciting rides?</span></label>
                 <input id="datetime_ride" type="datetime-local" name="datetime_ride">
                 <!-- maximum date is today -->
-                <script>                    
+                <script>
                     document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0,11)) + "23:59";
                 </script>
             </details>
@@ -143,6 +143,31 @@
             Hitchmap software is licensed under AGPL 3.0. The Hitchmap database is licensed under the ODBL, the license used by OpenStreetMap.
         </p>
     </div>
+    <div class="sidebar filters">
+        <h3>Filters</h3>
+        <label for="user-filter">Filter by user</label>
+        <input id="user-filter" type="text" value=""/>
+        <label for="text-filter">Search comments</label>
+        <input id="text-filter" type="text" value=""/>
+        <div class="extra-container">
+            <input id="knob-toggle" type="checkbox" value=""/> <label for="knob-toggle">Only show spots in this direction</label>
+            <div class="knob-container">
+                <div class="knob" id="knob">
+                    <div class="knob-line" id="knobLine"></div>
+                    <div class="knob-cone" id="knobCone"></div>
+                    <div class="direction north">N</div>
+                    <div class="direction south">S</div>
+                    <div class="direction west">W</div>
+                    <div class="direction east">E</div>
+                </div>
+                <div class="rotation-value" id="rotationValue">0°</div>
+                <div class="spread-input-container">
+                    ± <input type="number" min="0" max="89" id="spreadInput" value="70"> °
+                </div>
+            </div>
+        </div>
+        <button id="clear-filters">Clear filters</button>
+    </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <line x1="1" y1="13"
@@ -164,16 +189,6 @@
             Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
-    </div>
-    <div class="topbar route step1">
-        <span>Zoom the crosshairs into your starting point.</span>
-        <br>
-        <span>The route planner works best for long-distance travel. Coverage is best in Europe.</span>
-        <br><button>Done</button><button>Cancel</button>
-    </div>
-    <div class="topbar route step2">
-        <span>Move the crosshairs to your destination.</span>
-        <br><button>Done</button><button>Cancel</button>
     </div>
     <div class="topbar duplicate">
         <span>Click on the duplicated marker.</span>
