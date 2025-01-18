@@ -277,12 +277,8 @@ def show_account(username):
             year_of_birth=user.year_of_birth,
         )
     else:
+        # TODO
         result = f"User not found."
-
-
-@app.route("/support", methods=["GET"])
-def support():
-    return f"To get support please send an email to {EMAIL}."
 
 
 ### App content ###

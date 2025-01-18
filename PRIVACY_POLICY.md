@@ -35,7 +35,7 @@ Hitchhiking and more broadly mobility research will be conducted using the data 
 
 ### Questions?
 
-[Drop us a line!](https://hitchmap.com//support)
+[Drop us a line!](mailto:info@hitchmap.com)
 
 ---
 
