@@ -1,13 +1,13 @@
 {% extends "security/base.html" %}
 
 {% block content %}
-{% if gender == "None"%}
+{% if gender is none %}
     {% set gender = "-" %}
 {% endif %}
-{% if year_of_birth == "None" %}
+{% if year_of_birth is none %}
     {% set year_of_birth = "-" %}
 {% endif %}
-{% if hitchhiking_since == "None" %}
+{% if hitchhiking_since is none %}
     {% set hitchhiking_since = "-" %}
 {% endif %}
 {% if origin_string == " " %}
