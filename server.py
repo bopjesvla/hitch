@@ -207,7 +207,8 @@ def form():
     if current_user.is_anonymous:
         return redirect('/login')
     
-    form = UserEditForm() 
+    form = UserEditForm()
+    
     if form.validate_on_submit():
         updated_user = security.datastore.find_user(username=current_user.username)
         updated_user.gender = form.gender.data
@@ -220,6 +221,15 @@ def form():
         security.datastore.put(updated_user)
         security.datastore.commit()
         return redirect('/me')
+    
+    form.gender.data = current_user.gender
+    form.year_of_birth.data = current_user.year_of_birth
+    form.hitchhiking_since.data = current_user.hitchhiking_since
+    form.origin_country.data = current_user.origin_country
+    form.origin_city.data = current_user.origin_city
+    form.hitchwiki_username.data = current_user.hitchwiki_username
+    form.trustroots_username.data = current_user.trustroots_username
+    
     return render_template('edit_user.html', form=form)
 
 
