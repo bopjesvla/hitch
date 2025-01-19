@@ -203,6 +203,9 @@ body:not(.filtering) .leaflet-filtering-pane {
 body.filtering .filter-button {
     border-color: rgba(255, 0, 0, .5);
 }
+body.filtering .filter-button a::after {
+    content: '‼️' !important;
+}
 @media only screen and (max-width: 700px) {
     .topbar {
         font-size: 1em !important;

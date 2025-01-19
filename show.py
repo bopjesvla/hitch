@@ -179,7 +179,7 @@ review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
 points["hitchhiker"] = points["nickname"].fillna(points["username"])
 
-points['user_link'] = ("<a href='/?user=" + e(points["hitchhiker"]) + "'>" + e(points["hitchhiker"]) + "</a>").fillna('Anonymous')
+points['user_link'] = ("<a href='/?user=" + e(points["hitchhiker"]) + "#filters'>" + e(points["hitchhiker"]) + "</a>").fillna('Anonymous')
 
 points["text"] = (
     e(comment_nl)
@@ -354,3 +354,4 @@ if not LIGHT:
     duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
         "recent-dups.html", render_links=True, index=False
     )
+    

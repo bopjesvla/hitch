@@ -666,7 +666,9 @@ function applyParams() {
 
         if (userFilter.value) {
             filterMarkers = filterMarkers.filter(
-                marker => marker.options._row[6] && marker.options._row[6].includes(userFilter.value)
+                marker => marker.options._row[6] && marker.options._row[6]
+                    .map(x => x.toLowerCase())
+                    .includes(userFilter.value.toLowerCase())
             )
         }
         if (textFilter.value) {
