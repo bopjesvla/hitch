@@ -227,6 +227,7 @@ def form():
 
 @app.route("/user", methods=["GET"])
 def get_user():
+    """Endpoint to get the currently logged in user."""
     logger.info("Received request to get user.")
     # Check if the user is logged in
     if not current_user.is_anonymous:
@@ -273,6 +274,7 @@ def show_current_user():
 
 @app.route("/is_username_used/<username>", methods=["GET"])
 def is_username_used(username):
+    """Endpoint to check if a username is already used."""
     logger.info(f"Received request to check if username {username} is used.")
     user = security.datastore.find_user(username=username)
     if user:
