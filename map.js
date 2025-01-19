@@ -201,7 +201,6 @@ map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new AccountButton());
 map.addControl(new FilterButton());
-console.log(map)
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)

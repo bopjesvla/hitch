@@ -10,3 +10,4 @@ pycountry==24.6.1
 bleach==6.2.0
 argon2_cffi==23.1.0
 Flask-Mailman==1.1.1
+Flask-WTF==1.2.2 
