@@ -25,7 +25,7 @@ All user of the described user related information except their email will be pu
 
 ### Our server
 
-Our server (and thus your data) is securely hosted at _ in _.
+Our server (and thus your data) is securely hosted in the EU.
 
 ### Research
 
