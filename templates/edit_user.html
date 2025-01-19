@@ -1,9 +1,6 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-<title>Edit User Form</title> 
-</head> 
-<body> 
+{% extends "security/base.html" %}
+
+{% block content %}
 <h1>Edit your personal data </h1> 
 <form method="POST" action="{{ url_for('form') }}"> 
     {{ form.csrf_token }} 
@@ -18,6 +15,5 @@
     <p>Pay attention to our <a href="https://github.com/bopjesvla/hitch/blob/master/PRIVACY_POLICY.md">Privacy Policy.</a></p>
     <br><br>
     {{ form.submit }} 
-</form> 
-</body> 
-</html> 
+</form>
+{% endblock %}

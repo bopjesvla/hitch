@@ -131,13 +131,13 @@ class Role(db.Model, fsqla.FsRoleMixin):
 
 
 class User(db.Model, fsqla.FsUserMixin):
-    gender = db.Column(db.String(255))
-    year_of_birth = db.Column(db.Integer)
-    hitchhiking_since = db.Column(db.Integer)
-    origin_country = db.Column(db.String(255))
-    origin_city = db.Column(db.String(255))
-    hitchwiki_username = db.Column(db.String(255))
-    trustroots_username = db.Column(db.String(255))
+    gender = db.Column(db.String(255), default=None)
+    year_of_birth = db.Column(db.Integer, default=None)
+    hitchhiking_since = db.Column(db.Integer, default=None)
+    origin_country = db.Column(db.String(255), default=None)
+    origin_city = db.Column(db.String(255), default=None)
+    hitchwiki_username = db.Column(db.String(255), default=None)
+    trustroots_username = db.Column(db.String(255), default=None)
 
 
 class CountrySelectField(SelectField):
@@ -171,8 +171,8 @@ class UserEditForm(FlaskForm):
     )
     origin_country = CountrySelectField("Where are you from?")
     origin_city = StringField("Which city are you from?", validators=[Optional()])
-    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()])
-    trustroots_username = StringField("Trustroots Username", validators=[Optional()])
+    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()], default=None)
+    trustroots_username = StringField("Trustroots Username", validators=[Optional()], default=None)
     submit = SubmitField('Submit') 
 
 
