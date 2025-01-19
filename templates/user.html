@@ -1,13 +1,13 @@
 {% extends "security/base.html" %}
 
 {% block content %}
-{% if gender is "None"%}
+{% if gender is none %}
     {% set gender = "-" %}
 {% endif %}
-{% if year_of_birth is None %}
+{% if year_of_birth is none %}
     {% set year_of_birth = "-" %}
 {% endif %}
-{% if hitchhiking_since is None %}
+{% if hitchhiking_since is none %}
     {% set hitchhiking_since = "-" %}
 {% endif %}
 {% if origin_string == " " %}
@@ -24,13 +24,13 @@ Hitchhiking Since: {{ hitchhiking_since }}<br>
 Origin: {{ origin_string }}<br>
 On Hitchwiki:
 {% if hitchwiki_username is none %}
-Not set
+-
 {% else %}
 <a href="https://hitchwiki.org/en/User:{{ hitchwiki_username }}">{{ hitchwiki_username }}</a>
 {% endif %}<br>
 On Trustroots:
 {% if trustroots_username is none %}
-Not set
+-
 {% else %}
 <a href="https://www.trustroots.org/profile/{{ trustroots_username }}">{{ trustroots_username }}</a>
 {% endif %}<br>
