@@ -23,6 +23,11 @@ from wtforms.validators import Optional
 from datetime import datetime
 import pycountry
 from flask_mailman import Mail
+import logging
+from flask_wtf import FlaskForm
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 EMAIL = "info@hitchmap.com"
 
@@ -46,7 +51,7 @@ def get_or_create_secret_key():
         # Write the key to the file
         with open(SECRET_KEY_FILE, "w") as file:
             file.write(secret_key)
-        print(f"Generated new SECRET_KEY and saved to {SECRET_KEY_FILE}")
+        logger.info(f"Generated new SECRET_KEY and saved to {SECRET_KEY_FILE}")
     return secret_key
 
 def get_db():
@@ -140,7 +145,7 @@ class CountrySelectField(SelectField):
         ]
 
 
-class ExtendedRegisterForm(RegisterForm):
+class UserEditForm(FlaskForm):
     gender = SelectField(
         "Gender",
         choices=[
@@ -151,23 +156,24 @@ class ExtendedRegisterForm(RegisterForm):
             ("Prefer not to say", "Prefer not to say"),
         ],
     )
-    year_of_birth = IntegerField(
-        "Year of Birth",
-        widget=NumberInput(min=1900, max=datetime.now().year),
-        validators=[Optional()],
-    )
-    hitchhiking_since = IntegerField(
-        "Hitchhiking Since",
-        widget=NumberInput(min=1900, max=datetime.now().year),
-        validators=[Optional()],
-    )
-    origin_country = CountrySelectField("Where are you from?")
-    origin_city = StringField("Which city are you from?", validators=[Optional()])
-    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()])
-    trustroots_username = StringField("Trustroots Username", validators=[Optional()])
+    # year_of_birth = IntegerField(
+    #     "Year of Birth",
+    #     widget=NumberInput(min=1900, max=datetime.now().year),
+    #     validators=[Optional()],
+    # )
+    # hitchhiking_since = IntegerField(
+    #     "Hitchhiking Since",
+    #     widget=NumberInput(min=1900, max=datetime.now().year),
+    #     validators=[Optional()],
+    # )
+    # origin_country = CountrySelectField("Where are you from?")
+    # origin_city = StringField("Which city are you from?", validators=[Optional()])
+    # hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()])
+    # trustroots_username = StringField("Trustroots Username", validators=[Optional()])
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+# add UserEditForm as ExtendedRegisterForm to collect additional fields while registering
 security = Security(app, user_datastore)
 
 ### One time setup for user management ###
@@ -192,19 +198,28 @@ with app.app_context():
 
 ### Endpoints related to user management ###
 
+@app.route("/edit-user", methods=["GET", 'POST'])
+def edit_user():
+    form = UserEditForm()
+    if form.validate_on_submit():
+        return redirect('/success')
+    return render_template('edit_user.html', form=form)
+
+
 
 @app.route("/user", methods=["GET"])
 def get_user():
-    print("Received request to get user.")
+    logger.info("Received request to get user.")
     # Check if the user is logged in
     if not current_user.is_anonymous:
         return jsonify({"logged_in": True, "username": current_user.username})
     else:
         return jsonify({"logged_in": False, "username": ""})
 
-
+# TODO: properly delete the user after their confirmation
 @app.route("/delete-user", methods=["GET"])
 def delete_user():
+    # null the user data
     updated_user = security.datastore.find_user(username=current_user.username)
     updated_user.gender = None
     updated_user.year_of_birth = None
@@ -233,7 +248,7 @@ def show_current_user():
     user = current_user
     origin_string = get_origin_string(user)
 
-    print(user.hitchwiki_username is None)
+    logger.info(user.hitchwiki_username is None)
 
     return render_template(
         "me.html",
@@ -250,7 +265,7 @@ def show_current_user():
 
 @app.route("/is_username_used/<username>", methods=["GET"])
 def is_username_used(username):
-    print(f"Received request to check if username {username} is used.")
+    logger.info(f"Received request to check if username {username} is used.")
     user = security.datastore.find_user(username=username)
     if user:
         return jsonify({"used": True})
@@ -260,7 +275,7 @@ def is_username_used(username):
 
 @app.route("/account/<username>", methods=["GET"])
 def show_account(username):
-    print(f"Received request to show user {username}.")
+    logger.info(f"Received request to show user {username}.")
     user = security.datastore.find_user(username=username)
     if user:
         origin_string = get_origin_string(user)
@@ -440,7 +455,7 @@ def experience():
         if resp.ok:
             break
         else:
-            print(resp)
+            logger.info(resp)
 
     res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()
