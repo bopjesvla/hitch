@@ -1,6 +1,7 @@
-import pandas as pd
-import sqlite3
 import os
+import sqlite3
+
+import pandas as pd
 
 DUMP_DB = 'dump.sqlite'
 

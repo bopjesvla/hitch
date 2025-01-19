@@ -1,12 +1,13 @@
-import pandas as pd
-import numpy as np
-import folium
+import datetime
 import json
-import folium.plugins
+import os
 import sqlite3
 from html import unescape
-import os
-import datetime
+
+import folium
+import folium.plugins
+import numpy as np
+import pandas as pd
 
 to_df = lambda x: pd.DataFrame(x.tolist(), index=x.index)
 

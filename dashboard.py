@@ -1,8 +1,9 @@
+import os
 import sqlite3
+from string import Template
+
 import pandas as pd
 import plotly.express as px
-from string import Template
-import os
 
 # see
 # https://realpython.com/python-dash/

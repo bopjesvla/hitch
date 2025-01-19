@@ -1,15 +1,16 @@
-import pandas as pd
-import numpy as np
-import folium
-import json
-import folium.plugins
-import sqlite3
-import os
 import html
+import json
+import os
+import sqlite3
 import sys
-from branca.element import Element
 from string import Template
+
+import folium
+import folium.plugins
 import networkx
+import numpy as np
+import pandas as pd
+from branca.element import Element
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
