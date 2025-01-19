@@ -36,8 +36,7 @@ DATABASE = (
 )
 
 # generated using: secrets.token_urlsafe()
-HOME_DIR = os.path.expanduser("~")  # Get the user's home directory
-SECRET_KEY_FILE = os.path.join(HOME_DIR, ".flask_secret_key")
+SECRET_KEY_FILE = ".flask_secret_key"
 
 def get_or_create_secret_key():
     # Check if the secret key file already exists

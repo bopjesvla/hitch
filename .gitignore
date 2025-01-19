@@ -8,6 +8,7 @@ dst-env/
 .cache/v/cache/lastfailed
 tests/.cache/v/cache/lastfailed
 .vscode/settings.json
+.flask_secret_key
 
 ##
 ## R Section - See https://github.com/github/gitignore/blob/master/R.gitignore
