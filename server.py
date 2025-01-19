@@ -1,5 +1,4 @@
-from flask import Flask, redirect, g, render_template_string, jsonify, render_template
-from flask import send_file, request, redirect
+from flask import Flask, redirect, g, jsonify, render_template, send_file, request, redirect
 import secrets
 import re
 import pandas as pd
@@ -13,11 +12,10 @@ from flask_security import (
     Security,
     SQLAlchemyUserDatastore,
     current_user,
-    RegisterForm,
     utils
 )
 from flask_security.models import fsqla_v3 as fsqla
-from wtforms import IntegerField, SelectField, StringField
+from wtforms import IntegerField, SelectField, StringField, SubmitField
 from wtforms.widgets import NumberInput
 from wtforms.validators import Optional
 from datetime import datetime
@@ -25,10 +23,6 @@ import pycountry
 from flask_mailman import Mail
 import logging
 from flask_wtf import FlaskForm
-from flask import Flask, render_template 
-from flask_wtf import FlaskForm 
-from wtforms import StringField ,SubmitField 
-from wtforms.validators import InputRequired, Length 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -98,7 +92,7 @@ app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
 # Lax = CSRF protection for POST requests, Strict also includes GET requests
 app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 
-app.config["SECURITY_POST_REGISTER_VIEW"] = "/edit-user"
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/#registered"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///../{DATABASE}"  # relative to /instance directory
@@ -245,17 +239,6 @@ def get_user():
 # TODO: properly delete the user after their confirmation
 @app.route("/delete-user", methods=["GET"])
 def delete_user():
-    # null the user data
-    updated_user = security.datastore.find_user(username=current_user.username)
-    updated_user.gender = None
-    updated_user.year_of_birth = None
-    updated_user.hitchhiking_since = None
-    updated_user.origin_country = None
-    updated_user.origin_city = None
-    updated_user.hitchwiki_username = None
-    updated_user.trustroots_username = None
-    security.datastore.put(updated_user)
-    security.datastore.commit()
     return f"To delete your account please send an email to {EMAIL} with the subject 'Delete my account'."
 
 def get_origin_string(user):

@@ -18,6 +18,9 @@
 
 Username: {{ username }}<br>
 Email: {{ email }}<br>
+
+<h2>Public Profile</h2>
+
 Gender: {{ gender }}<br>
 Year of Birth: {{ year_of_birth }}<br>
 Hitchhiking Since: {{ hitchhiking_since }}<br>
@@ -33,11 +36,9 @@ On Trustroots:
 -
 {% else %}
 <a href="https://www.trustroots.org/profile/{{ trustroots_username }}">{{ trustroots_username }}</a>
-{% endif %}<br>
-<br>
-
-<a href="/?user={{ username }}">See my spots</a><br>
+{% endif %}<br><br>
 <a href="/edit-user">Edit your personal data</a><br>
+<a href="/?user={{ username }}">See my spots</a><br>
 <a href="/logout">Logout</a><br>
 <a href="/delete-user" style="color: red;" onclick=" ">Delete my account</a>
 {% endblock %}
