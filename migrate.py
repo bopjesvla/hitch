@@ -4,7 +4,6 @@ import os
 
 fn = "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
 
-
 ################
 # ensure database columns are up to date
 points = pd.read_sql(
