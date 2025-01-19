@@ -25,6 +25,10 @@ import pycountry
 from flask_mailman import Mail
 import logging
 from flask_wtf import FlaskForm
+from flask import Flask, render_template 
+from flask_wtf import FlaskForm 
+from wtforms import StringField ,SubmitField 
+from wtforms.validators import InputRequired, Length 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -94,7 +98,7 @@ app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
 # Lax = CSRF protection for POST requests, Strict also includes GET requests
 app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
 
-app.config["SECURITY_POST_REGISTER_VIEW"] = "/#registered"
+app.config["SECURITY_POST_REGISTER_VIEW"] = "/edit-user"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"sqlite:///../{DATABASE}"  # relative to /instance directory
@@ -155,20 +159,21 @@ class UserEditForm(FlaskForm):
             ("Prefer not to say", "Prefer not to say"),
         ],
     )
-    # year_of_birth = IntegerField(
-    #     "Year of Birth",
-    #     widget=NumberInput(min=1900, max=datetime.now().year),
-    #     validators=[Optional()],
-    # )
-    # hitchhiking_since = IntegerField(
-    #     "Hitchhiking Since",
-    #     widget=NumberInput(min=1900, max=datetime.now().year),
-    #     validators=[Optional()],
-    # )
-    # origin_country = CountrySelectField("Where are you from?")
-    # origin_city = StringField("Which city are you from?", validators=[Optional()])
-    # hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()])
-    # trustroots_username = StringField("Trustroots Username", validators=[Optional()])
+    year_of_birth = IntegerField(
+        "Year of Birth",
+        widget=NumberInput(min=1900, max=datetime.now().year),
+        validators=[Optional()],
+    )
+    hitchhiking_since = IntegerField(
+        "Hitchhiking Since",
+        widget=NumberInput(min=1900, max=datetime.now().year),
+        validators=[Optional()],
+    )
+    origin_country = CountrySelectField("Where are you from?")
+    origin_city = StringField("Which city are you from?", validators=[Optional()])
+    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()])
+    trustroots_username = StringField("Trustroots Username", validators=[Optional()])
+    submit = SubmitField('Submit') 
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -196,14 +201,26 @@ with app.app_context():
 
 
 ### Endpoints related to user management ###
-
-@app.route("/edit-user", methods=["GET", 'POST'])
-def edit_user():
-    form = UserEditForm()
+	
+@app.route('/edit-user', methods=['GET', 'POST']) 
+def form():
+    if current_user.is_anonymous:
+        return redirect('/login')
+    
+    form = UserEditForm() 
     if form.validate_on_submit():
-        return redirect('/success')
+        updated_user = security.datastore.find_user(username=current_user.username)
+        updated_user.gender = form.gender.data
+        updated_user.year_of_birth = form.year_of_birth.data
+        updated_user.hitchhiking_since = form.hitchhiking_since.data
+        updated_user.origin_country = form.origin_country.data
+        updated_user.origin_city = form.origin_city.data
+        updated_user.hitchwiki_username = form.hitchwiki_username.data
+        updated_user.trustroots_username = form.trustroots_username.data
+        security.datastore.put(updated_user)
+        security.datastore.commit()
+        return redirect('/me')
     return render_template('edit_user.html', form=form)
-
 
 
 @app.route("/user", methods=["GET"])
@@ -248,6 +265,7 @@ def show_current_user():
     origin_string = get_origin_string(user)
 
     logger.info(user.hitchwiki_username is None)
+    print(user.hitchwiki_username, type(user.hitchwiki_username))
 
     return render_template(
         "me.html",

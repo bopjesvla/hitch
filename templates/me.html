@@ -1,7 +1,8 @@
 {% extends 'user.html' %}
 
 {% block links %}
-<a href="/?user={{ username }}">See my spots</a>
+<a href="/?user={{ username }}">See my spots</a><br>
+<a href="/edit-user">Edit your personal data</a><br>
 <a href="/logout">Logout</a><br>
 <a href="/delete-user" style="color: red;" onclick=" ">Delete my account</a>
 {% endblock %}

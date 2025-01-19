@@ -57,9 +57,6 @@ points = pd.read_sql(
     con=sqlite3.connect(fn),
 )
 
-# no links for old anonymous reviews
-points.loc[points.nickname == 'Anonymous', 'nickname'] = None
-
 # NOT_A_USER_ID = 0
 # if "user_id" not in points.columns:
 #     points["user_id"] = NOT_A_USER_ID
@@ -72,6 +69,9 @@ if "from_hitchwiki" not in points.columns:
     points["name"] = points["name"].str.replace(" (Hitchwiki)", "")
 
 points.rename(columns={"name": "nickname"}, inplace=True)
+
+# no links for old anonymous reviews
+points.loc[points.nickname == 'Anonymous', 'nickname'] = None
 
 points.to_sql('points', sqlite3.connect(fn), index=False, if_exists='replace')
 ################
@@ -87,9 +87,12 @@ duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(fn)
 )
 
-users = pd.read_sql(
-    "select * from user", sqlite3.connect(fn)
-)
+try:
+    users = pd.read_sql(
+        "select * from user", sqlite3.connect(fn)
+    )
+except pd.errors.DatabaseError:
+    raise Exception("Run server.py to create the user table")
 
 print(f"{len(points)} points currently")
 
