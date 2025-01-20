@@ -1,8 +1,9 @@
+import os
 import sqlite3
+from string import Template
+
 import pandas as pd
 import plotly.express as px
-from string import Template
-import os
 
 # see
 # https://realpython.com/python-dash/
@@ -129,6 +130,21 @@ fig.update_layout(yaxis_title="# of entries")
 
 timeline_plot_hitchwiki = fig.to_html("dash.html", full_html=False)
 
+# TODO: necessary to track user prgress, move elsewhere later
+import html
+def e(s):
+    return html.escape(s.replace("\n", "<br>"))
+
+
+user_accounts = ""
+users = pd.read_sql(
+    "select * from user", sqlite3.connect(DATABASE)
+)
+
+for i, user in users.iterrows():
+    user_accounts += "<a href='/?user=" + e(user.username) + "#filters'>" + e(user.username) + "</a>"
+    user_accounts += "<br>"
+    
 
 # Put together
 template = open("dashboard_template.html").read()
@@ -138,6 +154,7 @@ output = Template(template).substitute(
         "timeline": timeline_plot,
         "timeline_duplicate": timeline_plot_duplicate,
         "timeline_hitchwiki": timeline_plot_hitchwiki,
+        "user_accounts": user_accounts,
     }
 )
 
