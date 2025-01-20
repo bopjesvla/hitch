@@ -1,10 +1,11 @@
+import sqlite3
+
+import folium
 import numpy as np
 import pandas as pd
-import sqlite3
-import folium
+import scipy.stats
 from folium.raster_layers import ImageOverlay
 from matplotlib import cm, colors
-import scipy.stats
 
 
 def haversine_np(lon1, lat1, lon2, lat2):

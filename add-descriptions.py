@@ -1,12 +1,13 @@
-import pandas as pd
-import numpy as np
-import folium
+import datetime
 import json
-import folium.plugins
+import os
 import sqlite3
 from html import unescape
-import os
-import datetime
+
+import folium
+import folium.plugins
+import numpy as np
+import pandas as pd
 
 fn = "hw.sqlite"
 desc = pd.read_sql(
@@ -16,7 +17,7 @@ desc = pd.read_sql(
 
 desc = desc.drop_duplicates("id")
 desc = desc[
-    ["id", "lat", "lon", "rating", "country", "wait", "name", "comment", "datetime"]
+    ["id", "lat", "lon", "rating", "country", "wait", "nickname", "comment", "datetime"]
 ]
 desc["datetime"] += ".000000"
 desc["id"] += 1000000

@@ -5,10 +5,11 @@ if ("serviceWorker" in navigator) {
 var $$ = function (e) { return document.querySelector(e) }
 
 var addSpotPoints = [],
-    planRoutePoints = [],
     addSpotLine = null,
     active = [],
-    destLines = [],
+    destLineGroup = null,
+    filterDestLineGroup = null,
+    filterMarkerGroup = null,
     spotMarker,
     destMarker
 
@@ -38,9 +39,16 @@ function summaryText(row) {
     Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
 }
 
-var markerClick = function (marker) {
+function handleMarkerClick(marker, point, e) {
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
+    maybeReportDuplicate(marker)
+    window.location.hash = `${point.lat},${point.lng}`
+
+    L.DomEvent.stopPropagation(e)
+}
+
+var markerClick = function (marker) {
     var row = marker.options._row, point = marker.getLatLng()
     active = [marker]
 
@@ -89,31 +97,10 @@ var AddSpotButton = L.Control.extend({
                     window.location = '/'
                 return;
             }
-            clearAllButRoute()
+            navigateHome()
             document.body.classList.add('adding-spot')
             bar('.topbar.spot.step1')
 
-            L.DomEvent.stopPropagation(e)
-        }
-
-        return controlDiv;
-    }
-});
-
-var RouteButton = L.Control.extend({
-    options: {
-        position: 'topleft'
-    },
-    onAdd: function (map) {
-        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button plan-route');
-        var container = L.DomUtil.create('a', '', controlDiv);
-        container.href = "javascript:void(0);";
-        container.innerHTML = "↗️ Plan route";
-
-        container.onclick = function (e) {
-            clearAllButRoute()
-            document.body.classList.add('planning-route')
-            bar('.topbar.route.step1')
             L.DomEvent.stopPropagation(e)
         }
 
@@ -132,7 +119,7 @@ var MenuButton = L.Control.extend({
         container.innerHTML = "☰";
 
         container.onclick = function (e) {
-            clearAllButRoute()
+            navigateHome()
             if (document.body.classList.contains('menu'))
                 bar()
             else
@@ -145,129 +132,33 @@ var MenuButton = L.Control.extend({
     }
 });
 
-var RouteViewButton = L.Control.extend({
+var AccountButton = L.Control.extend({
     options: {
         position: 'topleft'
     },
     onAdd: function (map) {
-        var controlDiv = L.DomUtil.create('div', 'leaflet-bar replacement-button route-view');
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button your-account');
         var container = L.DomUtil.create('a', '', controlDiv);
-        container.href = "javascript:void(0);";
-        container.innerHTML = "<span class='route-view-toggle'></span> Route view";
-
-        container.onclick = function (e) {
-            document.body.classList.toggle('directions')
-            L.DomEvent.stopPropagation(e)
-        }
+        container.href = "/me";
+        container.innerHTML = "👤 Your account";
 
         return controlDiv;
     }
 });
 
-var CancelRouteButton = L.Control.extend({
+var FilterButton = L.Control.extend({
     options: {
         position: 'topleft'
     },
     onAdd: function (map) {
-        var controlDiv = L.DomUtil.create('div', 'leaflet-bar replacement-button cancel-route');
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button filter-button');
         var container = L.DomUtil.create('a', '', controlDiv);
-        container.href = "javascript:void(0);";
-        container.innerHTML = "✖ Cancel Route";
-
-        container.onclick = function (e) {
-            clearRoute()
-            L.DomEvent.stopPropagation(e)
-        }
+        container.href = "#filters";
+        container.innerHTML = "🧮 Filters";
 
         return controlDiv;
     }
 });
-
-var DonateButton = L.Control.extend({
-    options: {
-        position: 'bottomright'
-    },
-    onAdd: function (map) {
-        var controlDiv = L.DomUtil.create('div', 'donate-button');
-        controlDiv.innerHTML = '<a href="https://en.liberapay.com/Bob./donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>'
-
-        return controlDiv;
-    }
-});
-
-// let backpane = map.createPane('back')
-// L.imageOverlay('map2.svg', [[-58.49860999999993,-179.9999899999999],[83.62360000,179.99999000000003]], {pane: 'back'}).addTo(map);
-
-// amsterdam to barcelona
-// route,52.3051,4.8371,41.3725,2.1766
-
-// lux to metz
-// route,49.5429,6.1178,49.1792,6.1768
-
-let directionsLayers = []
-
-let toPoint = coord => L.point(coord.lng, coord.lat)
-let toCoord = point => L.latLng(point.y, point.x)
-let closest = (coord, segmentStart, segmentEnd) => {
-    return toCoord(L.LineUtil.closestPointOnSegment(toPoint(coord), toPoint(segmentStart), toPoint(segmentEnd)))
-}
-
-let dirpane = map.createPane('directions')
-dirpane.style.zIndex = 450
-
-function planRoute(lat1, lon1, lat2, lon2) {
-    let A = new L.LatLng(lat1, lon1), Z = new L.LatLng(lat2, lon2)
-    planRoutePoints = [A, Z]
-    document.body.classList.add('directions', 'has-route')
-
-    let routeDistance = A.distanceTo(Z)
-    // TODO: get the real geographic center?
-    let MIDPOINT = L.latLngBounds(A, Z).getCenter()
-
-    for (let d of directionsLayers)
-        map.removeLayer(d)
-
-    directionsLayers = [L.polyline([A, Z], { opacity: 0.1, weight: 5, dashArray: '1', color: 'red', pane: 'directions', interactive: false }).addTo(map)]
-
-    for (let spot of destinationMarkers) {
-        let B = spot.getLatLng()
-        //     AtoB = A.distanceTo(B), BtoZ = B.distanceTo(Z),
-        //     detour = AtoB + BtoZ,
-        //     stopScore = 2 * routeDistance - Math.abs(AtoB - BtoZ) - detour
-
-        if (MIDPOINT.distanceTo(B) > routeDistance / 1.95 + 10000) continue
-
-        let AtoB = A.distanceTo(B), BtoZ = B.distanceTo(Z)
-        let bestImprovement = 0
-
-        let lats = spot.options._destination_lats
-        let lons = spot.options._destination_lons
-
-        // loop over the spot's previous rides; don't show all; some have wildly different directions
-        for (let i in lats) {
-            let rideCoord = new L.LatLng(lats[i], lons[i]),
-                closestToZ = closest(Z, B, rideCoord), // what's the point on this ride that is closest to Z?
-                improvement = BtoZ - closestToZ.distanceTo(Z), // how much closer to Z would this ride have gotten us?
-                travel = B.distanceTo(rideCoord), // how far was this ride?
-                retreat = AtoB - A.distanceTo(rideCoord) // how far back to A would this ride have gotten us?
-
-            if (improvement > 0 && retreat < 0.5 * travel) {
-                bestImprovement = Math.max(bestImprovement, improvement)
-
-                directionsLayers.push(arrowLine(spot.getLatLng(), [lats[i], lons[i]], {interactive: false, pane: 'directions'}).addTo(map))
-            }
-        }
-        if (bestImprovement > 0) {
-            let marker = new L.circleMarker(B, Object.assign({}, spot.options, { pane: 'directions', radius: 5 + Math.min(bestImprovement / 80000, 5) }))
-            marker.on('click', e => spot.fire('click', e))
-            marker.addTo(map)
-            directionsLayers.push(marker)
-        }
-    }
-
-    var bounds = new L.LatLngBounds([A, Z]);
-    map.fitBounds(bounds, {})
-}
 
 ////// Define the search bar for the map //////
 var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11 };
@@ -308,17 +199,14 @@ geocoderController.on('markgeocode', function (e) {
 ////// Add interaction buttons to the map //////
 map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
-map.addControl(new RouteButton());
-map.addControl(new RouteViewButton());
-map.addControl(new CancelRouteButton());
+map.addControl(new AccountButton());
+map.addControl(new FilterButton());
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
 
-// map.addControl(new DonateButton());
-
 $$('#sb-close').onclick = function (e) {
-    clearAllButRoute()
+    navigateHome()
 }
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
@@ -334,9 +222,6 @@ function updateAddSpotLine() {
     if (addSpotPoints.length == 1) {
         addSpotLine = arrowLine(addSpotPoints[0], map.getCenter()).addTo(map)
     }
-    else if (planRoutePoints.length == 1) {
-        addSpotLine = arrowLine(planRoutePoints[0], map.getCenter()).addTo(map)
-   }
 }
 
 map.on('move', updateAddSpotLine)
@@ -380,6 +265,20 @@ var addSpotStep = function (e) {
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
+            // nicknames wont be recorded if a user is logged in
+            fetch('/user')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! Status:');
+                    }
+                    return response.json(); // Parse the JSON response
+                })
+                .then(data => {
+                    $$("#nickname-container").classList.toggle("make-invisible", data.logged_in);
+                })
+                .catch(error => {
+                    console.error('Error fetching user info:', error);
+                });
             $$('#details-seen').classList.add("make-invisible")
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
@@ -417,39 +316,14 @@ var addSpotStep = function (e) {
         }
     }
     else if (e.target.innerText == 'Cancel') {
-        clearAllButRoute()
+        navigateHome()
     }
 
     document.body.classList.toggle('adding-spot', addSpotPoints.length > 0)
 }
 
-function planRouteStep(e) {
-    if (e.target.tagName != 'BUTTON') return
-    if (e.target.innerText == 'Done') {
-        let center = map.getCenter()
-        planRoutePoints.push(center)
-
-        if (planRoutePoints.length == 1) {
-            if (map.getZoom() > 7) map.setZoom(7);
-            map.panTo(planRoutePoints[0])
-            bar('.topbar.route.step2')
-        }
-
-        if (planRoutePoints.length == 2) {
-            let pr = planRoutePoints
-            window.location.hash = `#route,${pr[0].lat},${pr[0].lng},${pr[1].lat},${pr[1].lng}`
-        }
-    }
-    else if (e.target.innerText == 'Cancel') {
-        clearRoute()
-        clearAllButRoute()
-    }
-    document.body.classList.toggle('planning-route', planRoutePoints.length > 0)
-}
-
 bars.forEach(bar => {
     if (bar.classList.contains('spot')) bar.onclick = addSpotStep
-    else if (bar.classList.contains('route')) bar.onclick = planRouteStep
 })
 
 map.on('click', e => {
@@ -457,7 +331,7 @@ map.on('click', e => {
 
     if (window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
-        let markers = document.body.classList.contains('directions') ? directionsLayers.filter(x => x instanceof L.CircleMarker) : allMarkers
+        let markers = document.body.classList.contains('filtering') ? filterMarkerGroup : allMarkers
         var circles = markers.sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
         if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 20) {
             added = true
@@ -465,7 +339,7 @@ map.on('click', e => {
         }
     }
     if (!added && !document.body.classList.contains('reporting-duplicate') && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
-        clearAllButRoute()
+        navigateHome()
     }
 
     L.DomEvent.stopPropagation(e)
@@ -486,9 +360,8 @@ function renderPoints() {
     if (spotMarker) map.removeLayer(spotMarker)
     if (destMarker) map.removeLayer(destMarker)
 
-    for (let d of destLines)
-        d.remove()
-    destLines = []
+    if (destLineGroup)
+        destLineGroup.remove()
 
     spotMarker = destMarker = null
     if (addSpotPoints[0]) {
@@ -500,25 +373,31 @@ function renderPoints() {
         destMarker.addTo(map)
     }
     document.body.classList.toggle('has-points', addSpotPoints.length)
+
+    destLineGroup = L.layerGroup()
+
+    let opts = document.body.classList.contains('filtering') ? {pane: 'filtering'} : {}
+
     for (let a of active) {
-        let lats = a.options._destination_lats
-        let lons = a.options._destination_lons
+        let lats = a.options._row[7]
+        let lons = a.options._row[8]
         if (lats && lats.length) {
             for (let i in lats) {
-                destLines.push(arrowLine(a.getLatLng(), [lats[i], lons[i]]).addTo(map))
+                arrowLine(a.getLatLng(), [lats[i], lons[i]], opts).addTo(destLineGroup)
             }
         }
     }
 
+    destLineGroup.addTo(map)
+
     oldActive = active;
 }
 
-function clearAllButRoute() {
-    if (window.location.hash && !window.location.hash.includes('#route')) {
+function navigateHome() {
+    if (window.location.hash) {
         window.history.pushState(null, null, ' ')
     }
-    if (!window.location.hash) navigate() // clears rest
-    else clear()
+    navigate() // clears rest
 }
 
 function clear() {
@@ -527,16 +406,7 @@ function clear() {
     active = []
     renderPoints()
     updateAddSpotLine()
-    document.body.classList.remove('adding-spot')
-    document.body.classList.remove('reporting-duplicate')
-    document.body.classList.remove('menu')
-}
-
-function clearRoute() {
-    document.body.classList.remove('planning-route', 'directions', 'has-route')
-    planRoutePoints = []
-    if (window.location.hash.includes('#route'))
-        window.history.pushState(null, null, ' ')
+    document.body.classList.remove('adding-spot', 'reporting-duplicate', 'menu')
 }
 
 $$('.leaflet-control-attribution').remove()
@@ -593,52 +463,6 @@ if (map.getZoom() > 17 && window.location.hash != '#success-duplicate') map.setZ
 
 $$('.folium-map').focus()
 
-function navigate() {
-    console.log(location.hash)
-
-    let args = window.location.hash.split(',')
-    if (args[0] == '#route') {
-        clear()
-        planRoute(+args[1], +args[2], +args[3], +args[4])
-    }
-    else if (args[0] == '#location') {
-        clear()
-        clearRoute()
-        map.setView([+args[1], +args[2]], args[3])
-    }
-    else if (args.length == 2) {
-        clear()
-        clearRoute()
-        let lat = +args[0].slice(1), lon = +args[1]
-        for (let m of allMarkers) {
-            if (m._latlng.lat === lat && m._latlng.lng === lon) {
-                markerClick(m)
-                if (map.getZoom() < 3)
-                    map.setView(m.getLatLng(), 16)
-                return
-            }
-        }
-    }
-    else {
-        clear()
-        clearRoute()
-    }
-}
-
-window.onhashchange = navigate
-
-navigate()
-
-if (window.location.hash == '#success') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.success')
-}
-
-if (window.location.hash == '#success-duplicate') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.success-duplicate')
-}
-
 function exportAsGPX() {
     var script = document.createElement("script");
     script.src = 'https://cdn.jsdelivr.net/npm/togpx@0.5.4/togpx.js';
@@ -688,3 +512,267 @@ function exportAsGPX() {
 
 // $$('.report-button').onclick = _ => $$('.report-options').classList.toggle('.visible')
 // $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')
+
+// validate add spot form input
+document.getElementById('spot-form').addEventListener('submit', function(event) {
+    const nicknameInput = document.getElementById('nickname-input');
+    if (nicknameInput.value != ""){
+        event.preventDefault();
+        const errorMessage = document.getElementById('nickname-error-message');
+        errorMessage.textContent = '';
+
+        // nicknames that are used as usernames are not allowed
+        let url = '/is_username_used/' + nicknameInput.value;
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error! Status:');
+                }
+                return response.json(); // Parse the JSON response
+            })
+            .then(data => {
+                if (data.used){
+                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
+                } else {
+                    this.submit();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching user info:', error);
+            });
+    };
+});
+
+const knob = document.getElementById('knob');
+const knobLine = document.getElementById('knobLine');
+const knobCone = document.getElementById('knobCone');
+const rotationValue = document.getElementById('rotationValue');
+const spreadInput = document.getElementById('spreadInput');
+spreadInput.value = 70
+const knobToggle = document.getElementById('knob-toggle');
+const textFilter = document.getElementById('text-filter');
+const userFilter = document.getElementById('user-filter');
+const clearFilters = document.getElementById('clear-filters');
+
+let isDragging = false, radAngle = 0;
+
+function setQueryParameter(key, value) {
+    const url = new URL(window.location.href); // Get the current URL
+    if (value)
+        url.searchParams.set(key, value); // Set or update the query parameter
+    else
+        url.searchParams.delete(key);
+    window.history.replaceState({}, '', url.toString()); // Update the URL without reloading
+    navigate();
+}
+
+function getQueryParameter(key) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(key);
+}
+
+function clearParams() {
+    const url = new URL(window.location.href);
+    let newURL = url.origin + url.pathname + url.hash;
+    window.history.replaceState({}, '', newURL.toString());
+    navigate();
+}
+
+clearFilters.onclick = () => {
+    clearParams()
+    navigateHome()
+}
+
+knob.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    updateRotation(e);
+    const angle = Math.round(radAngle * (180 / Math.PI) + 90) % 360;
+    const normalizedAngle = (angle + 360) % 360; // Normalize angle
+    setQueryParameter('direction', normalizedAngle);
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        updateRotation(e);
+        const angle = Math.round(radAngle * (180 / Math.PI) + 90) % 360;
+        const normalizedAngle = (angle + 360) % 360; // Normalize angle
+        setQueryParameter('direction', normalizedAngle);
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+spreadInput.addEventListener('input', updateConeSpread);
+knobToggle.addEventListener('input', () => setQueryParameter('mydirection', knobToggle.checked));
+userFilter.addEventListener('input', () => setQueryParameter('user', userFilter.value));
+textFilter.addEventListener('input', () => setQueryParameter('text', textFilter.value));
+
+let filterPane = map.createPane('filtering')
+filterPane.style.zIndex = 450
+
+function updateRotation(event) {
+    const rect = knob.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const dx = event.clientX - centerX;
+    const dy = event.clientY - centerY;
+
+    radAngle = Math.atan2(dy, dx);
+}
+
+function updateConeSpread() { // Clamp spread between 1 and 89
+    const spread = Math.min(89, parseInt(spreadInput.value, 10) || 0);
+
+    if (spread > 0)
+        setQueryParameter('spread', spread);
+}
+
+function applyParams() {
+    const normalizedAngle = parseFloat(getQueryParameter('direction'));
+    const spread = parseFloat(getQueryParameter('spread')) || 70;
+
+    if (!isNaN(normalizedAngle)) {
+        knobLine.style.transform = `translateX(-50%) rotate(${normalizedAngle}deg)`;
+        knobCone.style.transform = `rotate(${normalizedAngle}deg)`;
+        rotationValue.textContent = `${Math.round(normalizedAngle)}°`;
+        radAngle = (normalizedAngle - 90) * (Math.PI / 180); // Update radAngle for consistency
+    }
+
+    spreadInput.value = spread;
+    const radiansSpread = spread * (Math.PI / 180); // Convert spread angle to radians
+
+    const multiplier = 100; // Factor to increase the cone's distance
+
+    // Calculate cone boundaries using trigonometry and multiply by the multiplier
+    const leftX = 50 - Math.sin(radiansSpread) * 50 * multiplier; // 50 is the radius
+    const rightX = 50 + Math.sin(radiansSpread) * 50 * multiplier;
+    const topY = 50 - Math.cos(radiansSpread) * 50 * multiplier; // Top vertex
+
+    knobCone.style.clipPath = `polygon(50% 50%, ${leftX}% ${topY}%, ${rightX}% ${topY}%)`;
+
+    knobToggle.checked = getQueryParameter('mydirection') == 'true'
+    textFilter.value = getQueryParameter('text')
+    userFilter.value = getQueryParameter('user')
+
+    if (knobToggle.checked || textFilter.value || userFilter.value) {
+        if (filterMarkerGroup) filterMarkerGroup.remove()
+        if (filterDestLineGroup) filterDestLineGroup.remove()
+
+        let filterMarkers = knobToggle.checked ? destinationMarkers : allMarkers;
+        // display filters pane
+        document.body.classList.add('filtering')
+
+        if (userFilter.value) {
+            filterMarkers = filterMarkers.filter(
+                marker => marker.options._row[6] && marker.options._row[6]
+                    .map(x => x.toLowerCase())
+                    .includes(userFilter.value.toLowerCase())
+            )
+        }
+        if (textFilter.value) {
+            filterMarkers = filterMarkers.filter(
+                x => x.options._row[3].toLowerCase().includes(textFilter.value.toLowerCase())
+            )
+        }
+        if (knobToggle.checked) {
+            filterMarkers = filterMarkers.filter(
+                x => {
+                    let from = x.getLatLng()
+                    let lats = x.options._row[7]
+                    let lons = x.options._row[8]
+
+                    for (let i in lats) {
+                        let travelAngle = Math.atan2(from.lat - lats[i], lons[i] - from.lng);
+                        // difference between the travel direction and the cone line
+                        let coneLineDiff = Math.abs(travelAngle - radAngle)
+                        let wrappedDiff = Math.min(coneLineDiff, 2 * Math.PI - coneLineDiff)
+                        // if the direction falls within the knob's cone
+                        if (wrappedDiff < radiansSpread)
+                            return true
+                    }
+                    return false
+                }
+            )
+        }
+
+        // duplicate all markers to the filtering pane
+        filterMarkers = filterMarkers.map(
+            spot => {
+                let loc = spot.getLatLng()
+                let marker = new L.circleMarker(loc, Object.assign({}, spot.options, { pane: 'filtering'}))
+                marker.on('click', e => spot.fire('click', e))
+                return marker
+            }
+        )
+
+        filterMarkerGroup = L.layerGroup(
+            filterMarkers, {pane: 'filtering'}
+        ).addTo(map)
+    } else {
+        document.body.classList.remove('filtering')
+    }
+}
+
+// Initialize the cone spread and knob appearance
+applyParams();
+
+function navigate() {
+    applyParams();
+
+    let args = window.location.hash.slice(1).split(',')
+    if (args[0] == 'route') {
+        clear()
+        planRoute(+args[1], +args[2], +args[3], +args[4])
+    }
+    else if (args[0] == 'location') {
+        clear()
+        map.setView([+args[1], +args[2]], args[3])
+    }
+    else if (args[0] == 'filters') {
+        clear()
+        bar('.sidebar.filters')
+    }
+    else if (args.length == 2 && !isNaN(args[0])) {
+        console.log('YEAH')
+        clear()
+        let lat = +args[0], lon = +args[1]
+        for (let m of allMarkers) {
+            if (m._latlng.lat === lat && m._latlng.lng === lon) {
+                markerClick(m)
+                if (map.getZoom() < 3)
+                    map.setView(m.getLatLng(), 16)
+                return
+            }
+        }
+    }
+    else {
+        clear()
+    }
+}
+
+window.onhashchange = navigate
+
+navigate()
+
+if (window.location.hash == '#success') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.success')
+}
+
+if (window.location.hash == '#success-duplicate') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.success-duplicate')
+}
+
+if (window.location.hash == '#failed') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.failed')
+}
+
+if (window.location.hash == '#registered') {
+    history.replaceState(null, null, ' ')
+    bar('.sidebar.registered')
+}

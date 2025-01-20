@@ -1,0 +1,20 @@
+{% extends "security/base.html" %}
+
+{% block content %}
+<h1>Edit your personal data </h1> 
+<form method="POST" action="{{ url_for('form') }}"> 
+    {{ form.csrf_token }} 
+    <p>{{ form.gender.label }} {{ form.gender() }}</p> 
+    <p>{{ form.year_of_birth.label }} {{ form.year_of_birth() }}</p>
+    <p>{{ form.hitchhiking_since.label }} {{ form.hitchhiking_since() }}</p>
+    <p>{{ form.origin_country.label }} {{ form.origin_country() }}</p>
+    <p>{{ form.origin_city.label }} {{ form.origin_city() }}</p>
+    <p>{{ form.hitchwiki_username.label }} {{ form.hitchwiki_username() }}</p>
+    <p>{{ form.trustroots_username.label }} {{ form.trustroots_username() }}</p>
+    <br><br>
+    <p>Pay attention to our <a href="https://github.com/bopjesvla/hitch/blob/master/PRIVACY_POLICY.md">Privacy Policy.</a></p>
+    <p>This personal information will be shown publicly.</p>
+    <br>
+    {{ form.submit }} 
+</form>
+{% endblock %}
