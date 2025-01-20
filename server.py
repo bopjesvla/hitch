@@ -1,28 +1,26 @@
-from flask import Flask, redirect, g, jsonify, render_template, send_file, request, redirect
-import secrets
-import re
-import pandas as pd
-import requests
-import sqlite3
-import random
-import os
-import math
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import (
-    Security,
-    SQLAlchemyUserDatastore,
-    current_user,
-    utils
-)
-from flask_security.models import fsqla_v3 as fsqla
-from wtforms import IntegerField, SelectField, StringField, SubmitField
-from wtforms.widgets import NumberInput
-from wtforms.validators import Optional
-from datetime import datetime
-import pycountry
-from flask_mailman import Mail
 import logging
+import math
+import os
+import random
+import re
+import secrets
+import sqlite3
+from datetime import datetime
+
+import pandas as pd
+import pycountry
+import requests
+from flask import (Flask, g, jsonify, redirect, render_template, request,
+                   send_file)
+from flask_mailman import Mail
+from flask_security import (Security, SQLAlchemyUserDatastore, current_user,
+                            utils)
+from flask_security.models import fsqla_v3 as fsqla
+from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from wtforms import IntegerField, SelectField, StringField, SubmitField
+from wtforms.validators import Optional
+from wtforms.widgets import NumberInput
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -229,6 +227,7 @@ def form():
 
 @app.route("/user", methods=["GET"])
 def get_user():
+    """Endpoint to get the currently logged in user."""
     logger.info("Received request to get user.")
     # Check if the user is logged in
     if not current_user.is_anonymous:
@@ -275,6 +274,7 @@ def show_current_user():
 
 @app.route("/is_username_used/<username>", methods=["GET"])
 def is_username_used(username):
+    """Endpoint to check if a username is already used."""
     logger.info(f"Received request to check if username {username} is used.")
     user = security.datastore.find_user(username=username)
     if user:

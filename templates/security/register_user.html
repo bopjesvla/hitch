@@ -16,8 +16,6 @@
     {% endif %}
     {{ render_field_errors(register_user_form.csrf_token) }}
     <br>
-    <!-- <p>Pay attention to our <a href="https://github.com/bopjesvla/hitch/blob/master/PRIVACY_POLICY.md">Privacy Policy</a></p>
-         <br> -->
     {{ render_field(register_user_form.submit) }}
   </form>
   {% include "security/_menu.html" %}
