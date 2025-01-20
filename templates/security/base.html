@@ -37,6 +37,9 @@
              background-size: cover; /* Maintains aspect ratio */
              filter: blur(10px); /* Applies blur to the background */
          }
+         form ~ hr, form ~ h2 {
+             display: none;
+         }
 
          .overlay {
              position: absolute;
@@ -45,6 +48,7 @@
              transform: translate(-50%, -50%); /* Centers the overlay */
              padding: 20px 40px; /* Adds some spacing inside the overlay */
              max-width: 350px; /* Prevents the overlay from being too wide */
+             width: 90vw;
              max-height: 90%; /* Prevents the overlay from being too tall */
              background: #fff; /* Semi-transparent background */
              border-radius: 8px; /* Adds rounded corners */

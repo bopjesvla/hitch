@@ -623,10 +623,11 @@ function updateRotation(event) {
     radAngle = Math.atan2(dy, dx);
 }
 
-function updateConeSpread() {
-    const spread = Math.max(0, Math.min(89, parseInt(spreadInput.value, 10) || 0)); // Clamp spread between 0 and 90
+function updateConeSpread() { // Clamp spread between 1 and 89
+    const spread = Math.min(89, parseInt(spreadInput.value, 10) || 0);
 
-    setQueryParameter('spread', spread);
+    if (spread > 0)
+        setQueryParameter('spread', spread);
 }
 
 function applyParams() {

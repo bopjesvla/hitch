@@ -52,7 +52,7 @@ input[type=radio] + label {
     padding: 0 20px 20px 20px;
     box-shadow: 2px 0 10px;
 }
-.sidebar.show-spot {
+.sidebar.show-spot, .sidebar.filters {
     max-width: 50%;
 }
 .sidebar button {
@@ -216,11 +216,8 @@ body.filtering .filter-button a::after {
     .sidebar.show-spot {
         font-size: 13px;
     }
-    .sidebar.show-spot h3 {
-        /* text-align: left; */
-    }
-    .sidebar.visible ~ #sb-close {
-        /* font-size: 30px; */
+    .sidebar.filters {
+        font-size: 14px;
     }
 }
 .donate-button img {
@@ -457,4 +454,5 @@ ul.no-style {
 }
 #knob-toggle + label {
     font-weight: normal;
+    display: inline;
 }
