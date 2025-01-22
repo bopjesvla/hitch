@@ -10,24 +10,24 @@ import plotly.express as px
 # https://stackoverflow.com/a/47715493
 
 
-rootDir = os.path.join(os.path.dirname(__file__), "..")
+root_dir = os.path.join(os.path.dirname(__file__), "..")
 
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
-distDir = os.path.abspath(os.path.join(rootDir, "dist"))
-templateDir = os.path.abspath(os.path.join(rootDir, "templates"))
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
 
-os.makedirs(distDir, exist_ok=True)
+os.makedirs(dist_dir, exist_ok=True)
 
-templatePath = os.path.join(templateDir, "dashboard_template.html")
+templatePath = os.path.join(template_dir, "dashboard_template.html")
 template = open(templatePath, encoding="utf-8").read()
 
-outname = os.path.join(distDir, "dashboard.html")
+outname = os.path.join(dist_dir, "dashboard.html")
 
 # TODO: Use dotenv?
-if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
-    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 else:
-    DATABASE = os.path.join(dbDir, "points.sqlite")
+    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 # Spots
 df = pd.read_sql(

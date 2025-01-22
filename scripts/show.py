@@ -12,37 +12,37 @@ import pandas as pd
 
 from helpers import get_bearing, haversine_np
 
-rootDir = os.path.join(os.path.dirname(__file__), "..")
+root_dir = os.path.join(os.path.dirname(__file__), "..")
 
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
-distDir = os.path.abspath(os.path.join(rootDir, "dist"))
-templateDir = os.path.abspath(os.path.join(rootDir, "templates"))
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
 
-os.makedirs(distDir, exist_ok=True)
+os.makedirs(dist_dir, exist_ok=True)
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
 
 if LIGHT:
-    outname = os.path.join(distDir, "light.html")
+    outname = os.path.join(dist_dir, "light.html")
 elif NEW:
-    outname = os.path.join(distDir, "new.html")
+    outname = os.path.join(dist_dir, "new.html")
 else:
-    outname = os.path.join(distDir, "index.html")
+    outname = os.path.join(dist_dir, "index.html")
 
-outname_recent = os.path.join(distDir, "recent.html")
-outname_dups = os.path.join(distDir, "recent-dups.html")
+outname_recent = os.path.join(dist_dir, "recent.html")
+outname_dups = os.path.join(dist_dir, "recent-dups.html")
 
 
-template_path = os.path.join(templateDir, "index_template.html")
+template_path = os.path.join(template_dir, "index_template.html")
 template = open(template_path, encoding="utf-8").read()
 
 
 # TODO: Use dotenv?
-if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
-    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 else:
-    DATABASE = os.path.join(dbDir, "points.sqlite")
+    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
@@ -322,10 +322,10 @@ output = Template(template).substitute(
         "folium_body": body,
         "folium_script": script,
         "hitch_script": open(
-            os.path.join(rootDir, "static", "map.js"), encoding="utf-8"
+            os.path.join(root_dir, "static", "map.js"), encoding="utf-8"
         ).read(),
         "hitch_style": open(
-            os.path.join(rootDir, "static", "style.css"), encoding="utf-8"
+            os.path.join(root_dir, "static", "style.css"), encoding="utf-8"
         ).read(),
     }
 )

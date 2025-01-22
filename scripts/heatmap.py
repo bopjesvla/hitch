@@ -8,12 +8,12 @@ from matplotlib import cm, colors
 
 from helpers import haversine_np
 
-rootDir = os.path.join(os.path.dirname(__file__), "..")
+root_dir = os.path.join(os.path.dirname(__file__), "..")
 
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
-distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 
-DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 
 
 points = pd.read_sql(
@@ -77,6 +77,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(os.path.abspath(os.path.join(distDir, f"heatmap-{VAR}-per-{DIVIDER}.html")))
+    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}-per-{DIVIDER}.html")))
 else:
-    m.save(os.path.abspath(os.path.join(distDir, f"heatmap-{VAR}.html")))
+    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}.html")))

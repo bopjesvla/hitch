@@ -3,15 +3,15 @@ import sqlite3
 
 import pandas as pd
 
-rootDir = os.path.join(os.path.dirname(__file__), "..")
+root_dir = os.path.join(os.path.dirname(__file__), "..")
 
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
 
 # TODO: Use dotenv?
-if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
-    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 else:
-    DATABASE = os.path.join(dbDir, "points.sqlite")
+    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 ################
 # ensure database columns are up to date

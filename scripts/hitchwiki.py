@@ -6,10 +6,10 @@ from html import unescape
 import numpy as np
 import pandas as pd
 
-rootDir = os.path.join(os.path.dirname(__file__), "..")
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+root_dir = os.path.join(os.path.dirname(__file__), "..")
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
 
-DATABASE = os.path.join(dbDir, "points.sqlite")
+DATABASE = os.path.join(db_dir, "points.sqlite")
 
 
 to_df = lambda x: pd.DataFrame(x.tolist(), index=x.index)

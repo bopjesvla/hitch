@@ -27,17 +27,17 @@ logger = logging.getLogger(__name__)
 EMAIL = "info@hitchmap.com"
 
 
-rootDir = os.path.dirname(__file__)
+root_dir = os.path.dirname(__file__)
 
 
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
-distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 
 # TODO: Use dotenv?
-if os.path.exists(os.path.join(dbDir, "prod-points.sqlite")):
-    DATABASE = os.path.join(dbDir, "prod-points.sqlite")
+if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 else:
-    DATABASE = os.path.join(dbDir, "points.sqlite")
+    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 # generated using: secrets.token_urlsafe()
 SECRET_KEY_FILE = ".flask_secret_key"
@@ -329,12 +329,12 @@ def show_account(username):
 
 @app.route("/", methods=["GET"])
 def index():
-    return send_file(os.path.join(distDir, "index.html"))
+    return send_file(os.path.join(dist_dir, "index.html"))
 
 
 @app.route("/light.html", methods=["GET"])
 def light():
-    light_map = os.path.join(distDir, "light.html")
+    light_map = os.path.join(dist_dir, "light.html")
     if os.path.exists(light_map):
         return send_file(light_map)
     else:
@@ -343,47 +343,47 @@ def light():
 
 @app.route("/lines.html", methods=["GET"])
 def lines():
-    return send_file(os.path.join(distDir, "lines.html"))
+    return send_file(os.path.join(dist_dir, "lines.html"))
 
 
 @app.route("/dashboard.html", methods=["GET"])
 def dashboard():
-    return send_file(os.path.join(distDir, "dashboard.html"))
+    return send_file(os.path.join(dist_dir, "dashboard.html"))
 
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
-    return send_file(os.path.join(distDir, "heatmap.html"))
+    return send_file(os.path.join(dist_dir, "heatmap.html"))
 
 
 @app.route("/tiny-world-map.json", methods=["GET"])
 def tinyworldmap():
-    return send_file(os.path.join(distDir, "tiny-world-map.json"))
+    return send_file(os.path.join(dist_dir, "tiny-world-map.json"))
 
 
 @app.route("/heatmap-wait.html", methods=["GET"])
 def heatmapwait():
-    return send_file(os.path.join(distDir, "heatmap-wait.html"))
+    return send_file(os.path.join(dist_dir, "heatmap-wait.html"))
 
 
 @app.route("/heatmap-distance.html", methods=["GET"])
 def heatmapdistance():
-    return send_file(os.path.join(distDir, "heatmap-distance.html"))
+    return send_file(os.path.join(dist_dir, "heatmap-distance.html"))
 
 
 @app.route("/new.html", methods=["GET"])
 def new():
-    return send_file(os.path.join(distDir, "new.html"))
+    return send_file(os.path.join(dist_dir, "new.html"))
 
 
 @app.route("/recent.html", methods=["GET"])
 def recent():
-    return send_file(os.path.join(distDir, "recent.html"))
+    return send_file(os.path.join(dist_dir, "recent.html"))
 
 
 @app.route("/recent-dups.html", methods=["GET"])
 def recent_dups():
-    return send_file(os.path.join(distDir, "recent-dups.html"))
+    return send_file(os.path.join(dist_dir, "recent-dups.html"))
 
 
 @app.route("/.well-known/assetlinks.json", methods=["GET"])

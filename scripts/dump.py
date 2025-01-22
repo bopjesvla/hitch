@@ -3,14 +3,14 @@ import sqlite3
 
 import pandas as pd
 
-rootDir = os.path.join(os.path.dirname(__file__), "..")
-dbDir = os.path.abspath(os.path.join(rootDir, "db"))
-distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+root_dir = os.path.join(os.path.dirname(__file__), "..")
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 
-os.makedirs(distDir, exist_ok=True)
+os.makedirs(dist_dir, exist_ok=True)
 
-DATABASE = os.path.join(dbDir, "prod-points.sqlite")
-DATABASE_DUMP = os.path.join(distDir, "dump.sqlite")
+DATABASE = os.path.join(db_dir, "prod-points.sqlite")
+DATABASE_DUMP = os.path.join(dist_dir, "dump.sqlite")
 
 if not os.path.exists(DATABASE):
     print(f"DB not found: {DATABASE}")
