@@ -1,15 +1,16 @@
 import html
-import json
 import os
 import sqlite3
 import sys
 from string import Template
-from branca.element import Element
+
 import folium
 import folium.plugins
 import networkx
 import numpy as np
 import pandas as pd
+
+from helpers import get_bearing, haversine_np
 
 rootDir = os.path.join(os.path.dirname(__file__), "..")
 
@@ -55,44 +56,9 @@ duplicates = pd.read_sql(
 )
 
 try:
-    users = pd.read_sql(
-        "select * from user", sqlite3.connect(DATABASE)
-    )
+    users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
 except pd.errors.DatabaseError:
     raise Exception("Run server.py to create the user table")
-
-
-def haversine_np(lon1, lat1, lon2, lat2):
-    """
-    Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees)
-
-    All args must be of equal length.
-
-    """
-    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
-
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
-
-    c = 2 * np.arcsin(np.sqrt(a))
-    km = 6367 * c
-    # 1.25 because the road distance is, on average, 25% larger than a straight flight
-    return 1.25 * km
-
-
-def get_bearing(lon1, lat1, lon2, lat2):
-    dLon = lon2 - lon1
-    x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
-    y = np.cos(np.radians(lat1)) * np.sin(np.radians(lat2)) - np.sin(
-        np.radians(lat1)
-    ) * np.cos(np.radians(lat2)) * np.cos(np.radians(dLon))
-    brng = np.arctan2(x, y)
-    brng = np.degrees(brng)
-
-    return brng
 
 print(f"{len(points)} points currently")
 
@@ -204,23 +170,39 @@ comment_nl.loc[(points.datetime.dt.year > 2021) & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
 
-points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
+points["username"] = pd.merge(
+    left=points[["user_id"]],
+    right=users[["id", "username"]],
+    left_on="user_id",
+    right_on="id",
+    how="left",
+)["username"]
 points["hitchhiker"] = points["nickname"].fillna(points["username"])
 
-points['user_link'] = ("<a href='/?user=" + e(points["hitchhiker"]) + "#filters'>" + e(points["hitchhiker"]) + "</a>").fillna('Anonymous')
+points["user_link"] = (
+    "<a href='/?user="
+    + e(points["hitchhiker"])
+    + "#filters'>"
+    + e(points["hitchhiker"])
+    + "</a>"
+).fillna("Anonymous")
 
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―" + points["user_link"]
-    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
+    + "</i><br><br>―"
+    + points["user_link"]
+    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(
+        review_submit_datetime
+    )
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + '―' + points.loc[oldies, 'user_link']
+    + "―"
+    + points.loc[oldies, "user_link"]
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
@@ -239,7 +221,10 @@ places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
 
 # to prevent confusion, only add a review user if their review is listed
 places["review_users"] = (
-    points.dropna(subset=['text', 'hitchhiker']).groupby(["lat", "lon"]).hitchhiker.unique().apply(list)
+    points.dropna(subset=["text", "hitchhiker"])
+    .groupby(["lat", "lon"])
+    .hitchhiker.unique()
+    .apply(list)
 )
 
 places["dest_lats"] = (
