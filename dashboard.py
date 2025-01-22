@@ -134,15 +134,12 @@ timeline_plot_hitchwiki = fig.to_html("dash.html", full_html=False)
 import html
 def e(s):
     return html.escape(s.replace("\n", "<br>"))
-
-
-user_accounts = ""
 users = pd.read_sql(
     "select * from user", sqlite3.connect(DATABASE)
 )
-
+user_accounts = ""
 for i, user in users.iterrows():
-    user_accounts += "<a href='/?user=" + e(user.username) + "#filters'>" + e(user.username) + "</a>"
+    user_accounts += f'<a href="/account/{e(user.username)}">{e(user.username)}</a> - <a href="/?user={e(user.username)}#filters">Their spots</a>'
     user_accounts += "<br>"
     
 
