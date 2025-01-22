@@ -1,9 +1,10 @@
 import html
+import json
 import os
 import sqlite3
 import sys
 from string import Template
-
+from branca.element import Element
 import folium
 import folium.plugins
 import networkx
@@ -47,9 +48,18 @@ points = pd.read_sql(
     con=sqlite3.connect(DATABASE),
 )
 
+points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
+
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
 )
+
+try:
+    users = pd.read_sql(
+        "select * from user", sqlite3.connect(DATABASE)
+    )
+except pd.errors.DatabaseError:
+    raise Exception("Run server.py to create the user table")
 
 
 def haversine_np(lon1, lat1, lon2, lat2):
@@ -84,7 +94,6 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
     return brng
 
-
 print(f"{len(points)} points currently")
 
 # merging and transforming data
@@ -109,7 +118,7 @@ for island in islands:
             if node != parents[0]:
                 replace_map[node] = parents[0]
 
-print("Currently recorded duplicate spots are represented by: ", dups)
+print("Currently recorded duplicate spots are represented by:", dups)
 
 points[["lat", "lon"]] = points[["lat", "lon"]].apply(
     lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True
@@ -189,26 +198,29 @@ points["extra_text"] = (
 )
 
 comment_nl = points["comment"] + "\n\n"
-comment_nl.loc[~points.dest_lat.isnull() & points.comment.isnull()] = ""
+
+# show review without comments in the sidebar if they're new; old reviews may be aggregate ratings that don't make sense
+comment_nl.loc[(points.datetime.dt.year > 2021) & points.comment.isnull()] = ""
 
 review_submit_datetime = points.datetime.dt.strftime(", %B %Y").fillna("")
+
+points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
+points["hitchhiker"] = points["nickname"].fillna(points["username"])
+
+points['user_link'] = ("<a href='/?user=" + e(points["hitchhiker"]) + "#filters'>" + e(points["hitchhiker"]) + "</a>").fillna('Anonymous')
 
 points["text"] = (
     e(comment_nl)
     + "<i>"
     + e(points["extra_text"])
-    + "</i><br><br>―"
-    + e(points["name"].fillna("Anonymous"))
-    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(
-        review_submit_datetime
-    )
+    + "</i><br><br>―" + points["user_link"]
+    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
     e(comment_nl[oldies])
-    + "―"
-    + e(points[oldies].name.fillna("Anonymous"))
+    + '―' + points.loc[oldies, 'user_link']
     + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
@@ -224,7 +236,12 @@ places["distance"] = (
     points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 )
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
-places["review_count"] = groups.size()
+
+# to prevent confusion, only add a review user if their review is listed
+places["review_users"] = (
+    points.dropna(subset=['text', 'hitchhiker']).groupby(["lat", "lon"]).hitchhiker.unique().apply(list)
+)
+
 places["dest_lats"] = (
     points.dropna(subset=["dest_lat", "dest_lon"])
     .groupby(["lat", "lon"])
@@ -253,20 +270,14 @@ function (row) {
     var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
     var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
     var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6] > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row, _destination_lats: row[7], _destination_lons: row[8]});
+    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6].length > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row});
 
     marker.on('click', function(e) {
-        maybeReportDuplicate(marker)
-        if (window.location.hash.includes('#route'))
-            markerClick(marker)
-        else
-            window.location.hash = `${point.lat},${point.lng}`
-        
-        L.DomEvent.stopPropagation(e)
+       handleMarkerClick(marker, point, e)
     })
 
     // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
-    if (row[6] >= 3) {
+    if (row[6].length >= 3) {
         marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
     }
 
@@ -287,7 +298,7 @@ cluster = folium.plugins.FastMarkerCluster(
             "text",
             "wait",
             "distance",
-            "review_count",
+            "review_users",
             "dest_lats",
             "dest_lons",
         ]
@@ -315,6 +326,11 @@ header = header.replace(
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
+# We embed everything directly into the HTML page so our service worker can't serve inconsistent files
+# For example, if we add a new attribute to the spot which is shown in the front-end, but the user only gets the new
+# presentation layer, not the new data, the application would break
+# Because the HTML file contains everything, this is not a problem
+
 output = Template(template).substitute(
     {
         "folium_head": header,
@@ -341,13 +357,13 @@ if not LIGHT:
         "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     )
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
-    recent["name"] = recent.name.str.replace("://", "", regex=False)
+    recent["hitchhiker"] = recent.hitchhiker.str.replace("://", "", regex=False)
     recent["distance"] = recent["distance"].round(1)
     recent["datetime"] = recent["datetime"].astype(str)
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), " 🕒", "")
 
     recent[
-        ["url", "country", "datetime", "name", "rating", "distance", "text"]
+        ["url", "country", "datetime", "hitchhiker", "rating", "distance", "text"]
     ].to_html(outname_recent, render_links=True, index=False)
 
     duplicates["from_url"] = (

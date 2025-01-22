@@ -1,0 +1,22 @@
+{% extends "security/base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_form_errors, render_field_errors %}
+
+{% block content %}
+  {% include "security/_messages.html" %}
+  <h1>{{ _fsdomain('Register') }}</h1>
+  <form action="{{ url_for_security('register') }}" method="post" name="register_user_form">
+      {{ register_user_form.hidden_tag() }}
+      {{ render_form_errors(register_user_form) }}
+      {{ render_field_with_errors(register_user_form.email) }}
+      <p><small>If you have previously reviewed hitchhiking spots using a Hitchmap nickname or your hitchwiki.org account, you can claim those reviews as yours by choosing the same username here.</small><p>
+    {% if config["SECURITY_USERNAME_ENABLE"] %}{{ render_field_with_errors(register_user_form.username) }}{% endif %}
+    {{ render_field_with_errors(register_user_form.password) }}
+    {% if register_user_form.password_confirm %}
+      {{ render_field_with_errors(register_user_form.password_confirm) }}
+    {% endif %}
+    {{ render_field_errors(register_user_form.csrf_token) }}
+    <br>
+    {{ render_field(register_user_form.submit) }}
+  </form>
+  {% include "security/_menu.html" %}
+{% endblock content %}

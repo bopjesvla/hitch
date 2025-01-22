@@ -134,19 +134,31 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(handleTileRequest(event.request, match))
     }
     else {
+        // Helper function to strip query parameters from a URL
+        function stripQuery(url) {
+            const urlObject = new URL(url);
+            if (urlObject.hostname !== self.location.hostname)
+                return url
+            urlObject.search = ''; // Remove query parameters
+            return urlObject.toString();
+        }
+
         // Open the cache
         event.respondWith(caches.open(cacheName).then((cache) => {
             // Go to the network first
             return fetch(event.request).then((fetchedResponse) => {
                 // IMPORTANT: Tell the service worker what not to cache
-                if (!['image', 'video', 'audio'].includes(event.request.destination))
-                    // Cache response
-                    cache.put(event.request, fetchedResponse.clone());
+                if (!['image', 'video', 'audio'].includes(event.request.destination)) {
+                    // Strip query from URL before caching
+                    const strippedUrl = stripQuery(event.request.url);
+                    cache.put(strippedUrl, fetchedResponse.clone());
+                }
 
                 return fetchedResponse;
             }).catch(() => {
-                // If the network is unavailable, get
-                return cache.match(event.request.url);
+                // If the network is unavailable, get from cache
+                const strippedUrl = stripQuery(event.request.url);
+                return cache.match(strippedUrl);
             });
         }));
     }

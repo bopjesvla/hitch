@@ -4,12 +4,13 @@ import sqlite3
 import folium
 import numpy as np
 import pandas as pd
-from folium.raster_layers import ImageOverlay
 from matplotlib import cm, colors
 
 rootDir = os.path.join(os.path.dirname(__file__), "..")
 
 dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+distDir = os.path.abspath(os.path.join(rootDir, "dist"))
+
 DATABASE = os.path.join(dbDir, "prod-points.sqlite")
 
 
@@ -94,6 +95,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(f"heatmap-{VAR}-per-{DIVIDER}.html")
+    m.save(os.path.abspath(os.path.join(distDir, f"heatmap-{VAR}-per-{DIVIDER}.html")))
 else:
-    m.save(f"heatmap-{VAR}.html")
+    m.save(os.path.abspath(os.path.join(distDir, f"heatmap-{VAR}.html")))

@@ -1,11 +1,22 @@
 import json
+import os
 import sqlite3
 from html import unescape
 
 import numpy as np
 import pandas as pd
 
+rootDir = os.path.join(os.path.dirname(__file__), "..")
+dbDir = os.path.abspath(os.path.join(rootDir, "db"))
+
+DATABASE = os.path.join(dbDir, "points.sqlite")
+
+
 to_df = lambda x: pd.DataFrame(x.tolist(), index=x.index)
+
+if not os.path.exists("good.json"):
+    print("File missing: good.json")
+    exit()
 
 good = pd.read_json("good.json")[0]
 good = good.str.split("\n").str[-1]
@@ -74,7 +85,7 @@ cols = [
 ]
 
 explode_df[cols].to_sql(
-    "points", sqlite3.connect("points.sqlite"), index_label="id", if_exists="replace"
+    "points", sqlite3.connect(DATABASE), index_label="id", if_exists="replace"
 )
 
 # create unique index unique_comment on points(lat, lon, comment) where comment is not null;
