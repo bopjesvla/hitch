@@ -18,8 +18,8 @@ template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
 
 os.makedirs(dist_dir, exist_ok=True)
 
-templatePath = os.path.join(template_dir, "dashboard_template.html")
-template = open(templatePath, encoding="utf-8").read()
+template_path = os.path.join(template_dir, "dashboard_template.html")
+template = open(template_path, encoding="utf-8").read()
 
 outname = os.path.join(dist_dir, "dashboard.html")
 
