@@ -5,9 +5,9 @@ The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitc
 
 ## Description
 
-- `show.py` builds the main HTML page (`index.html`). This is where the magic happens.
 - `server.py` runs the server
-- `dump.py` runs the monthly dump
+- `scripts/show.py` builds the main HTML page (`index.html`). This is where the magic happens.
+- `scripts/dump.py` runs the monthly dump
 - `cron.sh` is the crontab running above files
 - `hitchmap.conf` is the NGINX configuration
 
@@ -21,19 +21,19 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-curl https://hitchmap.com/dump.sqlite > points.sqlite
+curl https://hitchmap.com/dump.sqlite > db/points.sqlite
 
 OR
 
 conda install folium==0.16.0 networkx==3.2.1
-curl https://hitchmap.com/dump.sqlite > points.sqlite
+curl https://hitchmap.com/dump.sqlite > db/points.sqlite
 ```
 
 ## Getting started
 Running
 
 ```
-python3 show.py
+python3 scripts/show.py
 python3 server.py
 ```
 

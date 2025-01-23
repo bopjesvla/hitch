@@ -1,18 +1,26 @@
-import datetime
-import json
 import os
 import sqlite3
 from html import unescape
 
-import folium
-import folium.plugins
 import numpy as np
 import pandas as pd
 
-fn = "hw.sqlite"
+root_dir = os.path.join(os.path.dirname(__file__), "..")
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+
+os.makedirs(dist_dir, exist_ok=True)
+
+DATABASE = os.path.join(db_dir, "points.sqlite")
+DATABASE_HW = os.path.join(db_dir, "hw.sqlite")
+
+if not os.path.exists(DATABASE_HW):
+    print(f"DB not found: {DATABASE_HW}")
+    exit()
+
 desc = pd.read_sql(
     "select p.*, waitingtime wait, null name, pd.description comment from t_points p join t_points_descriptions pd where p.id = pd.fk_point",
-    sqlite3.connect(fn),
+    sqlite3.connect(DATABASE_HW),
 )
 
 desc = desc.drop_duplicates("id")
@@ -30,4 +38,4 @@ desc["banned"] = False
 desc["ip"] = None
 desc["dest_lat"] = desc["dest_lon"] = np.nan
 
-desc.to_sql("points", sqlite3.connect("points.sqlite"), index=False, if_exists="append")
+desc.to_sql("points", sqlite3.connect(DATABASE), index=False, if_exists="append")
