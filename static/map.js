@@ -409,8 +409,6 @@ function clear() {
     document.body.classList.remove('adding-spot', 'reporting-duplicate', 'menu')
 }
 
-$$('.leaflet-control-attribution').remove()
-
 function restoreView() {
     if (!storageAvailable('localStorage')) {
         return false;

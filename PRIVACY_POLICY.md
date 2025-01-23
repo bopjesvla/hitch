@@ -36,7 +36,3 @@ Hitchhiking and more broadly mobility research will be conducted using the data 
 ### Questions?
 
 [Drop us a line!](mailto:info@hitchmap.com)
-
----
-
-<small>Content available under a [Creative Commons licence](https://creativecommons.org/licenses/by-sa/4.0/).</small>
