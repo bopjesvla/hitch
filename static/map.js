@@ -409,7 +409,9 @@ function clear() {
     document.body.classList.remove('adding-spot', 'reporting-duplicate', 'menu')
 }
 
-$$('.leaflet-control-attribution').remove()
+$$('.leaflet-control-attribution').innerHTML = `
+    © <a href=https://openstreetmap.org/copyright>OpenStreetMap</a>, <a href=https://hitchmap.com/copyright.html>Hitchmap</a> contributors
+`
 
 function restoreView() {
     if (!storageAvailable('localStorage')) {

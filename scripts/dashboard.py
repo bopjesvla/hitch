@@ -9,9 +9,25 @@ import plotly.express as px
 # https://realpython.com/python-dash/
 # https://stackoverflow.com/a/47715493
 
-DATABASE = (
-    "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-)
+
+root_dir = os.path.join(os.path.dirname(__file__), "..")
+
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+
+os.makedirs(dist_dir, exist_ok=True)
+
+template_path = os.path.join(template_dir, "dashboard_template.html")
+template = open(template_path, encoding="utf-8").read()
+
+outname = os.path.join(dist_dir, "dashboard.html")
+
+# TODO: Use dotenv?
+if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
+else:
+    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 # Spots
 df = pd.read_sql(
@@ -171,4 +187,4 @@ output = Template(template).substitute(
     }
 )
 
-open("dashboard.html", "w", encoding="utf-8").write(output)
+open(outname, "w", encoding="utf-8").write(output)

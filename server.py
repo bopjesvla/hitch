@@ -1,3 +1,4 @@
+import datetime
 import logging
 import math
 import os
@@ -10,11 +11,9 @@ from datetime import datetime
 import pandas as pd
 import pycountry
 import requests
-from flask import (Flask, g, jsonify, redirect, render_template, request,
-                   send_file)
+from flask import Flask, g, jsonify, redirect, render_template, request, send_file
 from flask_mailman import Mail
-from flask_security import (Security, SQLAlchemyUserDatastore, current_user,
-                            utils)
+from flask_security import Security, SQLAlchemyUserDatastore, current_user, utils
 from flask_security.models import fsqla_v3 as fsqla
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
@@ -27,12 +26,22 @@ logger = logging.getLogger(__name__)
 
 EMAIL = "info@hitchmap.com"
 
-DATABASE = (
-    "prod-points.sqlite" if os.path.exists("prod-points.sqlite") else "points.sqlite"
-)
+
+root_dir = os.path.dirname(__file__)
+
+
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+
+# TODO: Use dotenv?
+if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
+else:
+    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 # generated using: secrets.token_urlsafe()
 SECRET_KEY_FILE = ".flask_secret_key"
+
 
 def get_or_create_secret_key():
     # Check if the secret key file already exists
@@ -49,21 +58,22 @@ def get_or_create_secret_key():
         logger.info(f"Generated new SECRET_KEY and saved to {SECRET_KEY_FILE}")
     return secret_key
 
+
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
 
-# Create app
-app = Flask(__name__)
+
+app = Flask(__name__, static_url_path="")
 
 ### Define user management ###
 
 app.config["DEBUG"] = DATABASE == "prod-points.sqlite"
 
 # Retrieve the secret key, creating it if necessary
-app.config['SECRET_KEY'] = get_or_create_secret_key()
+app.config["SECRET_KEY"] = get_or_create_secret_key()
 app.config["SECURITY_PASSWORD_HASH"] = "argon2"
 app.config["SECURITY_PASSWORD_SALT"] = (
     "146585145368132386173505678016728509634"  # can be published
@@ -80,7 +90,7 @@ app.config["SECURITY_USERNAME_REQUIRED"] = True
 app.config["SECURITY_USERNAME_MIN_LENGTH"] = 3
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
-    {'username': {'mapper': utils.uia_username_mapper, 'case_insensitive': True}}
+    {"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}
 ]
 app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
     f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
@@ -88,13 +98,11 @@ app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
 )
 
 # Lax = CSRF protection for POST requests, Strict also includes GET requests
-app.config["SESSION_COOKIE_SAMESITE"] = 'Strict'
+app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/#registered"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///../{DATABASE}"  # relative to /instance directory
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 app.config["SECURITY_CHANGE_EMAIL"] = True
@@ -102,13 +110,15 @@ app.config["SECURITY_CHANGE_EMAIL"] = True
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
 # Flask-Mailman configuration
-app.config['MAIL_SERVER'] = 'mail.smtp2go.com'
-app.config['MAIL_PORT'] = 587  # or 2525 if required
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'hitchmap.com'  # SMTP2GO username
-app.config['MAIL_PASSWORD'] = os.getenv('HITCHMAP_MAIL_PASSWORD', 'fake-password')  # Load password from env
-app.config['MAIL_DEFAULT_SENDER'] = ('Hitchmap', 'no-reply@hitchmap.com')
+app.config["MAIL_SERVER"] = "mail.smtp2go.com"
+app.config["MAIL_PORT"] = 587  # or 2525 if required
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USE_SSL"] = False
+app.config["MAIL_USERNAME"] = "hitchmap.com"  # SMTP2GO username
+app.config["MAIL_PASSWORD"] = os.getenv(
+    "HITCHMAP_MAIL_PASSWORD", "fake-password"
+)  # Load password from env
+app.config["MAIL_DEFAULT_SENDER"] = ("Hitchmap", "no-reply@hitchmap.com")
 
 mail = Mail(app)
 
@@ -163,9 +173,13 @@ class UserEditForm(FlaskForm):
     )
     origin_country = CountrySelectField("Where are you from?")
     origin_city = StringField("Which city are you from?", validators=[Optional()])
-    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()], default=None)
-    trustroots_username = StringField("Trustroots Username", validators=[Optional()], default=None)
-    submit = SubmitField('Submit') 
+    hitchwiki_username = StringField(
+        "Hitchwiki Username", validators=[Optional()], default=None
+    )
+    trustroots_username = StringField(
+        "Trustroots Username", validators=[Optional()], default=None
+    )
+    submit = SubmitField("Submit")
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -193,14 +207,15 @@ with app.app_context():
 
 
 ### Endpoints related to user management ###
-	
-@app.route('/edit-user', methods=['GET', 'POST']) 
+
+
+@app.route("/edit-user", methods=["GET", "POST"])
 def form():
     if current_user.is_anonymous:
-        return redirect('/login')
-    
+        return redirect("/login")
+
     form = UserEditForm()
-    
+
     if form.validate_on_submit():
         updated_user = security.datastore.find_user(username=current_user.username)
         updated_user.gender = form.gender.data
@@ -212,8 +227,8 @@ def form():
         updated_user.trustroots_username = form.trustroots_username.data
         security.datastore.put(updated_user)
         security.datastore.commit()
-        return redirect('/me')
-    
+        return redirect("/me")
+
     form.gender.data = current_user.gender
     form.year_of_birth.data = current_user.year_of_birth
     form.hitchhiking_since.data = current_user.hitchhiking_since
@@ -221,8 +236,8 @@ def form():
     form.origin_city.data = current_user.origin_city
     form.hitchwiki_username.data = current_user.hitchwiki_username
     form.trustroots_username.data = current_user.trustroots_username
-    
-    return render_template('edit_user.html', form=form)
+
+    return render_template("edit_user.html", form=form)
 
 
 @app.route("/user", methods=["GET"])
@@ -235,10 +250,12 @@ def get_user():
     else:
         return jsonify({"logged_in": False, "username": ""})
 
+
 # TODO: properly delete the user after their confirmation
 @app.route("/delete-user", methods=["GET"])
 def delete_user():
     return f"To delete your account please send an email to {EMAIL} with the subject 'Delete my account'."
+
 
 def get_origin_string(user):
     origin_string = (
@@ -248,10 +265,11 @@ def get_origin_string(user):
     )
     return origin_string
 
+
 @app.route("/me", methods=["GET"])
 def show_current_user():
     if current_user.is_anonymous:
-        return redirect('/login')
+        return redirect("/login")
 
     user = current_user
     origin_string = get_origin_string(user)
@@ -311,12 +329,12 @@ def show_account(username):
 
 @app.route("/", methods=["GET"])
 def index():
-    return send_file("index.html")
+    return send_file(os.path.join(dist_dir, "index.html"))
 
 
 @app.route("/light.html", methods=["GET"])
 def light():
-    light_map = "light.html"
+    light_map = os.path.join(dist_dir, "light.html")
     if os.path.exists(light_map):
         return send_file(light_map)
     else:
@@ -325,80 +343,51 @@ def light():
 
 @app.route("/lines.html", methods=["GET"])
 def lines():
-    return send_file("lines.html")
+    return send_file(os.path.join(dist_dir, "lines.html"))
 
 
 @app.route("/dashboard.html", methods=["GET"])
 def dashboard():
-    return send_file("dashboard.html")
+    return send_file(os.path.join(dist_dir, "dashboard.html"))
 
 
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
-    return send_file("heatmap.html")
+    return send_file(os.path.join(dist_dir, "heatmap.html"))
 
 
 @app.route("/tiny-world-map.json", methods=["GET"])
 def tinyworldmap():
-    return send_file("tiny-world-map.json")
+    return send_file(os.path.join(dist_dir, "tiny-world-map.json"))
 
 
 @app.route("/heatmap-wait.html", methods=["GET"])
 def heatmapwait():
-    return send_file("heatmap-wait.html")
+    return send_file(os.path.join(dist_dir, "heatmap-wait.html"))
 
 
 @app.route("/heatmap-distance.html", methods=["GET"])
 def heatmapdistance():
-    return send_file("heatmap-distance.html")
+    return send_file(os.path.join(dist_dir, "heatmap-distance.html"))
 
 
 @app.route("/new.html", methods=["GET"])
 def new():
-    return send_file("new.html")
+    return send_file(os.path.join(dist_dir, "new.html"))
 
 
 @app.route("/recent.html", methods=["GET"])
 def recent():
-    return send_file("recent.html")
+    return send_file(os.path.join(dist_dir, "recent.html"))
+
+@app.route("/copyright.html", methods=["GET"])
+def copyright():
+    return send_file(os.path.join(dist_dir, "copyright.html"))
 
 
 @app.route("/recent-dups.html", methods=["GET"])
 def recent_dups():
-    return send_file("recent-dups.html")
-
-
-@app.route("/favicon.ico", methods=["GET"])
-def favicon():
-    return send_file("favicon.ico")
-
-
-@app.route("/icon.png", methods=["GET"])
-def icon():
-    return send_file("hitchwiki-high-contrast-no-car-flipped.png")
-
-
-### App functionality ###
-
-
-@app.route("/content/report_duplicate.png", methods=["GET"])
-def report_duplicate_image():
-    return send_file("content/report_duplicate.png")
-
-
-@app.route("/content/route_planner.png", methods=["GET"])
-def route_planner_image():
-    return send_file("content/route_planner.png")
-
-
-@app.route("/manifest.json", methods=["GET"])
-def manifest():
-    return send_file("manifest.json")
-
-
-@app.route("/sw.js", methods=["GET"])
-def sw():
-    return send_file("sw.js")
+    return send_file(os.path.join(dist_dir, "recent-dups.html"))
 
 
 @app.route("/.well-known/assetlinks.json", methods=["GET"])
@@ -409,11 +398,6 @@ def assetlinks():
 @app.route("/Hitchmap.apk", methods=["GET"])
 def android_app():
     return send_file("android/Hitchmap.apk")
-
-
-@app.route("/content/<path:path>")
-def send_report(path):
-    return send_from_directory("content", path)
 
 
 @app.route("/experience", methods=["POST"])

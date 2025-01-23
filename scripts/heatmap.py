@@ -1,45 +1,33 @@
+import os
 import sqlite3
 
 import folium
 import numpy as np
 import pandas as pd
-import scipy.stats
-from folium.raster_layers import ImageOverlay
 from matplotlib import cm, colors
 
+from helpers import haversine_np
 
-def haversine_np(lon1, lat1, lon2, lat2):
-    """
-    Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees)
+root_dir = os.path.join(os.path.dirname(__file__), "..")
 
-    All args must be of equal length.
+db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 
-    """
-    lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
-
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-
-    a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
-
-    c = 2 * np.arcsin(np.sqrt(a))
-    km = 6367 * c
-    return km
+DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 
 
-fn = "/home/bob/dump(1).sqlite"
 points = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(fn),
+    sqlite3.connect(DATABASE),
 )
+
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
 VAR = "distance"
 DIVIDER = "wait"
 
-points["distance"] = haversine_np(*rads)
+points["distance"] = haversine_np(*rads, 1)
 
 # points = points[points.datetime > '2021']
 if "distance" in [VAR, DIVIDER]:
@@ -89,6 +77,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(f"heatmap-{VAR}-per-{DIVIDER}.html")
+    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}-per-{DIVIDER}.html")))
 else:
-    m.save(f"heatmap-{VAR}.html")
+    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}.html")))
