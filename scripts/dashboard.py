@@ -176,8 +176,6 @@ user_accounts += f"<br>There are {count_inactive_users} inactive users"
     
 
 ### Put together ###
-template = open("dashboard_template.html", encoding="utf-8").read()
-
 output = Template(template).substitute(
     {
         "timeline": timeline_plot,
