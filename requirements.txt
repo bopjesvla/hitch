@@ -11,3 +11,4 @@ numpy==1.26.4
 pandas==2.2.2
 plotly==5.23.0
 pycountry==24.6.1
+shapely==2.0.6

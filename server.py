@@ -380,6 +380,10 @@ def new():
 def recent():
     return send_file(os.path.join(dist_dir, "recent.html"))
 
+@app.route("/copyright.html", methods=["GET"])
+def copyright():
+    return send_file(os.path.join(dist_dir, "copyright.html"))
+
 
 @app.route("/recent-dups.html", methods=["GET"])
 def recent_dups():
