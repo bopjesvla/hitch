@@ -188,6 +188,9 @@ body.adding-spot .horizontal-button {
     display: block;
     clear: both;
 }
+.leaflet-arrowlines-pane {
+    pointer-events: none;
+}
 body.zoomed-out .leaflet-overlay-pane {
     opacity: 0.3;
 }

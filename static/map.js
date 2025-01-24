@@ -361,7 +361,8 @@ function arrowLine(from, to, opts = {}) {
                 stroke: false,
                 fill: true,
                 fillOpacity: 0.6,
-                fillColor: 'black'
+                fillColor: 'black',
+                pane: 'arrowlines'
             },
         }),
         offset: 16,
@@ -627,6 +628,9 @@ textFilter.addEventListener('input', () => setQueryParameter('text', textFilter.
 
 let filterPane = map.createPane('filtering')
 filterPane.style.zIndex = 450
+
+let arrowlinePane = map.createPane('arrowlines')
+filterPane.style.zIndex = 1450
 
 function updateRotation(event) {
     const rect = knob.getBoundingClientRect();
