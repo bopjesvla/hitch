@@ -352,8 +352,22 @@ map.on('zoom', e => {
 var oldActive = [];
 
 function arrowLine(from, to, opts = {}) {
-    opts = Object.assign({frequency: '7px', size: '5px', fill: true, stroke: false, fillOpacity: 0.8}, opts)
-    return L.polyline([from, to], { opacity: 0, color: 'black' }).arrowheads(opts)
+    return L.polylineDecorator([from, to], {patterns: [{
+        repeat: 10,
+        symbol: L.Symbol.arrowHead({
+            pixelSize: 7,
+            polygon: true,
+            pathOptions: {
+                stroke: false,
+                fill: true,
+                fillOpacity: 0.6,
+                fillColor: 'black'
+            },
+        }),
+        offset: 16,
+        endOffset: 16
+    }
+]})
 }
 
 function renderPoints() {
