@@ -6,6 +6,12 @@ from heatchmap.map_based_model import BUCKETS, BOUNDARIES
 import matplotlib.colors as colors
 import numpy as np
 import xyzservices.providers as xyz
+import branca.colormap as cm
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 BUCKETS = BUCKETS[:-1]
 BOUNDARIES = BOUNDARIES[:-1]
@@ -56,9 +62,9 @@ folium.raster_layers.ImageOverlay(
 ).add_to(m)
 
 
-colormap = cm.linear.Set1_09.scale(0, 35).to_step(10)
-colormap.caption = "A colormap caption"
-m.add_child(colormap)
+legend = cm.LinearColormap(colors=BUCKETS, index=BOUNDARIES[:-1], vmin=BOUNDARIES[0], vmax=BOUNDARIES[-1])
+legend.caption = "Waiting time to catch a ride by hitchhiking (minutes)"
+m.add_child(legend)
 
 ### from show.py ###
 m.get_root().render()
@@ -75,16 +81,21 @@ header = header.replace(
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
-outname = "hitchhiking.html"
-template = open("src.html", encoding="utf-8").read()
+root_dir = os.path.join(os.path.dirname(__file__), "..")
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+outname = os.path.join(dist_dir, "hitchhiking.html")
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+template_path = os.path.join(template_dir, "index_template.html")
+template = open(template_path, encoding="utf-8").read()
 
 output = Template(template).substitute(
     {
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open("map.js", encoding="utf-8").read() + "\n" + open("heatmap.js", encoding="utf-8").read(),
-        "hitch_style": open("style.css", encoding="utf-8").read(),
+        "hitch_script":  open(os.path.join(root_dir, "static", "map.js"), encoding="utf-8").read() + "\n" + open(os.path.join(root_dir, "static", "heatmap.js"), encoding="utf-8").read(),
+        "hitch_style": open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8").read()
     }
 )
 
@@ -93,63 +104,63 @@ print(f"Map saved to {outname}")
 
 ### Heatmap info ###
 
-import matplotlib.colors as colors
+# import matplotlib.colors as colors
 
-norm_uncertainties = plt.Normalize(0, 1)
-cmap_uncertainties = colors.LinearSegmentedColormap.from_list(
-    "", ["#00c800", background_color]
-)
+# norm_uncertainties = plt.Normalize(0, 1)
+# cmap_uncertainties = colors.LinearSegmentedColormap.from_list(
+#     "", ["#00c800", background_color]
+# )
 
-# from https://stackoverflow.com/a/56900830
-cax = fig.add_axes(
-    [
-        ax.get_position().x1 + 0.01,
-        ax.get_position().y0
-        + (ax.get_position().height * 2 / 3)
-        - (ax.get_position().height / 20),
-        0.02,
-        (ax.get_position().height / 3),
-    ]
-)
+# # from https://stackoverflow.com/a/56900830
+# cax = fig.add_axes(
+#     [
+#         ax.get_position().x1 + 0.01,
+#         ax.get_position().y0
+#         + (ax.get_position().height * 2 / 3)
+#         - (ax.get_position().height / 20),
+#         0.02,
+#         (ax.get_position().height / 3),
+#     ]
+# )
 
-cbar_uncertainty = fig.colorbar(
-    cm.ScalarMappable(norm=norm_uncertainties, cmap=cmap_uncertainties),
-    cax=cax,
-)
-cbar_uncertainty.ax.tick_params(labelsize=figsize)
-cbar_uncertainty.ax.set_ylabel(
-    "Uncertainty in waiting time estimation",
-    rotation=90,
-    fontsize=figsize * 2 / 3,
-)
+# cbar_uncertainty = fig.colorbar(
+#     cm.ScalarMappable(norm=norm_uncertainties, cmap=cmap_uncertainties),
+#     cax=cax,
+# )
+# cbar_uncertainty.ax.tick_params(labelsize=figsize)
+# cbar_uncertainty.ax.set_ylabel(
+#     "Uncertainty in waiting time estimation",
+#     rotation=90,
+#     fontsize=figsize * 2 / 3,
+# )
 
-# from https://stackoverflow.com/a/56900830
-cax = fig.add_axes(
-[
-    ax.get_position().x1 + 0.01,
-    ax.get_position().y0 + (ax.get_position().height / 20),
-    0.02,
-    (ax.get_position().height / 3),
-]
-)
-cbar = fig.colorbar(
-cm.ScalarMappable(norm=norm, cmap=cmap),
-cax=cax,
-)
-boundary_labels = [
-"0 min",
-"10",
-"20",
-"30",
-"40",
-"50",
-"60",
-"70",
-"80",
-"90",
-"> 100",
-]
-cbar.ax.set_yticks(ticks=boundaries, labels=boundary_labels)
-cbar.ax.tick_params(labelsize=figsize)
+# # from https://stackoverflow.com/a/56900830
+# cax = fig.add_axes(
+# [
+#     ax.get_position().x1 + 0.01,
+#     ax.get_position().y0 + (ax.get_position().height / 20),
+#     0.02,
+#     (ax.get_position().height / 3),
+# ]
+# )
+# cbar = fig.colorbar(
+# cm.ScalarMappable(norm=norm, cmap=cmap),
+# cax=cax,
+# )
+# boundary_labels = [
+# "0 min",
+# "10",
+# "20",
+# "30",
+# "40",
+# "50",
+# "60",
+# "70",
+# "80",
+# "90",
+# "> 100",
+# ]
+# cbar.ax.set_yticks(ticks=boundaries, labels=boundary_labels)
+# cbar.ax.tick_params(labelsize=figsize)
         
-print("Done.")
+logger.info("Done.")

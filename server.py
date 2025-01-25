@@ -354,7 +354,7 @@ def dashboard():
 
 @app.route("/hitchhiking.html", methods=["GET"])
 def hitchhiking():
-    return send_file("hitchhiking.html")
+    return send_file(os.path.join(dist_dir, "hitchhiking.html"))
 
 
 @app.route("/heatmap.html", methods=["GET"])
