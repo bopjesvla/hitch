@@ -1,0 +1,39 @@
+{% extends "security/base.html" %}
+
+{% block content %}
+{% if gender is none %}
+    {% set gender = "-" %}
+{% endif %}
+{% if year_of_birth is none %}
+    {% set year_of_birth = "-" %}
+{% endif %}
+{% if hitchhiking_since is none %}
+    {% set hitchhiking_since = "-" %}
+{% endif %}
+{% if origin_string == " " %}
+    {% set origin_string = "-" %}
+{% endif %}
+
+<h1>User</h1>
+
+Username: {{ username }}<br>
+Gender: {{ gender }}<br>
+Year of Birth: {{ year_of_birth }}<br>
+Hitchhiking Since: {{ hitchhiking_since }}<br>
+Origin: {{ origin_string }}<br>
+On Hitchwiki:
+{% if hitchwiki_username is none %}
+-
+{% else %}
+<a href="https://hitchwiki.org/en/User:{{ hitchwiki_username }}">{{ hitchwiki_username }}</a>
+{% endif %}<br>
+On Trustroots:
+{% if trustroots_username is none %}
+-
+{% else %}
+<a href="https://www.trustroots.org/profile/{{ trustroots_username }}">{{ trustroots_username }}</a>
+{% endif %}<br>
+<br>
+
+<a href="/?user={{ username }}#filters">See their spots</a>
+{% endblock %}

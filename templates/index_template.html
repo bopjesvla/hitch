@@ -7,7 +7,7 @@
 
     $folium_head
     <script src=" https://cdn.jsdelivr.net/npm/leaflet-geometryutil@0.10.3/src/leaflet.geometryutil.min.js "></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-arrowheads@1.4.0/src/leaflet-arrowheads.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.min.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -41,8 +41,13 @@
             <input type="number" name="wait" min="0" max="9999" size="4"> minutes
             <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
-            <label for="username">Public nickname (alphanumeric)</label>
-            <input name="username" maxlength="32" pattern="[a-zA-Z0-9]*">
+            <div id="nickname-container">
+                <label for="nickname">Public nickname (alphanumeric)</label>
+                <input id="nickname-input" name="nickname" maxlength="32" pattern="[a-zA-Z0-9]*">
+                <span id="nickname-error-message" class="error"></span>
+                <br>
+                <div><small>To keep track of your reviews, <a href="/login">log in</a> or <a href="/register">register</a>. This will reset the review above.</small></div>
+            </div>
             <br>
             <details closed id="extended_info">
                 <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen" style='color: red;'> (check values, then submit again)</span></summary>
@@ -59,7 +64,7 @@
                 <label for="datetime_ride">When did you get the ride?<span id="no-ride"> If you didn't get a ride, when did you stop soliciting rides?</span></label>
                 <input id="datetime_ride" type="datetime-local" name="datetime_ride">
                 <!-- maximum date is today -->
-                <script>                    
+                <script>
                     document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0,11)) + "23:59";
                 </script>
             </details>
@@ -68,7 +73,6 @@
             <!-- <input type="number" value="0" name="males" min="0" max="9" size="2"> males, -->
             <!-- <input type="number" value="0" name="females" min="0" max="9" size="2"> females, -->
             <!-- <input value="0" type="number" name="others" min="0" max="9" size="2"> others -->
-
             <button>Submit</button>
         </form>
     </div>
@@ -115,17 +119,26 @@
 
         <p><a href="https://tillwenke.github.io/2024/05/06/hitchhiking-worldwide.html">Read the blog post</a> about the heatmap.</p>
         <p><a href="https://tillwenke.github.io/2024/04/21/hitchmap-gp.html">Read the blog post</a> in more detail.</p>
+    <div class="sidebar failed">
+        <h3>Failed!</h3>
+
+        <p>Try to submit the review again.</p>
+    </div>
+    <div class="sidebar registered">
+        <h3>Success!</h3>
+
+        <p>You're registered and logged in.</p>
     </div>
     <div class="sidebar menu">
         <ul class="no-style">
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch">Contribute</a></li>
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch/issues/new">Report bugs</a></li>
-            <li><i class="fa fa-download"></i><a href="https://hitchmap.com/dump.sqlite">Download spots as SQLite</a>
+            <li><i class="fa fa-download"></i><a href="/dump.sqlite">Download spots as SQLite</a>
             </li>
             <li><i class="fa fa-download"></i><a href="javascript:exportAsGPX()">Download spots as GPX</a></li>
-            <li><i class="fa fa-map-pin"></i><a href="https://hitchmap.com/recent.html">Recent reviews</a></li>
-            <li><i class="fa fa-chart-simple"></i><a href="https://hitchmap.com/dashboard.html">Charts & graphs</a></li>
-            <li><i class="fa fa-chart-simple"></i><a href="https://hitchmap.com/hitchhiking.html">World-wide Hitchhiking Heatmap</a></li>
+            <li><i class="fa fa-map-pin"></i><a href="/recent.html">Recent reviews</a></li>
+            <li><i class="fa fa-chart-simple"></i><a href="/dashboard.html">Charts & graphs</a></li>
+            <li><i class="fa fa-chart-simple"></i><a href="/hitchhiking.html">World-wide Hitchhiking Heatmap</a></li>
         </ul>
         <h4>Credits</h4>
         <p>
@@ -134,14 +147,39 @@
         </p>
         <p>
             Maps and data by
-            <a href=https://openstreetmap.org>OpenStreetMap</a>,
-            <a href=https: //tinyworldmap.com>tinyworldmap</a> and
-            <a href=https://hitchwiki.org>HitchWiki</a>
+            <a href="https://openstreetmap.org">OpenStreetMap</a>,
+            <a href="https://tinyworldmap.com">tinyworldmap</a> and
+            <a href="https://hitchwiki.org">HitchWiki</a>
         </p>
         <h4>License</h4>
         <p>
             Hitchmap software is licensed under AGPL 3.0. The Hitchmap database is licensed under the ODBL, the license used by OpenStreetMap.
         </p>
+    </div>
+    <div class="sidebar filters">
+        <h3>Filters</h3>
+        <label for="user-filter">Filter by user</label>
+        <input id="user-filter" type="text" value=""/>
+        <label for="text-filter">Search comments</label>
+        <input id="text-filter" type="text" value=""/>
+        <div class="extra-container">
+            <input id="knob-toggle" type="checkbox" value=""/> <label for="knob-toggle">Directional filter</label>
+            <div class="knob-container">
+                <div class="knob" id="knob">
+                    <div class="knob-line" id="knobLine"></div>
+                    <div class="knob-cone" id="knobCone"></div>
+                    <div class="direction north">N</div>
+                    <div class="direction south">S</div>
+                    <div class="direction west">W</div>
+                    <div class="direction east">E</div>
+                </div>
+                <div class="rotation-value" id="rotationValue">0°</div>
+                <div class="spread-input-container">
+                    ± <input type="number" min="0" max="89" id="spreadInput" value="70"> °
+                </div>
+            </div>
+        </div>
+        <button id="clear-filters">Clear filters</button>
     </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -164,16 +202,6 @@
             Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
-    </div>
-    <div class="topbar route step1">
-        <span>Zoom the crosshairs into your starting point.</span>
-        <br>
-        <span>The route planner works best for long-distance travel. Coverage is best in Europe.</span>
-        <br><button>Done</button><button>Cancel</button>
-    </div>
-    <div class="topbar route step2">
-        <span>Move the crosshairs to your destination.</span>
-        <br><button>Done</button><button>Cancel</button>
     </div>
     <div class="topbar duplicate">
         <span>Click on the duplicated marker.</span>
