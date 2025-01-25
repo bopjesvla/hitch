@@ -107,45 +107,6 @@ fig.update_layout(yaxis_title="# of entries")
 
 timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
-# Hitchwiki
-df = pd.read_sql(
-    "select * from hitchwiki",
-    sqlite3.connect(DATABASE),
-)
-
-df["datetime"] = df["datetime"].astype("datetime64[ns]")
-
-hist_data = df["datetime"]
-fig = px.histogram(df["datetime"], title="Entries per month")
-
-
-fig.update_xaxes(
-    range=[
-        "2024-10-01",
-        pd.Timestamp.today().strftime("%Y-%m-%d"),
-    ],
-    rangeselector=dict(
-        buttons=list(
-            [
-                dict(count=1, label="1m", step="month", stepmode="backward"),
-                dict(count=6, label="6m", step="month", stepmode="backward"),
-                dict(count=1, label="1y", step="year", stepmode="backward"),
-                dict(count=2, label="2y", step="year", stepmode="backward"),
-                dict(count=5, label="5y", step="year", stepmode="backward"),
-                dict(count=10, label="10y", step="year", stepmode="backward"),
-                dict(step="all"),
-            ]
-        )
-    ),
-)
-
-fig.update_layout(showlegend=False)
-fig.update_layout(xaxis_title=None)
-fig.update_layout(yaxis_title="# of entries")
-
-
-timeline_plot_hitchwiki = fig.to_html("dash.html", full_html=False)
-
 # TODO: necessary to track user prgress, move elsewhere later
 import html
 def e(s):
@@ -180,7 +141,6 @@ output = Template(template).substitute(
     {
         "timeline": timeline_plot,
         "timeline_duplicate": timeline_plot_duplicate,
-        "timeline_hitchwiki": timeline_plot_hitchwiki,
         "user_accounts": user_accounts,
     }
 )

@@ -21,15 +21,13 @@ This information is collected when you provide it to us (like when you fill your
 - Basic profile information such as name, email, language, name, picture, gender, age, living location, usernames in other networks.
 - Information about your hitchhiking experiences.
 
-All user of the described user related information except their email will be publicly accessible, also via a regular database dump.
-
 ### Our server
 
 Our server (and thus your data) is securely hosted in the EU.
 
 ### Research
 
-Hitchhiking and more broadly mobility research will be conducted using the data collected on Hitchmap including public user data. See our [statistics page](https://hitchmap.com//dashboard.html) for more information.
+Hitchhiking and more broadly mobility research might be conducted using the data collected on Hitchmap including user data. No individual data will be published, only aggregate data. See our [statistics page](https://hitchmap.com/dashboard.html) for more information.
 
 ---
 
