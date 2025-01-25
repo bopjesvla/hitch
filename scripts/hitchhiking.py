@@ -16,8 +16,16 @@ logger = logging.getLogger(__name__)
 BUCKETS = BUCKETS[:-1]
 BOUNDARIES = BOUNDARIES[:-1]
 
+root_dir = os.path.join(os.path.dirname(__file__), "..")
+dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+outname = os.path.join(dist_dir, "hitchhiking.html")
+template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+template_path = os.path.join(template_dir, "index_template.html")
+template = open(template_path, encoding="utf-8").read()
+
 tiles = xyz.CartoDB.Positron
-m = folium.Map(
+folium_map = folium.Map(
     tiles=folium.TileLayer(no_wrap=True, tiles=tiles),
     attr="Heatchmap",
     min_zoom=1,
@@ -59,17 +67,17 @@ rgba_array[:, :, 3] = uncertainties
 folium.raster_layers.ImageOverlay(
     image=rgba_array,
     bounds=[[-56, -180], [80, 180]],
-).add_to(m)
+).add_to(folium_map)
 
 
 legend = cm.LinearColormap(colors=BUCKETS, index=BOUNDARIES[:-1], vmin=BOUNDARIES[0], vmax=BOUNDARIES[-1])
 legend.caption = "Waiting time to catch a ride by hitchhiking (minutes)"
-m.add_child(legend)
+folium_map.add_child(legend)
 
 ### from show.py ###
-m.get_root().render()
+folium_map.get_root().render()
 
-header = m.get_root().header.render()
+header = folium_map.get_root().header.render()
 header = header.replace(
     '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>',
     '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">',
@@ -78,16 +86,8 @@ header = header.replace(
     '<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>',
     '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">',
 )
-body = m.get_root().html.render()
-script = m.get_root().script.render()
-
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
-template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
-outname = os.path.join(dist_dir, "hitchhiking.html")
-template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
-template_path = os.path.join(template_dir, "index_template.html")
-template = open(template_path, encoding="utf-8").read()
+body = folium_map.get_root().html.render()
+script = folium_map.get_root().script.render()
 
 output = Template(template).substitute(
     {
@@ -100,67 +100,6 @@ output = Template(template).substitute(
 )
 
 open(outname, "w", encoding="utf-8").write(output)
-print(f"Map saved to {outname}")
+logger.info(f"Map saved to {outname}")
 
-### Heatmap info ###
-
-# import matplotlib.colors as colors
-
-# norm_uncertainties = plt.Normalize(0, 1)
-# cmap_uncertainties = colors.LinearSegmentedColormap.from_list(
-#     "", ["#00c800", background_color]
-# )
-
-# # from https://stackoverflow.com/a/56900830
-# cax = fig.add_axes(
-#     [
-#         ax.get_position().x1 + 0.01,
-#         ax.get_position().y0
-#         + (ax.get_position().height * 2 / 3)
-#         - (ax.get_position().height / 20),
-#         0.02,
-#         (ax.get_position().height / 3),
-#     ]
-# )
-
-# cbar_uncertainty = fig.colorbar(
-#     cm.ScalarMappable(norm=norm_uncertainties, cmap=cmap_uncertainties),
-#     cax=cax,
-# )
-# cbar_uncertainty.ax.tick_params(labelsize=figsize)
-# cbar_uncertainty.ax.set_ylabel(
-#     "Uncertainty in waiting time estimation",
-#     rotation=90,
-#     fontsize=figsize * 2 / 3,
-# )
-
-# # from https://stackoverflow.com/a/56900830
-# cax = fig.add_axes(
-# [
-#     ax.get_position().x1 + 0.01,
-#     ax.get_position().y0 + (ax.get_position().height / 20),
-#     0.02,
-#     (ax.get_position().height / 3),
-# ]
-# )
-# cbar = fig.colorbar(
-# cm.ScalarMappable(norm=norm, cmap=cmap),
-# cax=cax,
-# )
-# boundary_labels = [
-# "0 min",
-# "10",
-# "20",
-# "30",
-# "40",
-# "50",
-# "60",
-# "70",
-# "80",
-# "90",
-# "> 100",
-# ]
-# cbar.ax.set_yticks(ticks=boundaries, labels=boundary_labels)
-# cbar.ax.tick_params(labelsize=figsize)
-        
 logger.info("Done.")
