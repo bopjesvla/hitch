@@ -160,6 +160,30 @@ var FilterButton = L.Control.extend({
     }
 });
 
+var HeatmapInfoButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button heatmap-info');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "\u2139 What can I see here?";
+
+        container.onclick = function (e) {
+            navigateHome()
+            if (document.body.classList.contains('heatmap-info'))
+                bar()
+            else
+                bar('.sidebar.heatmap-info')
+            document.body.classList.toggle('heatmap-info')
+            L.DomEvent.stopPropagation(e)
+        }
+
+        return controlDiv;
+    }
+});
+
 ////// Define the search bar for the map //////
 var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11 };
 
@@ -201,6 +225,11 @@ map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new AccountButton());
 map.addControl(new FilterButton());
+if (window.location.pathname === "/hitchhiking.html") {
+    map.addControl(new HeatmapInfoButton());
+    $$(".filter-button").remove()
+    $$(".add-spot").remove()
+}
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)

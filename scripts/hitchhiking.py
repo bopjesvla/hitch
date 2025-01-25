@@ -94,7 +94,7 @@ output = Template(template).substitute(
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script":  open(os.path.join(root_dir, "static", "map.js"), encoding="utf-8").read() + "\n" + open(os.path.join(root_dir, "static", "heatmap.js"), encoding="utf-8").read(),
+        "hitch_script":  open(os.path.join(root_dir, "static", "map.js"), encoding="utf-8").read(),
         "hitch_style": open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8").read()
     }
 )
