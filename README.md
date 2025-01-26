@@ -30,12 +30,20 @@ curl https://hitchmap.com/dump.sqlite > db/points.sqlite
 ```
 
 ## Getting started
-Running
+### Running
 
 ```
 python3 scripts/show.py
 python3 server.py
 ```
+
+### Linting
+
+We use Ruff for linting [https://docs.astral.sh/ruff/](https://docs.astral.sh/ruff/).
+
+The settings can be found in `ruff.toml`.
+
+To configure automatic linting for VS Code check out the extension [https://github.com/astral-sh/ruff-vscode](https://github.com/astral-sh/ruff-vscode).
 
 ## Contributing
 Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhCtydy3DOOCKEAE_tsR6g9s).
