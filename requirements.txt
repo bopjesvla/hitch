@@ -8,7 +8,7 @@ Flask-WTF==1.2.2
 folium==0.19.4
 heatchmap==0.2.1
 networkx==3.2.1
-numpy==2.2.1
+numpy==2.2.2
 pandas==2.2.3
 plotly==5.23.0
 pycountry==24.6.1
