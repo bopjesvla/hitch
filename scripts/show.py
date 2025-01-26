@@ -9,7 +9,6 @@ import folium.plugins
 import networkx
 import numpy as np
 import pandas as pd
-
 from helpers import get_bearing, haversine_np
 
 root_dir = os.path.join(os.path.dirname(__file__), "..")

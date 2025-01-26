@@ -109,6 +109,8 @@ timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
 # TODO: necessary to track user prgress, move elsewhere later
 import html
+
+
 def e(s):
     return html.escape(s.replace("\n", "<br>"))
 points = pd.read_sql(

@@ -47,7 +47,7 @@ def get_or_create_secret_key():
     # Check if the secret key file already exists
     if os.path.exists(SECRET_KEY_FILE):
         # Read the key from the file
-        with open(SECRET_KEY_FILE, "r") as file:
+        with open(SECRET_KEY_FILE) as file:
             secret_key = file.read().strip()
     else:
         # Generate a new random secret key
@@ -321,7 +321,7 @@ def show_account(username):
         )
     else:
         # TODO
-        result = f"User not found."
+        result = "User not found."
 
 
 ### App content ###
