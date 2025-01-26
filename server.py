@@ -351,6 +351,12 @@ def dashboard():
     return send_file(os.path.join(dist_dir, "dashboard.html"))
 
 
+
+@app.route("/hitchhiking.html", methods=["GET"])
+def hitchhiking():
+    return send_file(os.path.join(dist_dir, "hitchhiking.html"))
+
+
 @app.route("/heatmap.html", methods=["GET"])
 def heatmap():
     return send_file(os.path.join(dist_dir, "heatmap.html"))
