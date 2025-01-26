@@ -399,6 +399,9 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
+@app.route("/dump.sqlite", methods=["GET"])
+def dump():
+    return send_file("db/dump.sqlite")
 
 @app.route("/experience", methods=["POST"])
 def experience():
