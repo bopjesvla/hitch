@@ -401,7 +401,7 @@ def android_app():
 
 @app.route("/dump.sqlite", methods=["GET"])
 def dump():
-    return send_file("db/dump.sqlite")
+    return send_file("dist/dump.sqlite")
 
 @app.route("/experience", methods=["POST"])
 def experience():

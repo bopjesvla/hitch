@@ -10,11 +10,9 @@ import networkx
 import numpy as np
 import pandas as pd
 
-from helpers import get_bearing, haversine_np
+from helpers import get_bearing, haversine_np, get_dirs
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-
-db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+scripts_dir, root_dir, db_dir = get_dirs()
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
 

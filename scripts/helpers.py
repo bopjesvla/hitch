@@ -1,5 +1,5 @@
 import numpy as np
-
+import os
 
 def haversine_np(lon1, lat1, lon2, lat2, factor = 1.25):
     """
@@ -32,3 +32,9 @@ def get_bearing(lon1, lat1, lon2, lat2):
     brng = np.degrees(brng)
 
     return brng
+
+def get_dirs():
+    scripts_dir = os.path.dirname(__file__)
+    root_dir = os.path.join(scripts_dir, "..")
+    db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+    return scripts_dir, root_dir, db_dir
