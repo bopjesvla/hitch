@@ -10,3 +10,6 @@ Please fill out as much as you can.
 
 - Browser:
 - Device:
+
+## Hygiene
+- [ ] I checked solved and open issues for similar ones.
