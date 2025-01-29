@@ -97,6 +97,7 @@ var AddSpotButton = L.Control.extend({
                     window.location = '/'
                 return;
             }
+            clearParams()
             navigateHome()
             document.body.classList.add('adding-spot')
             bar('.topbar.spot.step1')
