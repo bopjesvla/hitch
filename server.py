@@ -314,7 +314,6 @@ def show_account(username):
 
 @app.route("/", methods=["GET"])
 def index():
-    print("AAAA")
     return send_file(os.path.join(dist_dir, "index.html"))
 
 
