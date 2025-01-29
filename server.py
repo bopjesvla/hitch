@@ -11,7 +11,7 @@ from datetime import datetime
 import pandas as pd
 import pycountry
 import requests
-from flask import Flask, g, jsonify, redirect, render_template, request, send_file, send_from_directory
+from flask import Flask, g, jsonify, redirect, render_template, request, send_file, send_from_directory, Blueprint
 from flask_mailman import Mail
 from flask_security import Security, SQLAlchemyUserDatastore, current_user, utils
 from flask_security.models import fsqla_v3 as fsqla
@@ -66,7 +66,10 @@ def get_db():
     return db
 
 
-app = Flask(__name__, static_url_path="", static_folder="dist")
+app = Flask(__name__, static_url_path="", static_folder="static")
+
+blueprint = Blueprint("static_dist", __name__, static_url_path="", static_folder="dist")
+app.register_blueprint(blueprint)
 
 ### Define user management ###
 
