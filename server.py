@@ -11,7 +11,7 @@ from datetime import datetime
 import pandas as pd
 import pycountry
 import requests
-from flask import Flask, g, jsonify, redirect, render_template, request, send_file
+from flask import Flask, g, jsonify, redirect, render_template, request, send_file, send_from_directory
 from flask_mailman import Mail
 from flask_security import Security, SQLAlchemyUserDatastore, current_user, utils
 from flask_security.models import fsqla_v3 as fsqla
@@ -66,7 +66,7 @@ def get_db():
     return db
 
 
-app = Flask(__name__, static_url_path="")
+app = Flask(__name__, static_url_path="", static_folder="dist")
 
 ### Define user management ###
 
@@ -75,9 +75,7 @@ app.config["DEBUG"] = DATABASE == "prod-points.sqlite"
 # Retrieve the secret key, creating it if necessary
 app.config["SECRET_KEY"] = get_or_create_secret_key()
 app.config["SECURITY_PASSWORD_HASH"] = "argon2"
-app.config["SECURITY_PASSWORD_SALT"] = (
-    "146585145368132386173505678016728509634"  # can be published
-)
+app.config["SECURITY_PASSWORD_SALT"] = "146585145368132386173505678016728509634"  # can be published
 
 # Allow registration of new users without confirmation
 app.config["SECURITY_REGISTERABLE"] = True
@@ -89,9 +87,7 @@ app.config["SECURITY_USERNAME_ENABLE"] = True
 app.config["SECURITY_USERNAME_REQUIRED"] = True
 app.config["SECURITY_USERNAME_MIN_LENGTH"] = 3
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
-app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [
-    {"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}
-]
+app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [{"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}]
 app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
     f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
     "error",
@@ -115,9 +111,7 @@ app.config["MAIL_PORT"] = 587  # or 2525 if required
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USE_SSL"] = False
 app.config["MAIL_USERNAME"] = "hitchmap.com"  # SMTP2GO username
-app.config["MAIL_PASSWORD"] = os.getenv(
-    "HITCHMAP_MAIL_PASSWORD", "fake-password"
-)  # Load password from env
+app.config["MAIL_PASSWORD"] = os.getenv("HITCHMAP_MAIL_PASSWORD", "fake-password")  # Load password from env
 app.config["MAIL_DEFAULT_SENDER"] = ("Hitchmap", "no-reply@hitchmap.com")
 
 mail = Mail(app)
@@ -145,9 +139,7 @@ class User(db.Model, fsqla.FsUserMixin):
 class CountrySelectField(SelectField):
     def __init__(self, *args, **kwargs):
         super(CountrySelectField, self).__init__(*args, **kwargs)
-        self.choices = [(None, "None")] + [
-            (country.name, country.name) for country in pycountry.countries
-        ]
+        self.choices = [(None, "None")] + [(country.name, country.name) for country in pycountry.countries]
 
 
 class UserEditForm(FlaskForm):
@@ -173,12 +165,8 @@ class UserEditForm(FlaskForm):
     )
     origin_country = CountrySelectField("Where are you from?")
     origin_city = StringField("Which city are you from?", validators=[Optional()])
-    hitchwiki_username = StringField(
-        "Hitchwiki Username", validators=[Optional()], default=None
-    )
-    trustroots_username = StringField(
-        "Trustroots Username", validators=[Optional()], default=None
-    )
+    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()], default=None)
+    trustroots_username = StringField("Trustroots Username", validators=[Optional()], default=None)
     submit = SubmitField("Submit")
 
 
@@ -196,12 +184,8 @@ with app.app_context():
         name="admin",
         permissions={"admin-read", "admin-write", "user-read", "user-write"},
     )
-    security.datastore.find_or_create_role(
-        name="monitor", permissions={"admin-read", "user-read"}
-    )
-    security.datastore.find_or_create_role(
-        name="user", permissions={"user-read", "user-write"}
-    )
+    security.datastore.find_or_create_role(name="monitor", permissions={"admin-read", "user-read"})
+    security.datastore.find_or_create_role(name="user", permissions={"user-read", "user-write"})
     security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
     security.datastore.db.session.commit()
 
@@ -329,65 +313,8 @@ def show_account(username):
 
 @app.route("/", methods=["GET"])
 def index():
+    print("AAAA")
     return send_file(os.path.join(dist_dir, "index.html"))
-
-
-@app.route("/light.html", methods=["GET"])
-def light():
-    light_map = os.path.join(dist_dir, "light.html")
-    if os.path.exists(light_map):
-        return send_file(light_map)
-    else:
-        return "No light map available."
-
-
-@app.route("/lines.html", methods=["GET"])
-def lines():
-    return send_file(os.path.join(dist_dir, "lines.html"))
-
-
-@app.route("/dashboard.html", methods=["GET"])
-def dashboard():
-    return send_file(os.path.join(dist_dir, "dashboard.html"))
-
-
-@app.route("/heatmap.html", methods=["GET"])
-def heatmap():
-    return send_file(os.path.join(dist_dir, "heatmap.html"))
-
-
-@app.route("/tiny-world-map.json", methods=["GET"])
-def tinyworldmap():
-    return send_file(os.path.join(dist_dir, "tiny-world-map.json"))
-
-
-@app.route("/heatmap-wait.html", methods=["GET"])
-def heatmapwait():
-    return send_file(os.path.join(dist_dir, "heatmap-wait.html"))
-
-
-@app.route("/heatmap-distance.html", methods=["GET"])
-def heatmapdistance():
-    return send_file(os.path.join(dist_dir, "heatmap-distance.html"))
-
-
-@app.route("/new.html", methods=["GET"])
-def new():
-    return send_file(os.path.join(dist_dir, "new.html"))
-
-
-@app.route("/recent.html", methods=["GET"])
-def recent():
-    return send_file(os.path.join(dist_dir, "recent.html"))
-
-@app.route("/copyright.html", methods=["GET"])
-def copyright():
-    return send_file(os.path.join(dist_dir, "copyright.html"))
-
-
-@app.route("/recent-dups.html", methods=["GET"])
-def recent_dups():
-    return send_file(os.path.join(dist_dir, "recent-dups.html"))
 
 
 @app.route("/.well-known/assetlinks.json", methods=["GET"])
@@ -399,9 +326,6 @@ def assetlinks():
 def android_app():
     return send_file("android/Hitchmap.apk")
 
-@app.route("/dump.sqlite", methods=["GET"])
-def dump():
-    return send_file("dist/dump.sqlite")
 
 @app.route("/experience", methods=["POST"])
 def experience():
@@ -434,9 +358,7 @@ def experience():
 
     assert -90 <= lat <= 90
     assert -180 <= lon <= 180
-    assert (-90 <= dest_lat <= 90 and -180 <= dest_lon <= 180) or (
-        math.isnan(dest_lat) and math.isnan(dest_lon)
-    )
+    assert (-90 <= dest_lat <= 90 and -180 <= dest_lon <= 180) or (math.isnan(dest_lat) and math.isnan(dest_lon))
 
     for _i in range(10):
         resp = requests.get(
