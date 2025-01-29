@@ -11,7 +11,7 @@ from datetime import datetime
 import pandas as pd
 import pycountry
 import requests
-from flask import Flask, g, jsonify, redirect, render_template, request, send_file, send_from_directory, Blueprint
+from flask import Flask, g, jsonify, redirect, render_template, request, send_file, send_from_directory
 from flask_mailman import Mail
 from flask_security import Security, SQLAlchemyUserDatastore, current_user, utils
 from flask_security.models import fsqla_v3 as fsqla
@@ -32,6 +32,7 @@ root_dir = os.path.dirname(__file__)
 
 db_dir = os.path.abspath(os.path.join(root_dir, "db"))
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+static_dir = os.path.abspath(os.path.join(root_dir, "static"))
 
 # TODO: Use dotenv?
 if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
@@ -66,10 +67,7 @@ def get_db():
     return db
 
 
-app = Flask(__name__, static_url_path="", static_folder="static")
-
-blueprint = Blueprint("static_dist", __name__, static_url_path="", static_folder="dist")
-app.register_blueprint(blueprint)
+app = Flask(__name__)
 
 ### Define user management ###
 
@@ -443,6 +441,26 @@ def report_duplicate():
     df.to_sql("duplicates", get_db(), index=None, if_exists="append")
 
     return redirect("/#success-duplicate")
+
+
+# Fallback route for static files
+
+
+@app.route("/<path:path>")
+def serve_static(path):
+    dist_path = os.path.join(dist_dir, path)
+
+    if os.path.exists(dist_path):
+        return send_from_directory(dist_dir, path)
+    else:
+        return send_from_directory(static_dir, path)
+
+
+# Also add a root route to catch '/'
+@app.route("/a")
+def serve_root():
+    print("Root path accessed")  # Debug print
+    return send_from_directory(dist_dir, "index.html")
 
 
 if __name__ == "__main__":
