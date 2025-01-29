@@ -351,7 +351,7 @@ function arrowLine(from, to, opts = {}) {
             },
         }),
         offset: 16,
-        endOffset: 16
+        endOffset: 0
     }
 ]})
 }
@@ -554,6 +554,7 @@ spreadInput.value = 70
 const knobToggle = document.getElementById('knob-toggle');
 const textFilter = document.getElementById('text-filter');
 const userFilter = document.getElementById('user-filter');
+const distanceFilter = document.getElementById('distance-filter');
 const clearFilters = document.getElementById('clear-filters');
 
 let isDragging = false, radAngle = 0;
@@ -610,6 +611,7 @@ spreadInput.addEventListener('input', updateConeSpread);
 knobToggle.addEventListener('input', () => setQueryParameter('mydirection', knobToggle.checked));
 userFilter.addEventListener('input', () => setQueryParameter('user', userFilter.value));
 textFilter.addEventListener('input', () => setQueryParameter('text', textFilter.value));
+distanceFilter.addEventListener('input', () => setQueryParameter('mindistance', distanceFilter.value));
 
 let filterPane = map.createPane('filtering')
 filterPane.style.zIndex = 450
@@ -661,12 +663,13 @@ function applyParams() {
     knobToggle.checked = getQueryParameter('mydirection') == 'true'
     textFilter.value = getQueryParameter('text')
     userFilter.value = getQueryParameter('user')
+    distanceFilter.value = getQueryParameter('mindistance')
 
-    if (knobToggle.checked || textFilter.value || userFilter.value) {
+    if (knobToggle.checked || textFilter.value || userFilter.value || distanceFilter.value) {
         if (filterMarkerGroup) filterMarkerGroup.remove()
         if (filterDestLineGroup) filterDestLineGroup.remove()
 
-        let filterMarkers = knobToggle.checked ? destinationMarkers : allMarkers;
+        let filterMarkers = knobToggle.checked || distanceFilter.value ? destinationMarkers : allMarkers;
         // display filters pane
         document.body.classList.add('filtering')
 
@@ -680,6 +683,21 @@ function applyParams() {
         if (textFilter.value) {
             filterMarkers = filterMarkers.filter(
                 x => x.options._row[3].toLowerCase().includes(textFilter.value.toLowerCase())
+            )
+        }
+        if (distanceFilter.value) {
+            filterMarkers = filterMarkers.filter(
+                x => {
+                    let from = x.getLatLng()
+                    let lats = x.options._row[7]
+                    let lons = x.options._row[8]
+
+                    for (let i in lats) {
+                        if (from.distanceTo([lats[i], lons[i]]) / 1000 > distanceFilter.value)
+                            return true
+                    }
+                    return false
+                }
             )
         }
         if (knobToggle.checked) {

@@ -459,3 +459,6 @@ ul.no-style {
     font-weight: normal;
     display: inline;
 }
+#distance-filter {
+    width: 100%;
+}
