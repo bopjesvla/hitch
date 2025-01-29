@@ -227,7 +227,7 @@ var addSpotStep = function (e) {
         addSpotPoints.push({ lat: 'nan', lng: 'nan' })
     if (e.target.innerText.includes('Review')) {
         addSpotPoints.push(active[0].getLatLng())
-        document.body.classList.remove('directions')
+        clearParams()
         active = []
     }
 
@@ -694,7 +694,8 @@ function applyParams() {
                     let lons = x.options._row[8]
 
                     for (let i in lats) {
-                        if (from.distanceTo([lats[i], lons[i]]) / 1000 > distanceFilter.value)
+                        // Road distance is on average 25% longer than straight distance
+                        if (from.distanceTo([lats[i], lons[i]]) * 1.25 / 1000 > distanceFilter.value)
                             return true
                     }
                     return false
