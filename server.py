@@ -456,12 +456,5 @@ def serve_static(path):
         return send_from_directory(static_dir, path)
 
 
-# Also add a root route to catch '/'
-@app.route("/a")
-def serve_root():
-    print("Root path accessed")  # Debug print
-    return send_from_directory(dist_dir, "index.html")
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
