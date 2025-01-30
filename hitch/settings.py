@@ -66,7 +66,6 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
-    DEBUG = True
     pass
 
 
