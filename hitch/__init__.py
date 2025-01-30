@@ -35,7 +35,6 @@ def register_extensions(app):
 def register_blueprints(app):
     app.register_blueprint(main_bp)
     app.register_blueprint(user_bp)
-    return
 
 
 def register_commands(app):

@@ -5,7 +5,7 @@ The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitc
 
 ## Description
 
-- `server.py` runs the server
+- `flask run` runs the server
 - `scripts/show.py` builds the main HTML page (`index.html`). This is where the magic happens.
 - `scripts/dump.py` runs the monthly dump
 - `cron.sh` is the crontab running above files
@@ -34,7 +34,7 @@ Running
 
 ```
 python3 scripts/show.py
-python3 server.py
+flask run
 ```
 
 ## Contributing
