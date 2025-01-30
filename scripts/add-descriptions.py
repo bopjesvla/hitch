@@ -4,14 +4,13 @@ from html import unescape
 
 import numpy as np
 import pandas as pd
+from db import DATABASE_URI as DATABASE
+from helpers import get_dirs
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
 
 os.makedirs(dist_dir, exist_ok=True)
 
-DATABASE = os.path.join(db_dir, "points.sqlite")
 DATABASE_HW = os.path.join(db_dir, "hw.sqlite")
 
 if not os.path.exists(DATABASE_HW):

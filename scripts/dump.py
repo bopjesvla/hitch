@@ -2,14 +2,14 @@ import os
 import sqlite3
 
 import pandas as pd
+from helpers import get_dirs
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+from db import DATABASE_URI as DATABASE
+
+scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
 
 os.makedirs(dist_dir, exist_ok=True)
 
-DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 DATABASE_DUMP = os.path.join(dist_dir, "dump.sqlite")
 
 if not os.path.exists(DATABASE):

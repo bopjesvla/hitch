@@ -1,7 +1,9 @@
-import numpy as np
 import os
 
-def haversine_np(lon1, lat1, lon2, lat2, factor = 1.25):
+import numpy as np
+
+
+def haversine_np(lon1, lat1, lon2, lat2, factor=1.25):
     """
     Calculate the great circle distance between two points
     on the earth (specified in decimal degrees)
@@ -33,8 +35,12 @@ def get_bearing(lon1, lat1, lon2, lat2):
 
     return brng
 
+
 def get_dirs():
     scripts_dir = os.path.dirname(__file__)
-    root_dir = os.path.join(scripts_dir, "..")
+    root_dir = os.path.abspath(os.path.join(scripts_dir, ".."))
+    base_dir = os.path.join(root_dir, "hitch")
+    dist_dir = os.path.join(root_dir, "dist")
+    template_dir = os.path.join(base_dir, "templates")
     db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-    return scripts_dir, root_dir, db_dir
+    return scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir

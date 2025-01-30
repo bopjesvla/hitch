@@ -1,17 +1,11 @@
-import os
 import sqlite3
 
 import pandas as pd
+from helpers import get_dirs
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
+from db import DATABASE_URI as DATABASE
 
-db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-
-# TODO: Use dotenv?
-if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
-    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
-else:
-    DATABASE = os.path.join(db_dir, "points.sqlite")
+scripts_dir, root_dir, base_dir, db_dir, *dirs = get_dirs()
 
 ################
 # ensure database columns are up to date

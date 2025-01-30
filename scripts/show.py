@@ -9,12 +9,11 @@ import folium.plugins
 import networkx
 import numpy as np
 import pandas as pd
+from helpers import get_bearing, get_dirs, haversine_np
 
-from helpers import get_bearing, haversine_np, get_dirs
+from db import DATABASE_URI as DATABASE
 
-scripts_dir, root_dir, db_dir = get_dirs()
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
-template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir = get_dirs()
 
 os.makedirs(dist_dir, exist_ok=True)
 
@@ -34,13 +33,6 @@ outname_dups = os.path.join(dist_dir, "recent-dups.html")
 
 template_path = os.path.join(template_dir, "index_template.html")
 template = open(template_path, encoding="utf-8").read()
-
-
-# TODO: Use dotenv?
-if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
-    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
-else:
-    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
@@ -320,10 +312,10 @@ output = Template(template).substitute(
         "folium_body": body,
         "folium_script": script,
         "hitch_script": open(
-            os.path.join(root_dir, "static", "map.js"), encoding="utf-8"
+            os.path.join(base_dir, "static", "map.js"), encoding="utf-8"
         ).read(),
         "hitch_style": open(
-            os.path.join(root_dir, "static", "style.css"), encoding="utf-8"
+            os.path.join(base_dir, "static", "style.css"), encoding="utf-8"
         ).read(),
     }
 )
