@@ -5,14 +5,13 @@ from html import unescape
 import numpy as np
 import pandas as pd
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
+from hitch.helpers import get_db, get_dirs
 
-os.makedirs(dist_dir, exist_ok=True)
+dirs = get_dirs()
 
-DATABASE = os.path.join(db_dir, "points.sqlite")
-DATABASE_HW = os.path.join(db_dir, "hw.sqlite")
+os.makedirs(dirs["dist"], exist_ok=True)
+
+DATABASE_HW = os.path.join(dirs["db"], "hw.sqlite")
 
 if not os.path.exists(DATABASE_HW):
     print(f"DB not found: {DATABASE_HW}")
@@ -38,4 +37,4 @@ desc["banned"] = False
 desc["ip"] = None
 desc["dest_lat"] = desc["dest_lon"] = np.nan
 
-desc.to_sql("points", sqlite3.connect(DATABASE), index=False, if_exists="append")
+desc.to_sql("points", get_db(), index=False, if_exists="append")

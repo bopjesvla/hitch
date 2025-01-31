@@ -16,7 +16,7 @@
   "screenshots": [],
   "icons": [
       {
-          "src": "https://hitchmap.com/icon.png",
+          "src": "https://hitchmap.com/static/icon.png",
           "sizes": "1024x1024 512x512 256x256 128x128 96x96 48x48"
       }
   ],
@@ -26,7 +26,7 @@
       "url": "https://hitchmap.com",
       "icons": [
         {
-            "src": "https://hitchmap.com/icon.png",
+            "src": "https://hitchmap.com/static/icon.png",
             "sizes": "512x512 256x256 128x128 96x96 48x48"
         }
       ],

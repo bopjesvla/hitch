@@ -1,6 +1,5 @@
 import html
 import os
-import sqlite3
 import sys
 from string import Template
 
@@ -10,51 +9,40 @@ import networkx
 import numpy as np
 import pandas as pd
 
-from helpers import get_bearing, haversine_np, get_dirs
+from hitch.helpers import get_bearing, get_db, get_dirs, haversine_np
 
-scripts_dir, root_dir, db_dir = get_dirs()
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
-template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+dirs = get_dirs()
 
-os.makedirs(dist_dir, exist_ok=True)
+os.makedirs(dirs["dist"], exist_ok=True)
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
 
 if LIGHT:
-    outname = os.path.join(dist_dir, "light.html")
+    outname = os.path.join(dirs["dist"], "light.html")
 elif NEW:
-    outname = os.path.join(dist_dir, "new.html")
+    outname = os.path.join(dirs["dist"], "new.html")
 else:
-    outname = os.path.join(dist_dir, "index.html")
+    outname = os.path.join(dirs["dist"], "index.html")
 
-outname_recent = os.path.join(dist_dir, "recent.html")
-outname_dups = os.path.join(dist_dir, "recent-dups.html")
+outname_recent = os.path.join(dirs["dist"], "recent.html")
+outname_dups = os.path.join(dirs["dist"], "recent-dups.html")
 
 
-template_path = os.path.join(template_dir, "index_template.html")
+template_path = os.path.join(dirs['templates'], "index_template.html")
 template = open(template_path, encoding="utf-8").read()
-
-
-# TODO: Use dotenv?
-if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
-    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
-else:
-    DATABASE = os.path.join(db_dir, "points.sqlite")
 
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
-    con=sqlite3.connect(DATABASE),
+    con=get_db(),
 )
 
 points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
 
-duplicates = pd.read_sql(
-    "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
-)
+duplicates = pd.read_sql("select * from duplicates where reviewed = accepted", get_db())
 
 try:
-    users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
+    users = pd.read_sql("select * from user", get_db())
 except pd.errors.DatabaseError:
     raise Exception("Run server.py to create the user table")
 
@@ -320,10 +308,10 @@ output = Template(template).substitute(
         "folium_body": body,
         "folium_script": script,
         "hitch_script": open(
-            os.path.join(root_dir, "static", "map.js"), encoding="utf-8"
+            os.path.join(dirs['base'], "static", "map.js"), encoding="utf-8"
         ).read(),
         "hitch_style": open(
-            os.path.join(root_dir, "static", "style.css"), encoding="utf-8"
+            os.path.join(dirs['base'], "static", "style.css"), encoding="utf-8"
         ).read(),
     }
 )

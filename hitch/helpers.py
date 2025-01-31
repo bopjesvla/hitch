@@ -1,7 +1,36 @@
-import numpy as np
 import os
+import sqlite3
 
-def haversine_np(lon1, lat1, lon2, lat2, factor = 1.25):
+import numpy as np
+from flask import current_app, g
+
+
+def get_db():
+    db = getattr(g, "_database", None)
+    if db is None:
+        db = g._database = sqlite3.connect(current_app.config["DATABASE_URI"])
+    return db
+
+
+def get_dirs():
+    scripts_dir = os.path.dirname(__file__)
+    root_dir = os.path.abspath(os.path.join(scripts_dir, ".."))
+    base_dir = os.path.join(root_dir, "hitch")
+    dist_dir = os.path.join(root_dir, "dist")
+    template_dir = os.path.join(base_dir, "templates")
+    db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+
+    return {
+        "scripts": scripts_dir,
+        "root": root_dir,
+        "base": base_dir,
+        "dist": dist_dir,
+        "templates": template_dir,
+        "db": db_dir,
+    }
+
+
+def haversine_np(lon1, lat1, lon2, lat2, factor=1.25):
     """
     Calculate the great circle distance between two points
     on the earth (specified in decimal degrees)
@@ -32,9 +61,3 @@ def get_bearing(lon1, lat1, lon2, lat2):
     brng = np.degrees(brng)
 
     return brng
-
-def get_dirs():
-    scripts_dir = os.path.dirname(__file__)
-    root_dir = os.path.join(scripts_dir, "..")
-    db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-    return scripts_dir, root_dir, db_dir
