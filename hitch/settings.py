@@ -8,9 +8,9 @@ baseDir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 # SQLite URI compatible
 WIN = sys.platform.startswith("win")
 if WIN:
-    prefix = "sqlite:///"
+    sql_prefix = "sqlite:///"
 else:
-    prefix = "sqlite:////"
+    sql_prefix = "sqlite:////"
 
 
 class BaseConfig:
@@ -49,7 +49,7 @@ class BaseConfig:
     DATABASE_NAME = os.getenv("DATABASE_NAME", "points.sqlite")
     DATABASE_URI = os.getenv("DATABASE_URI", os.path.join(baseDir, "db", DATABASE_NAME))
 
-    SQLALCHEMY_DATABASE_URI = prefix + DATABASE_URI
+    SQLALCHEMY_DATABASE_URI = sql_prefix + DATABASE_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
