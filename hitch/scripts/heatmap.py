@@ -1,19 +1,17 @@
 import os
-import sqlite3
 
 import folium
 import numpy as np
 import pandas as pd
-from helpers import get_dirs, haversine_np
 from matplotlib import cm, colors
 
-from db import DATABASE_URI
+from hitch.helpers import get_db, get_dirs, haversine_np
 
 scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
 
 points = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(DATABASE_URI),
+    get_db(),
 )
 
 

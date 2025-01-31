@@ -1,6 +1,5 @@
 import html
 import os
-import sqlite3
 import sys
 from string import Template
 
@@ -9,9 +8,8 @@ import folium.plugins
 import networkx
 import numpy as np
 import pandas as pd
-from helpers import get_bearing, get_dirs, haversine_np
 
-from db import DATABASE_URI as DATABASE
+from hitch.helpers import get_bearing, get_db, get_dirs, haversine_np
 
 scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir = get_dirs()
 
@@ -19,6 +17,8 @@ os.makedirs(dist_dir, exist_ok=True)
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
+
+print("script:", sys.argv)
 
 if LIGHT:
     outname = os.path.join(dist_dir, "light.html")
@@ -36,17 +36,15 @@ template = open(template_path, encoding="utf-8").read()
 
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
-    con=sqlite3.connect(DATABASE),
+    con=get_db(),
 )
 
 points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
 
-duplicates = pd.read_sql(
-    "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
-)
+duplicates = pd.read_sql("select * from duplicates where reviewed = accepted", get_db())
 
 try:
-    users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
+    users = pd.read_sql("select * from user", get_db())
 except pd.errors.DatabaseError:
     raise Exception("Run server.py to create the user table")
 

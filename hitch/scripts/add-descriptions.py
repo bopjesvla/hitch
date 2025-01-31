@@ -4,8 +4,8 @@ from html import unescape
 
 import numpy as np
 import pandas as pd
-from db import DATABASE_URI as DATABASE
-from helpers import get_dirs
+
+from hitch.helpers import get_db, get_dirs
 
 scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
 
@@ -37,4 +37,4 @@ desc["banned"] = False
 desc["ip"] = None
 desc["dest_lat"] = desc["dest_lon"] = np.nan
 
-desc.to_sql("points", sqlite3.connect(DATABASE), index=False, if_exists="append")
+desc.to_sql("points", get_db(), index=False, if_exists="append")

@@ -1,5 +1,8 @@
+import importlib
 import os
+import sys
 
+import click
 from flask import Flask, send_file, send_from_directory
 from flask_security import SQLAlchemyUserDatastore
 
@@ -60,6 +63,47 @@ def register_commands(app):
         )
         security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
         security.datastore.db.session.commit()
+
+    @app.cli.command()
+    @click.argument("script", default="show")
+    @click.option("--args", default="", help="Arguments for the script")
+    def generate(script, args):
+        """
+        Executes a given script
+
+        USAGE: flask --app hitch generate <script> --args <args>
+        EXAMPLE: flask --app hitch generate show --args light
+        """
+        try:
+            m = f"hitch.scripts.{script}"
+
+            # Sets arguments on the current process (workaround because import_module cannot take args)
+            sys.argv.clear()
+            sys.argv.append(args)
+
+            # Runs a script automatically through importing it (or reloading so it gets executed again)
+            if m not in sys.modules:
+                importlib.import_module(m)
+            else:
+                importlib.reload(sys.modules[m])
+        except Exception as e:
+            print(e)
+
+    @app.cli.command("generate-all")
+    @click.pass_context
+    def generate_all(ctx):
+        """
+        Executes all scripts defined in array with given args
+        """
+        scripts = [
+            ("show", ""),
+            ("show", "light"),
+            ("show", "new"),
+            ("dump", ""),
+            ("dashboard", ""),
+        ]
+        for script, args in scripts:
+            ctx.invoke(generate, script=script, args=args)
 
 
 def register_routes(app):

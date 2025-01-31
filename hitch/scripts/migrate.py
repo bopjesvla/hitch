@@ -1,9 +1,6 @@
-import sqlite3
-
 import pandas as pd
-from helpers import get_dirs
 
-from db import DATABASE_URI as DATABASE
+from hitch.helpers import get_db, get_dirs
 
 scripts_dir, root_dir, base_dir, db_dir, *dirs = get_dirs()
 
@@ -11,7 +8,7 @@ scripts_dir, root_dir, base_dir, db_dir, *dirs = get_dirs()
 # ensure database columns are up to date
 points = pd.read_sql(
     sql="select * from points",
-    con=sqlite3.connect(DATABASE),
+    con=get_db(),
 )
 
 points["user_id"] = pd.array([None] * len(points), dtype=pd.Int64Dtype())
@@ -25,5 +22,5 @@ points.rename(columns={"name": "nickname"}, inplace=True)
 # no links for old anonymous reviews
 points.loc[points.nickname == "Anonymous", "nickname"] = None
 
-points.to_sql("points", sqlite3.connect(DATABASE), index=False, if_exists="replace")
+points.to_sql("points", get_db(), index=False, if_exists="replace")
 ################

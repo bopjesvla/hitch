@@ -1,12 +1,10 @@
 import os
-import sqlite3
 from string import Template
 
 import pandas as pd
 import plotly.express as px
-from helpers import get_dirs
 
-from db import DATABASE_URI as DATABASE
+from hitch.helpers import get_db, get_dirs
 
 scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir, *dirs = get_dirs()
 
@@ -20,7 +18,7 @@ outname = os.path.join(dist_dir, "dashboard.html")
 # Spots
 df = pd.read_sql(
     "select * from points where not banned and datetime is not null",
-    sqlite3.connect(DATABASE),
+    get_db(),
 )
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
@@ -59,7 +57,7 @@ timeline_plot = fig.to_html("dash.html", full_html=False)
 # Duplicates
 df = pd.read_sql(
     "select * from duplicates",
-    sqlite3.connect(DATABASE),
+    get_db(),
 )
 
 df["datetime"] = df["datetime"].astype("datetime64[ns]")
@@ -105,10 +103,10 @@ def e(s):
 
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
-    con=sqlite3.connect(DATABASE),
+    con=get_db(),
 )
 points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
-users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
+users = pd.read_sql("select * from user", get_db())
 points["username"] = pd.merge(
     left=points[["user_id"]],
     right=users[["id", "username"]],
