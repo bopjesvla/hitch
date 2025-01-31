@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, jsonify, redirect, render_template
 from flask_security import current_user
 
 from hitch.extensions import security
-from hitch.models import UserEditForm
+from hitch.forms import UserEditForm
 
 user_bp = Blueprint("user", __name__)
 
