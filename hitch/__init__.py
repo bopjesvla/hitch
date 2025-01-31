@@ -3,7 +3,7 @@ import os
 import sys
 
 import click
-from flask import Flask, send_file, send_from_directory
+from flask import Flask, render_template, send_from_directory
 from flask_security import SQLAlchemyUserDatastore
 
 from hitch.blueprints.main import main_bp
@@ -19,7 +19,7 @@ def create_app(config_name=None):
     if config_name is None:
         config_name = os.getenv("FLASK_CONFIG", "development")
 
-    app = Flask(__name__, static_url_path="", static_folder="static")
+    app = Flask(__name__)
     app.config.from_object(config[config_name])
 
     register_extensions(app)
@@ -107,12 +107,27 @@ def register_commands(app):
 
 
 def register_routes(app):
-    # Serve index.html (when no path is provided; default path is not supported by dist route)
-    @app.route("/")
-    def index():
-        return send_file(os.path.join(baseDir, "dist", "index.html"))
-
-    # Serve dist files
+    # Serve dist and index.html (when no path is provided)
+    @app.route("/", defaults={"path": "index.html"})
     @app.route("/<path:path>")
-    def dist(path="index.html"):
+    def catch_all(path):
         return send_from_directory(os.path.join(baseDir, "dist"), path)
+
+    @app.route("/copyright.html")
+    def copyright():
+        return render_template("copyright.html")
+
+    @app.route("/favicon.ico")
+    def favicon():
+        return send_from_directory(
+            os.path.join(app.root_path, "static"),
+            "favicon.ico",
+            mimetype="image/vnd.microsoft.icon",
+        )
+
+    @app.route("/manifest.json")
+    def manifest():
+        return send_from_directory(
+            os.path.join(app.root_path, "static"),
+            "manifest.json",
+        )
