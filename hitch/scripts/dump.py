@@ -5,11 +5,11 @@ import pandas as pd
 
 from hitch.helpers import get_db, get_dirs
 
-scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
+dirs = get_dirs()
 
-os.makedirs(dist_dir, exist_ok=True)
+os.makedirs(dirs['dist'], exist_ok=True)
 
-DATABASE_DUMP = os.path.join(dist_dir, "dump.sqlite")
+DATABASE_DUMP = os.path.join(dirs['dist'], "dump.sqlite")
 
 all_points = pd.read_sql("select * from points where not banned", get_db())
 all_points["ip"] = ""

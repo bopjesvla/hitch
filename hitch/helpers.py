@@ -12,6 +12,24 @@ def get_db():
     return db
 
 
+def get_dirs():
+    scripts_dir = os.path.dirname(__file__)
+    root_dir = os.path.abspath(os.path.join(scripts_dir, ".."))
+    base_dir = os.path.join(root_dir, "hitch")
+    dist_dir = os.path.join(root_dir, "dist")
+    template_dir = os.path.join(base_dir, "templates")
+    db_dir = os.path.abspath(os.path.join(root_dir, "db"))
+
+    return {
+        "scripts": scripts_dir,
+        "root": root_dir,
+        "base": base_dir,
+        "dist": dist_dir,
+        "templates": template_dir,
+        "db": db_dir,
+    }
+
+
 def haversine_np(lon1, lat1, lon2, lat2, factor=1.25):
     """
     Calculate the great circle distance between two points
@@ -43,13 +61,3 @@ def get_bearing(lon1, lat1, lon2, lat2):
     brng = np.degrees(brng)
 
     return brng
-
-
-def get_dirs():
-    scripts_dir = os.path.dirname(__file__)
-    root_dir = os.path.abspath(os.path.join(scripts_dir, ".."))
-    base_dir = os.path.join(root_dir, "hitch")
-    dist_dir = os.path.join(root_dir, "dist")
-    template_dir = os.path.join(base_dir, "templates")
-    db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-    return scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir

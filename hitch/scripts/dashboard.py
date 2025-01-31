@@ -6,14 +6,14 @@ import plotly.express as px
 
 from hitch.helpers import get_db, get_dirs
 
-scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir, *dirs = get_dirs()
+dirs = get_dirs()
 
-os.makedirs(dist_dir, exist_ok=True)
+os.makedirs(dirs['dist'], exist_ok=True)
 
-template_path = os.path.join(template_dir, "dashboard_template.html")
+template_path = os.path.join(dirs['templates'], "dashboard_template.html")
 template = open(template_path, encoding="utf-8").read()
 
-outname = os.path.join(dist_dir, "dashboard.html")
+outname = os.path.join(dirs['dist'], "dashboard.html")
 
 # Spots
 df = pd.read_sql(

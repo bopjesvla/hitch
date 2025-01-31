@@ -11,27 +11,25 @@ import pandas as pd
 
 from hitch.helpers import get_bearing, get_db, get_dirs, haversine_np
 
-scripts_dir, root_dir, base_dir, db_dir, dist_dir, template_dir = get_dirs()
+dirs = get_dirs()
 
-os.makedirs(dist_dir, exist_ok=True)
+os.makedirs(dirs["dist"], exist_ok=True)
 
 LIGHT = "light" in sys.argv
 NEW = "new" in sys.argv
 
-print("script:", sys.argv)
-
 if LIGHT:
-    outname = os.path.join(dist_dir, "light.html")
+    outname = os.path.join(dirs["dist"], "light.html")
 elif NEW:
-    outname = os.path.join(dist_dir, "new.html")
+    outname = os.path.join(dirs["dist"], "new.html")
 else:
-    outname = os.path.join(dist_dir, "index.html")
+    outname = os.path.join(dirs["dist"], "index.html")
 
-outname_recent = os.path.join(dist_dir, "recent.html")
-outname_dups = os.path.join(dist_dir, "recent-dups.html")
+outname_recent = os.path.join(dirs["dist"], "recent.html")
+outname_dups = os.path.join(dirs["dist"], "recent-dups.html")
 
 
-template_path = os.path.join(template_dir, "index_template.html")
+template_path = os.path.join(dirs['templates'], "index_template.html")
 template = open(template_path, encoding="utf-8").read()
 
 points = pd.read_sql(
@@ -310,10 +308,10 @@ output = Template(template).substitute(
         "folium_body": body,
         "folium_script": script,
         "hitch_script": open(
-            os.path.join(base_dir, "static", "map.js"), encoding="utf-8"
+            os.path.join(dirs['base'], "static", "map.js"), encoding="utf-8"
         ).read(),
         "hitch_style": open(
-            os.path.join(base_dir, "static", "style.css"), encoding="utf-8"
+            os.path.join(dirs['base'], "static", "style.css"), encoding="utf-8"
         ).read(),
     }
 )

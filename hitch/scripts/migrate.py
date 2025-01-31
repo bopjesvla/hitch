@@ -2,7 +2,7 @@ import pandas as pd
 
 from hitch.helpers import get_db, get_dirs
 
-scripts_dir, root_dir, base_dir, db_dir, *dirs = get_dirs()
+dirs = get_dirs()
 
 ################
 # ensure database columns are up to date

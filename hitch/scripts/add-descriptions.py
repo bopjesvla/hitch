@@ -7,11 +7,11 @@ import pandas as pd
 
 from hitch.helpers import get_db, get_dirs
 
-scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
+dirs = get_dirs()
 
-os.makedirs(dist_dir, exist_ok=True)
+os.makedirs(dirs["dist"], exist_ok=True)
 
-DATABASE_HW = os.path.join(db_dir, "hw.sqlite")
+DATABASE_HW = os.path.join(dirs["db"], "hw.sqlite")
 
 if not os.path.exists(DATABASE_HW):
     print(f"DB not found: {DATABASE_HW}")

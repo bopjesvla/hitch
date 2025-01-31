@@ -7,7 +7,7 @@ from matplotlib import cm, colors
 
 from hitch.helpers import get_db, get_dirs, haversine_np
 
-scripts_dir, root_dir, base_dir, db_dir, dist_dir, *dirs = get_dirs()
+dirs = get_dirs()
 
 points = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
@@ -70,6 +70,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}-per-{DIVIDER}.html")))
+    m.save(os.path.abspath(os.path.join(dirs['dist'], f"heatmap-{VAR}-per-{DIVIDER}.html")))
 else:
-    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}.html")))
+    m.save(os.path.abspath(os.path.join(dirs['dist'], f"heatmap-{VAR}.html")))
