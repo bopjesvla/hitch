@@ -9,7 +9,6 @@ from hitch.extensions import db, mail, security
 from hitch.models import Role, User
 from hitch.settings import config
 
-
 baseDir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 

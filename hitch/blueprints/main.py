@@ -1,5 +1,4 @@
 import math
-import os
 import random
 import re
 from datetime import datetime
@@ -11,8 +10,6 @@ from flask import (
     current_app,
     redirect,
     request,
-    send_file,
-    send_from_directory,
 )
 from flask_security import current_user
 
