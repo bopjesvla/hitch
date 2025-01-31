@@ -75,17 +75,17 @@ def register_commands(app):
         EXAMPLE: flask --app hitch generate show --args light
         """
         try:
-            m = f"hitch.scripts.{script}"
+            module = f"hitch.scripts.{script}"
 
             # Sets arguments on the current process (workaround because import_module cannot take args)
             sys.argv.clear()
             sys.argv.append(args)
 
             # Runs a script automatically through importing it (or reloading so it gets executed again)
-            if m not in sys.modules:
-                importlib.import_module(m)
+            if module not in sys.modules:
+                importlib.import_module(module)
             else:
-                importlib.reload(sys.modules[m])
+                importlib.reload(sys.modules[module])
         except Exception as e:
             print(e)
 
@@ -115,7 +115,7 @@ def register_routes(app):
 
     @app.route("/copyright.html")
     def copyright():
-        return render_template("copyright.html")
+        return render_template("copyright.jinja2")
 
     @app.route("/favicon.ico")
     def favicon():
