@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, send_file, send_from_directory
 from flask_security import SQLAlchemyUserDatastore
 
 from hitch.blueprints.main import main_bp
@@ -8,6 +8,9 @@ from hitch.blueprints.user import user_bp
 from hitch.extensions import db, mail, security
 from hitch.models import Role, User
 from hitch.settings import config
+
+
+baseDir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
 def create_app(config_name=None):
@@ -20,6 +23,7 @@ def create_app(config_name=None):
     register_extensions(app)
     register_blueprints(app)
     register_commands(app)
+    register_routes(app)
 
     return app
 
@@ -57,3 +61,15 @@ def register_commands(app):
         )
         security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
         security.datastore.db.session.commit()
+
+
+def register_routes(app):
+    # Serve index.html (when no path is provided; default path is not supported by dist route)
+    @app.route("/")
+    def index():
+        return send_file(os.path.join(baseDir, "dist", "index.html"))
+
+    # Serve dist files
+    @app.route("/<path:path>")
+    def dist(path="index.html"):
+        return send_from_directory(os.path.join(baseDir, "dist"), path)

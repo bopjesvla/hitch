@@ -21,20 +21,6 @@ from hitch.helpers import get_db
 
 main_bp = Blueprint("main", __name__)
 
-baseDir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
-
-# Serve index.html (when no path is provided; default path is not supported by dist route)
-@main_bp.route("/")
-def index():
-    return send_file(os.path.join(baseDir, "dist", "index.html"))
-
-
-# Serve dist files
-@main_bp.route("/<path:path>")
-def route(path="index.html"):
-    return send_from_directory(os.path.join(baseDir, "dist"), path)
-
 
 # Log experience (reviews)
 @main_bp.route("/experience", methods=["POST"])
