@@ -27,7 +27,7 @@ SECRET_KEY_FILE = ".flask_secret_key"
 
 def get_or_create_secret_key():
     if os.path.exists(SECRET_KEY_FILE):
-        with open(SECRET_KEY_FILE, "r") as file:
+        with open(SECRET_KEY_FILE) as file:
             secret_key = file.read().strip()
     else:
         secret_key = secrets.token_hex(32)

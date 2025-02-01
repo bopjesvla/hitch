@@ -31,7 +31,7 @@ class User(db.Model, fsqla.FsUserMixin):
 
 class CountrySelectField(SelectField):
     def __init__(self, *args, **kwargs):
-        super(CountrySelectField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.choices = [(None, "None")] + [(country.name, country.name) for country in pycountry.countries]
 
 
@@ -76,7 +76,10 @@ app.config["SECURITY_USERNAME_MIN_LENGTH"] = 3
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [{"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}]
 app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
-    f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
+    (
+        f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username "
+        + "because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well."
+    ),
     "error",
 )
 app.config["SECURITY_POST_REGISTER_VIEW"] = "/#registered"

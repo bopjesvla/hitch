@@ -47,10 +47,7 @@ def experience():
     datetime_ride = data["datetime_ride"]
     now = str(datetime.utcnow())
 
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
+    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
     lat, lon, dest_lat, dest_lon = map(float, data["coords"].split(","))
 
@@ -111,10 +108,7 @@ def report_duplicate():
     data = request.form
     now = str(datetime.utcnow())
 
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
+    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
     from_lat, from_lon, to_lat, to_lon = map(float, data["report"].split(","))
 
