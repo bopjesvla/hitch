@@ -421,8 +421,9 @@ function navigateHome() {
 }
 
 // Export functions to window object
-window.navigate = navigate;
-window.navigateHome = navigateHome;
+window.navigate = navigate
+window.navigateHome = navigateHome
+window.handleMarkerClick = handleMarkerClick
 
 // Set up hash change listener
 window.onhashchange = navigate
