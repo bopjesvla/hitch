@@ -6,11 +6,7 @@ from flask_security import utils
 baseDir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 # SQLite URI compatible
-WIN = sys.platform.startswith("win")
-if WIN:
-    sql_prefix = "sqlite:///"
-else:
-    sql_prefix = "sqlite:////"
+sql_prefix = "sqlite:///" if sys.platform.startswith("win") else "sqlite:////"
 
 
 class BaseConfig:
@@ -19,9 +15,7 @@ class BaseConfig:
 
     # User Config
     SECURITY_PASSWORD_HASH = os.getenv("SECURITY_PASSWORD_HASH", "argon2")
-    SECURITY_PASSWORD_SALT = os.getenv(
-        "SECURITY_PASSWORD_SALT", "146585145368132386173505678016728509634"
-    )
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT", "146585145368132386173505678016728509634")
     SECURITY_REGISTERABLE = True
     SECURITY_SEND_REGISTER_EMAIL = False
     SECURITY_POST_REGISTER_VIEW = "/#registered"
@@ -34,11 +28,13 @@ class BaseConfig:
     SECURITY_USERNAME_REQUIRED = True
     SECURITY_USERNAME_MIN_LENGTH = 3
     SECURITY_USERNAME_MAX_LENGTH = 32
-    SECURITY_USER_IDENTITY_ATTRIBUTES = [
-        {"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}
-    ]
+    SECURITY_USER_IDENTITY_ATTRIBUTES = [{"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}]
     SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED = (
-        f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
+        (
+            "%(username)s is already associated with an account. ",
+            f"Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname ",
+            "on hitchmap.com and/or you use this username on hitchwiki.org as well.",
+        ),
         "error",
     )
 
@@ -59,9 +55,7 @@ class BaseConfig:
     MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", True)
     MAIL_USE_SSL = os.getenv("MAIL_USE_SSL", False)
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", "hitchmap.com")  # SMTP2GO username
-    MAIL_PASSWORD = os.getenv(
-        "HITCHMAP_MAIL_PASSWORD", "password"
-    )  # Load password from env
+    MAIL_PASSWORD = os.getenv("HITCHMAP_MAIL_PASSWORD", "password")  # Load password from env
     MAIL_DEFAULT_SENDER = ("Hitchmap", "no-reply@hitchmap.com")
 
 

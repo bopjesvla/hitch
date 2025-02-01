@@ -55,12 +55,8 @@ def register_commands(app):
             name="admin",
             permissions={"admin-read", "admin-write", "user-read", "user-write"},
         )
-        security.datastore.find_or_create_role(
-            name="monitor", permissions={"admin-read", "user-read"}
-        )
-        security.datastore.find_or_create_role(
-            name="user", permissions={"user-read", "user-write"}
-        )
+        security.datastore.find_or_create_role(name="monitor", permissions={"admin-read", "user-read"})
+        security.datastore.find_or_create_role(name="user", permissions={"user-read", "user-write"})
         security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
         security.datastore.db.session.commit()
 

@@ -9,10 +9,8 @@ from wtforms.widgets import NumberInput
 
 class CountrySelectField(SelectField):
     def __init__(self, *args, **kwargs):
-        super(CountrySelectField, self).__init__(*args, **kwargs)
-        self.choices = [(None, "None")] + [
-            (country.name, country.name) for country in pycountry.countries
-        ]
+        super().__init__(*args, **kwargs)
+        self.choices = [(None, "None")] + [(country.name, country.name) for country in pycountry.countries]
 
 
 class UserEditForm(FlaskForm):
@@ -38,10 +36,6 @@ class UserEditForm(FlaskForm):
     )
     origin_country = CountrySelectField("Where are you from?")
     origin_city = StringField("Which city are you from?", validators=[Optional()])
-    hitchwiki_username = StringField(
-        "Hitchwiki Username", validators=[Optional()], default=None
-    )
-    trustroots_username = StringField(
-        "Trustroots Username", validators=[Optional()], default=None
-    )
+    hitchwiki_username = StringField("Hitchwiki Username", validators=[Optional()], default=None)
+    trustroots_username = StringField("Trustroots Username", validators=[Optional()], default=None)
     submit = SubmitField("Submit")

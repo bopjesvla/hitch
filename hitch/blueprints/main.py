@@ -42,18 +42,13 @@ def experience():
 
     now = str(datetime.utcnow())
 
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
+    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
     lat, lon, dest_lat, dest_lon = map(float, data["coords"].split(","))
 
     assert -90 <= lat <= 90
     assert -180 <= lon <= 180
-    assert (-90 <= dest_lat <= 90 and -180 <= dest_lon <= 180) or (
-        math.isnan(dest_lat) and math.isnan(dest_lon)
-    )
+    assert (-90 <= dest_lat <= 90 and -180 <= dest_lon <= 180) or (math.isnan(dest_lat) and math.isnan(dest_lon))
 
     for _i in range(10):
         resp = requests.get(
@@ -111,10 +106,7 @@ def report_duplicate():
 
     now = str(datetime.datetime.utcnow())
 
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
+    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
     from_lat, from_lon, to_lat, to_lon = map(float, data["report"].split(","))
 

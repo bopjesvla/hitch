@@ -92,9 +92,7 @@ def show_current_user():
 @user_bp.route("/is_username_used/<username>", methods=["GET"])
 def is_username_used(username):
     """Endpoint to check if a username is already used."""
-    current_app.logger.info(
-        f"Received request to check if username {username} is used."
-    )
+    current_app.logger.info(f"Received request to check if username {username} is used.")
 
     user = security.datastore.find_user(username=username)
 
