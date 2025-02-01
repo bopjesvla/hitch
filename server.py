@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 import pandas as pd
 import requests
-from flask import redirect, render_template, request, send_file, send_from_directory
+from flask import redirect, request, send_file, send_from_directory
 from flask_security import current_user
 
 from shared import app, db, dist_dir, static_dir, EMAIL, logger
