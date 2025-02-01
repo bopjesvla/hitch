@@ -19,7 +19,7 @@ if not os.path.exists(DATABASE_HW):
     exit()
 
 desc = pd.read_sql(
-    "select p.*, waitingtime wait, null name, pd.description comment from t_points p join t_points_descriptions pd where p.id = pd.fk_point",
+    "select p.*, waitingtime wait, null name, pd.description comment from t_points p join t_points_descriptions pd where p.id = pd.fk_point",  # noqa: E501
     sqlite3.connect(DATABASE_HW),
 )
 

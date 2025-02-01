@@ -1,4 +1,3 @@
-import datetime
 import logging
 import math
 import os
@@ -90,7 +89,10 @@ app.config["SECURITY_USERNAME_MIN_LENGTH"] = 3
 app.config["SECURITY_USERNAME_MAX_LENGTH"] = 32
 app.config["SECURITY_USER_IDENTITY_ATTRIBUTES"] = [{"username": {"mapper": utils.uia_username_mapper, "case_insensitive": True}}]
 app.config["SECURITY_MSG_USERNAME_ALREADY_ASSOCIATED"] = (
-    f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well.",
+    (
+        f"%(username)s is already associated with an account. Please reach out to {EMAIL} if you want to claim this username "
+        + "because you used it before as a nickname on hitchmap.com and/ or you use this username on hitchwiki.org as well."
+    ),
     "error",
 )
 
@@ -139,7 +141,7 @@ class User(db.Model, fsqla.FsUserMixin):
 
 class CountrySelectField(SelectField):
     def __init__(self, *args, **kwargs):
-        super(CountrySelectField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.choices = [(None, "None")] + [(country.name, country.name) for country in pycountry.countries]
 
 
@@ -305,8 +307,7 @@ def show_account(username):
             year_of_birth=user.year_of_birth,
         )
     else:
-        # TODO
-        result = "User not found."
+        return "User not found."
 
 
 ### App content ###
@@ -349,10 +350,7 @@ def experience():
 
     now = str(datetime.utcnow())
 
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
+    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
     lat, lon, dest_lat, dest_lon = map(float, data["coords"].split(","))
 
@@ -415,10 +413,7 @@ def report_duplicate():
 
     now = str(datetime.datetime.utcnow())
 
-    if request.headers.getlist("X-Real-IP"):
-        ip = request.headers.getlist("X-Real-IP")[-1]
-    else:
-        ip = request.remote_addr
+    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
     from_lat, from_lon, to_lat, to_lon = map(float, data["report"].split(","))
 
