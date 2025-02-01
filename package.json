@@ -1,0 +1,23 @@
+{
+  "name": "hitch",
+  "version": "1.0.0",
+  "description": "The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitchwiki:Maps).",
+  "main": "js/map.js",
+  "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "esbuild js/map.js --bundle --outfile=dist/out.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bopjesvla/hitch.git"
+  },
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE.md and README",
+  "bugs": {
+    "url": "https://github.com/bopjesvla/hitch/issues"
+  },
+  "homepage": "https://github.com/bopjesvla/hitch#readme",
+  "dependencies": {
+    "esbuild": "^0.24.2"
+  }
+}
