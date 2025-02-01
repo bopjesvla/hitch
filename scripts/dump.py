@@ -11,6 +11,7 @@ os.makedirs(dist_dir, exist_ok=True)
 
 DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 DATABASE_DUMP = os.path.join(dist_dir, "dump.sqlite")
+CSV_DUMP = os.path.join(dist_dir, "dump.csv")
 
 if not os.path.exists(DATABASE):
     print(f"DB not found: {DATABASE}")
@@ -24,7 +25,6 @@ all_points.to_sql(
     "points", sqlite3.connect(DATABASE_DUMP), index=False, if_exists="replace"
 )
 
-
 duplicates = pd.read_sql(
     "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
 )
@@ -32,3 +32,5 @@ duplicates["ip"] = ""
 duplicates.to_sql(
     "duplicates", sqlite3.connect(DATABASE_DUMP), index=False, if_exists="replace"
 )
+
+all_points.to_csv(CSV_DUMP, index=False)

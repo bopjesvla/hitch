@@ -443,8 +443,6 @@ def report_duplicate():
 
 
 # Fallback route for static files
-
-
 @app.route("/<path:path>")
 def serve_static(path):
     dist_path = os.path.join(dist_dir, path)
