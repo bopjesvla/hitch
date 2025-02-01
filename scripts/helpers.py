@@ -1,5 +1,7 @@
-import numpy as np
 import os
+
+import numpy as np
+
 
 def haversine_np(lon1, lat1, lon2, lat2, factor = 1.25):
     """

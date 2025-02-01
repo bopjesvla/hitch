@@ -10,8 +10,7 @@ import folium.plugins
 import networkx
 import numpy as np
 import pandas as pd
-
-from helpers import get_bearing, haversine_np, get_dirs
+from helpers import get_bearing, get_dirs, haversine_np
 
 scripts_dir, root_dir, db_dir = get_dirs()
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
@@ -34,7 +33,8 @@ outname_dups = os.path.join(dist_dir, "recent-dups.html")
 
 
 template_path = os.path.join(template_dir, "index_template.html")
-template = open(template_path, encoding="utf-8").read()
+with open(template_path, encoding="utf-8") as f:
+    template = f.read()
 
 
 # TODO: Use dotenv?
@@ -55,7 +55,7 @@ duplicates = pd.read_sql("select * from duplicates where reviewed = accepted", s
 try:
     users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
 except pd.errors.DatabaseError:
-    raise Exception("Run server.py to create the user table")
+    raise Exception("Run server.py to create the user table") from None
 
 print(f"{len(points)} points currently")
 
@@ -83,11 +83,7 @@ for island in islands:
 
 print("Currently recorded duplicate spots are represented by:", dups)
 
-points[["lat", "lon"]] = points[["lat", "lon"]].apply(
-    lambda x: replace_map[tuple(x)] if tuple(x) in replace_map else x, axis=1, raw=True
-)
-
-# dups = duplicates.merge(points, left_on='child_id', right_on='id').merge(left_on='parent_id', right_on='id', suffixes=('child_', 'parent_'))
+points[["lat", "lon"]] = points[["lat", "lon"]].apply(lambda x: replace_map.get(tuple(x), x), axis=1, raw=True)
 
 points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
     points.loc[points.id.isin(range(1000000, 1040000)), "comment"]
@@ -228,7 +224,7 @@ function (row) {
 
     return marker;
 };
-"""
+"""  # noqa: E501
 
 # for country, group in places.groupby('country_group'):
 cluster = folium.plugins.FastMarkerCluster(
@@ -280,17 +276,24 @@ js_output_file = os.path.join(dist_dir, "out.js")
 # presentation layer, not the new data, the application would break
 # Because the HTML file contains everything, this is not a problem
 
+with open(js_output_file, encoding="utf-8") as f:
+    hitch_script = f.read()
+
+with open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8") as f:
+    hitch_style = f.read()
+
 output = Template(template).substitute(
     {
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open(js_output_file, encoding="utf-8").read(),
-        "hitch_style": open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8").read(),
+        "hitch_script": hitch_script,
+        "hitch_style": hitch_style,
     }
 )
 
-open(outname, "w", encoding="utf-8").write(output)
+with open(outname, "w", encoding="utf-8") as f:
+    f.write(output)
 
 if not LIGHT:
     recent = points.dropna(subset=["datetime"]).sort_values("datetime", ascending=False).iloc[:1000]
