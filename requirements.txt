@@ -13,3 +13,4 @@ plotly==5.23.0
 pycountry==24.6.1
 ruff==0.9.3
 shapely==2.0.6
+requests-cache==0.6.4
