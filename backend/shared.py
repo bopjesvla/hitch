@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 EMAIL = "info@hitchmap.com"
 
 # TODO: import these from helpers.py
-root_dir = os.path.dirname(__file__)
+root_dir = os.path.join(os.path.dirname(__file__), "..")
 db_dir = os.path.abspath(os.path.join(root_dir, "db"))
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 static_dir = os.path.abspath(os.path.join(root_dir, "static"))

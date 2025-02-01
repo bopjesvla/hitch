@@ -8,8 +8,8 @@ import requests
 from flask import redirect, request, send_file, send_from_directory
 from flask_security import current_user
 
-from shared import app, db, dist_dir, static_dir, EMAIL, logger
-from user import init_security, security
+from backend.shared import app, db, dist_dir, static_dir, EMAIL, logger
+from backend.user import init_security, security
 
 
 @app.route("/", methods=["GET"])

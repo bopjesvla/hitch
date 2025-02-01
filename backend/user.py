@@ -8,7 +8,7 @@ from wtforms import IntegerField, SelectField, StringField, SubmitField
 from wtforms.validators import Optional
 from wtforms.widgets import NumberInput
 
-from shared import app, db, logger, EMAIL
+from backend.shared import app, db, logger, EMAIL
 
 # Set up Flask-Security database models
 fsqla.FsModels.set_db_info(db)
