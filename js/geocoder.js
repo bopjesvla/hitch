@@ -2,7 +2,7 @@ import {$$} from './utils';
 
 ////// Define the search bar for the map //////
 export function addGeocoder(map) {
-    var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11 };
+    var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city", "zoom": 11 };
 
     var customGeocoder = L.Control.Geocoder.photon();
     geocoderOpts["geocoder"] = customGeocoder;
