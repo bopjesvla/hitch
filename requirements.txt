@@ -6,7 +6,6 @@ Flask-Security==5.5.2
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2 
 folium==0.19.4
-heatchmap==0.2.1
 networkx==3.2.1
 numpy==2.2.2
 pandas==2.2.3
