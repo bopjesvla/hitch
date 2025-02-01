@@ -18,15 +18,19 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 ## Installation (on Linux)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv # optional
+source .venv/bin/activate # optional
+
 pip install -r requirements.txt
 curl https://hitchmap.com/dump.sqlite > db/points.sqlite
+curl https://hitchmap.com/out.js > dist/out.js
+```
 
-OR
+If you wish to edit the JS, you need to install Node.js, then:
 
-conda install folium==0.16.0 networkx==3.2.1
-curl https://hitchmap.com/dump.sqlite > db/points.sqlite
+```
+npm install
+npm run build
 ```
 
 ## Getting started

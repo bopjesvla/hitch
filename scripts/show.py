@@ -3,6 +3,7 @@ import os
 import sqlite3
 import sys
 from string import Template
+import subprocess
 
 import folium
 import folium.plugins
@@ -49,9 +50,7 @@ points = pd.read_sql(
 
 points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
 
-duplicates = pd.read_sql(
-    "select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE)
-)
+duplicates = pd.read_sql("select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE))
 
 try:
     users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
@@ -97,9 +96,7 @@ points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
 )
 
 points["datetime"] = pd.to_datetime(points.datetime)
-points["ride_datetime"] = pd.to_datetime(
-    points.ride_datetime, errors="coerce"
-)  # handels invalid dates
+points["ride_datetime"] = pd.to_datetime(points.ride_datetime, errors="coerce")  # handels invalid dates
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
@@ -127,12 +124,7 @@ points["arrows"] = rounded_dir.replace(
 )
 
 rating_text = "rating: " + points.rating.astype(int).astype(str) + "/5"
-destination_text = (
-    ", ride: "
-    + np.round(points.distance).astype(str).str.replace(".0", "", regex=False)
-    + " km "
-    + points.arrows
-)
+destination_text = ", ride: " + np.round(points.distance).astype(str).str.replace(".0", "", regex=False) + " km " + points.arrows
 
 points["wait_text"] = None
 has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
@@ -140,26 +132,17 @@ points.loc[has_accurate_wait, "wait_text"] = (
     ", wait: "
     + points.wait[has_accurate_wait].astype(int).astype(str)
     + " min"
-    + (
-        " "
-        + points.signal[has_accurate_wait].replace(
-            {"ask": "💬", "ask-sign": "💬+🪧", "sign": "🪧", "thumb": "👍"}
-        )
-    ).fillna("")
+    + (" " + points.signal[has_accurate_wait].replace({"ask": "💬", "ask-sign": "💬+🪧", "sign": "🪧", "thumb": "👍"})).fillna("")
 )
 
 
 def e(s):
     s2 = s.copy()
-    s2.loc[~s2.isnull()] = s2.loc[~s2.isnull()].map(
-        lambda x: html.escape(x).replace("\n", "<br>")
-    )
+    s2.loc[~s2.isnull()] = s2.loc[~s2.isnull()].map(lambda x: html.escape(x).replace("\n", "<br>"))
     return s2
 
 
-points["extra_text"] = (
-    rating_text + points.wait_text.fillna("") + destination_text.fillna("")
-)
+points["extra_text"] = rating_text + points.wait_text.fillna("") + destination_text.fillna("")
 
 comment_nl = points["comment"] + "\n\n"
 
@@ -177,13 +160,9 @@ points["username"] = pd.merge(
 )["username"]
 points["hitchhiker"] = points["nickname"].fillna(points["username"])
 
-points["user_link"] = (
-    "<a href='/?user="
-    + e(points["hitchhiker"])
-    + "#filters'>"
-    + e(points["hitchhiker"])
-    + "</a>"
-).fillna("Anonymous")
+points["user_link"] = ("<a href='/?user=" + e(points["hitchhiker"]) + "#filters'>" + e(points["hitchhiker"]) + "</a>").fillna(
+    "Anonymous"
+)
 
 points["text"] = (
     e(comment_nl)
@@ -191,17 +170,12 @@ points["text"] = (
     + e(points["extra_text"])
     + "</i><br><br>―"
     + points["user_link"]
-    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(
-        review_submit_datetime
-    )
+    + points.ride_datetime.dt.strftime(", %a %d %b %Y, %H:%M").fillna(review_submit_datetime)
 )
 
 oldies = points.datetime.dt.year <= 2021
 points.loc[oldies, "text"] = (
-    e(comment_nl[oldies])
-    + "―"
-    + points.loc[oldies, "user_link"]
-    + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
+    e(comment_nl[oldies]) + "―" + points.loc[oldies, "user_link"] + points[oldies].datetime.dt.strftime(", %B %Y").fillna("")
 )
 
 # has_text = ~points.text.isnull()
@@ -212,29 +186,14 @@ groups = points.groupby(["lat", "lon"])
 places = groups[["country"]].first()
 places["rating"] = groups.rating.mean().round()
 places["wait"] = points[~points.wait.isnull()].groupby(["lat", "lon"]).wait.mean()
-places["distance"] = (
-    points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
-)
+places["distance"] = points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
 
 # to prevent confusion, only add a review user if their review is listed
-places["review_users"] = (
-    points.dropna(subset=["text", "hitchhiker"])
-    .groupby(["lat", "lon"])
-    .hitchhiker.unique()
-    .apply(list)
-)
+places["review_users"] = points.dropna(subset=["text", "hitchhiker"]).groupby(["lat", "lon"]).hitchhiker.unique().apply(list)
 
-places["dest_lats"] = (
-    points.dropna(subset=["dest_lat", "dest_lon"])
-    .groupby(["lat", "lon"])
-    .dest_lat.apply(list)
-)
-places["dest_lons"] = (
-    points.dropna(subset=["dest_lat", "dest_lon"])
-    .groupby(["lat", "lon"])
-    .dest_lon.apply(list)
-)
+places["dest_lats"] = points.dropna(subset=["dest_lat", "dest_lon"]).groupby(["lat", "lon"]).dest_lat.apply(list)
+places["dest_lons"] = points.dropna(subset=["dest_lat", "dest_lon"]).groupby(["lat", "lon"]).dest_lon.apply(list)
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
@@ -309,6 +268,13 @@ header = header.replace(
 body = m.get_root().html.render()
 script = m.get_root().script.render()
 
+try:
+    subprocess.run(["npm", "run", "build"], check=True, text=True)
+except subprocess.CalledProcessError as e:
+    print("DID NOT BUILD JS")
+
+js_output_file = os.path.join(dist_dir, "out.js")
+
 # We embed everything directly into the HTML page so our service worker can't serve inconsistent files
 # For example, if we add a new attribute to the spot which is shown in the front-end, but the user only gets the new
 # presentation layer, not the new data, the application would break
@@ -319,48 +285,28 @@ output = Template(template).substitute(
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script": open(
-            os.path.join(root_dir, "static", "map.js"), encoding="utf-8"
-        ).read(),
-        "hitch_style": open(
-            os.path.join(root_dir, "static", "style.css"), encoding="utf-8"
-        ).read(),
+        "hitch_script": open(js_output_file, encoding="utf-8").read(),
+        "hitch_style": open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8").read(),
     }
 )
 
 open(outname, "w", encoding="utf-8").write(output)
 
 if not LIGHT:
-    recent = (
-        points.dropna(subset=["datetime"])
-        .sort_values("datetime", ascending=False)
-        .iloc[:1000]
-    )
-    recent["url"] = (
-        "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
-    )
+    recent = points.dropna(subset=["datetime"]).sort_values("datetime", ascending=False).iloc[:1000]
+    recent["url"] = "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
     recent["hitchhiker"] = recent.hitchhiker.str.replace("://", "", regex=False)
     recent["distance"] = recent["distance"].round(1)
     recent["datetime"] = recent["datetime"].astype(str)
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), " 🕒", "")
 
-    recent[
-        ["url", "country", "datetime", "hitchhiker", "rating", "distance", "text"]
-    ].to_html(outname_recent, render_links=True, index=False)
+    recent[["url", "country", "datetime", "hitchhiker", "rating", "distance", "text"]].to_html(
+        outname_recent, render_links=True, index=False
+    )
 
-    duplicates["from_url"] = (
-        "https://hitchmap.com/#"
-        + duplicates.from_lat.astype(str)
-        + ","
-        + duplicates.from_lon.astype(str)
+    duplicates["from_url"] = "https://hitchmap.com/#" + duplicates.from_lat.astype(str) + "," + duplicates.from_lon.astype(str)
+    duplicates["to_url"] = "https://hitchmap.com/#" + duplicates.to_lat.astype(str) + "," + duplicates.to_lon.astype(str)
+    duplicates[["id", "from_url", "to_url", "distance", "reviewed", "accepted"]].to_html(
+        outname_dups, render_links=True, index=False
     )
-    duplicates["to_url"] = (
-        "https://hitchmap.com/#"
-        + duplicates.to_lat.astype(str)
-        + ","
-        + duplicates.to_lon.astype(str)
-    )
-    duplicates[
-        ["id", "from_url", "to_url", "distance", "reviewed", "accepted"]
-    ].to_html(outname_dups, render_links=True, index=False)
