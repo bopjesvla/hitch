@@ -12,9 +12,7 @@ select = [
     # flake8-bugbear
     "B",
     # flake8-simplify
-    "SIM",
-    # isort
-    "I"
+    "SIM"
 ]
 
 # could be extended to enforce type annotations and docstrings
