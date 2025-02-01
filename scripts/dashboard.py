@@ -111,6 +111,7 @@ timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
 
 # TODO: necessary to track user prgress, move elsewhere later
+### Show accounts ###
 def e(s):
     return html.escape(s.replace("\n", "<br>"))
 
