@@ -9,7 +9,7 @@ from flask import jsonify, redirect, render_template, request, send_file, send_f
 from flask_security import current_user
 
 from shared import app, db, dist_dir, static_dir, EMAIL, logger
-from user import init_security
+from user import init_security, security
 
 
 @app.route("/", methods=["GET"])
@@ -38,7 +38,7 @@ def experience():
     assert comment is None or len(comment) < 10000
     nickname = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
 
-    if app.security.datastore.find_user(username=nickname):
+    if security.datastore.find_user(username=nickname):
         return redirect("/#failed")
 
     signal = data["signal"] if data["signal"] != "null" else None
