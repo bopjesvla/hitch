@@ -11,7 +11,7 @@ os.makedirs(dist_dir, exist_ok=True)
 
 DATABASE = os.path.join(db_dir, "prod-points.sqlite")
 DATABASE_DUMP = os.path.join(dist_dir, "dump.sqlite")
-EXCEL_DUMP = os.path.join(dist_dir, "dump.xlsx")
+CSV_DUMP = os.path.join(dist_dir, "dump.csv")
 
 if not os.path.exists(DATABASE):
     print(f"DB not found: {DATABASE}")
@@ -33,6 +33,4 @@ duplicates.to_sql(
     "duplicates", sqlite3.connect(DATABASE_DUMP), index=False, if_exists="replace"
 )
 
-with pd.ExcelWriter(EXCEL_DUMP) as writer:
-    all_points.to_excel(writer, sheet_name="points")  
-    duplicates.to_excel(writer, sheet_name="duplicates")  
+all_points.to_csv(CSV_DUMP, index=False)
