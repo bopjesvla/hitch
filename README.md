@@ -17,18 +17,14 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 
 ## Installation (on Linux)
 
+Install Python and Node.js, then:
+
 ```bash
 python3 -m venv .venv # optional
 source .venv/bin/activate # optional
 
 pip install -r requirements.txt
 curl https://hitchmap.com/dump.sqlite > db/points.sqlite
-curl https://hitchmap.com/out.js > dist/out.js
-```
-
-If you wish to edit the JS, you need to install Node.js, then:
-
-```
 npm install
 npm run build
 ```
