@@ -1,0 +1,21 @@
+
+line-length = 130
+
+[lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I"
+]
+
+# could be extended to enforce type annotations and docstrings
+

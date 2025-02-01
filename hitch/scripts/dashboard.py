@@ -1,3 +1,4 @@
+import html
 import os
 from string import Template
 
@@ -8,12 +9,10 @@ from hitch.helpers import get_db, get_dirs
 
 dirs = get_dirs()
 
-os.makedirs(dirs['dist'], exist_ok=True)
+os.makedirs(dirs["dist"], exist_ok=True)
 
-template_path = os.path.join(dirs['templates'], "dashboard_template.html")
-template = open(template_path, encoding="utf-8").read()
-
-outname = os.path.join(dirs['dist'], "dashboard.html")
+template_path = os.path.join(dirs["templates"], "dashboard_template.html")
+outname = os.path.join(dirs["dist"], "dashboard.html")
 
 # Spots
 df = pd.read_sql(
@@ -93,10 +92,8 @@ fig.update_layout(yaxis_title="# of entries")
 
 timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
+
 # TODO: necessary to track user prgress, move elsewhere later
-import html
-
-
 def e(s):
     return html.escape(s.replace("\n", "<br>"))
 
@@ -124,9 +121,13 @@ def get_num_reviews(username):
 
 user_accounts = ""
 count_inactive_users = 0
-for i, user in users.iterrows():
+for _i, user in users.iterrows():
     if get_num_reviews(user.username) >= 1:
-        user_accounts += f'<a href="/account/{e(user.username)}">{e(user.username)}</a> - <a href="/?user={e(user.username)}#filters">Their spots</a>'
+        user_accounts += (
+            f'<a href="/account/{e(user.username)}">{e(user.username)}</a>',
+            " - ",
+            '<a href="/?user={e(user.username)}#filters">Their spots</a>',
+        )
         user_accounts += "<br>"
     else:
         count_inactive_users += 1
@@ -134,12 +135,12 @@ user_accounts += f"<br>There are {count_inactive_users} inactive users"
 
 
 ### Put together ###
-output = Template(template).substitute(
-    {
-        "timeline": timeline_plot,
-        "timeline_duplicate": timeline_plot_duplicate,
-        "user_accounts": user_accounts,
-    }
-)
-
-open(outname, "w", encoding="utf-8").write(output)
+with open(template_path, encoding="utf-8") as template, open(outname, "w", encoding="utf-8") as out:
+    output = Template(template.read()).substitute(
+        {
+            "timeline": timeline_plot,
+            "timeline_duplicate": timeline_plot_duplicate,
+            "user_accounts": user_accounts,
+        }
+    )
+    out.write(output)

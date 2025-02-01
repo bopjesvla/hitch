@@ -54,9 +54,9 @@ def haversine_np(lon1, lat1, lon2, lat2, factor=1.25):
 def get_bearing(lon1, lat1, lon2, lat2):
     dLon = lon2 - lon1
     x = np.cos(np.radians(lat2)) * np.sin(np.radians(dLon))
-    y = np.cos(np.radians(lat1)) * np.sin(np.radians(lat2)) - np.sin(
-        np.radians(lat1)
-    ) * np.cos(np.radians(lat2)) * np.cos(np.radians(dLon))
+    y = np.cos(np.radians(lat1)) * np.sin(np.radians(lat2)) - np.sin(np.radians(lat1)) * np.cos(np.radians(lat2)) * np.cos(
+        np.radians(dLon)
+    )
     brng = np.arctan2(x, y)
     brng = np.degrees(brng)
 

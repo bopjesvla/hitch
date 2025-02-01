@@ -70,6 +70,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(os.path.abspath(os.path.join(dirs['dist'], f"heatmap-{VAR}-per-{DIVIDER}.html")))
+    m.save(os.path.abspath(os.path.join(dirs["dist"], f"heatmap-{VAR}-per-{DIVIDER}.html")))
 else:
-    m.save(os.path.abspath(os.path.join(dirs['dist'], f"heatmap-{VAR}.html")))
+    m.save(os.path.abspath(os.path.join(dirs["dist"], f"heatmap-{VAR}.html")))

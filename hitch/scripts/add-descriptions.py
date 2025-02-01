@@ -18,14 +18,19 @@ if not os.path.exists(DATABASE_HW):
     exit()
 
 desc = pd.read_sql(
-    "select p.*, waitingtime wait, null name, pd.description comment from t_points p join t_points_descriptions pd where p.id = pd.fk_point",
+    """
+    select 
+        p.*, waitingtime wait, null name, pd.description comment 
+    from 
+        t_points p join t_points_descriptions pd 
+    where 
+        p.id = pd.fk_point
+    """,
     sqlite3.connect(DATABASE_HW),
 )
 
 desc = desc.drop_duplicates("id")
-desc = desc[
-    ["id", "lat", "lon", "rating", "country", "wait", "nickname", "comment", "datetime"]
-]
+desc = desc[["id", "lat", "lon", "rating", "country", "wait", "nickname", "comment", "datetime"]]
 desc["datetime"] += ".000000"
 desc["id"] += 1000000
 desc[["lat", "lon", "rating"]] = desc[["lat", "lon", "rating"]].astype(float)
