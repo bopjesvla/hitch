@@ -4,9 +4,8 @@ import sqlite3
 import folium
 import numpy as np
 import pandas as pd
-from matplotlib import cm, colors
-
 from helpers import haversine_np
+from matplotlib import cm, colors
 
 root_dir = os.path.join(os.path.dirname(__file__), "..")
 

@@ -1,3 +1,4 @@
+import html
 import os
 import sqlite3
 from string import Template
@@ -19,7 +20,8 @@ template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
 os.makedirs(dist_dir, exist_ok=True)
 
 template_path = os.path.join(template_dir, "dashboard_template.html")
-template = open(template_path, encoding="utf-8").read()
+with open(template_path, encoding="utf-8") as f:
+    template = f.read()
 
 outname = os.path.join(dist_dir, "dashboard.html")
 
@@ -107,34 +109,43 @@ fig.update_layout(yaxis_title="# of entries")
 
 timeline_plot_duplicate = fig.to_html("dash.html", full_html=False)
 
+
 # TODO: necessary to track user prgress, move elsewhere later
-import html
+### Show accounts ###
 def e(s):
     return html.escape(s.replace("\n", "<br>"))
+
+
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
     con=sqlite3.connect(DATABASE),
 )
 points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
-users = pd.read_sql(
-    "select * from user", sqlite3.connect(DATABASE)
-)
-points["username"] = pd.merge(left=points[['user_id']] , right=users[["id", "username"]], left_on="user_id", right_on="id", how="left")["username"]
+users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
+points["username"] = pd.merge(
+    left=points[["user_id"]], right=users[["id", "username"]], left_on="user_id", right_on="id", how="left"
+)["username"]
 points["hitchhiker"] = points["nickname"].fillna(points["username"])
 points["hitchhiker"] = points["hitchhiker"].str.lower()
+
+
 def get_num_reviews(username):
     return len(points[points["hitchhiker"] == username.lower()])
+
+
 user_accounts = ""
 count_inactive_users = 0
-for i, user in users.iterrows():
+for _, user in users.iterrows():
     if get_num_reviews(user.username) >= 1:
-        user_accounts += f'<a href="/account/{e(user.username)}">{e(user.username)}</a> - <a href="/?user={e(user.username)}#filters">Their spots</a>'
+        user_accounts += (
+            f'<a href="/account/{e(user.username)}">{e(user.username)}</a> - '
+            + '<a href="/?user={e(user.username)}#filters">Their spots</a>'
+        )
         user_accounts += "<br>"
     else:
         count_inactive_users += 1
 user_accounts += f"<br>There are {count_inactive_users} inactive users"
 
-    
 
 ### Put together ###
 output = Template(template).substitute(
@@ -145,4 +156,5 @@ output = Template(template).substitute(
     }
 )
 
-open(outname, "w", encoding="utf-8").write(output)
+with open(outname, "w", encoding="utf-8") as f:
+    f.write(output)
