@@ -1,24 +1,17 @@
 import os
-import sqlite3
 
 import folium
 import numpy as np
 import pandas as pd
 from matplotlib import cm, colors
 
-from helpers import haversine_np
+from hitch.helpers import get_db, get_dirs, haversine_np
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-
-db_dir = os.path.abspath(os.path.join(root_dir, "db"))
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
-
-DATABASE = os.path.join(db_dir, "prod-points.sqlite")
-
+dirs = get_dirs()
 
 points = pd.read_sql(
     "select * from points where not banned order by datetime is not null desc, datetime desc",
-    sqlite3.connect(DATABASE),
+    get_db(),
 )
 
 
@@ -77,6 +70,6 @@ for (lat, lon), g in stacked_grid.items():
 #           [grid_.index.max().right, grid_.columns.max().right]]
 # ImageOverlay(grid_counts.values, bounds, opacity=.5).add_to(m)
 if DIVIDER:
-    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}-per-{DIVIDER}.html")))
+    m.save(os.path.abspath(os.path.join(dirs["dist"], f"heatmap-{VAR}-per-{DIVIDER}.html")))
 else:
-    m.save(os.path.abspath(os.path.join(dist_dir, f"heatmap-{VAR}.html")))
+    m.save(os.path.abspath(os.path.join(dirs["dist"], f"heatmap-{VAR}.html")))

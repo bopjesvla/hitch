@@ -5,9 +5,11 @@ The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitc
 
 ## Description
 
-- `server.py` runs the server
-- `scripts/show.py` builds the main HTML page (`index.html`). This is where the magic happens.
-- `scripts/dump.py` runs the monthly dump
+- `flask run` runs the server
+- `flask --app hitch generate [script]` generates pages or the dump, for example:
+  - `flask --app hitch generate show` builds the main HTML page (`index.html`). This is where the magic happens.
+  - `flask --app hitch generate dump` runs the monthly dump
+  - `flask --app hitch generate-all` generates all files
 - `cron.sh` is the crontab running above files
 - `hitchmap.conf` is the NGINX configuration
 
@@ -30,12 +32,20 @@ curl https://hitchmap.com/dump.sqlite > db/points.sqlite
 ```
 
 ## Getting started
-Running
+### Running
 
 ```
-python3 scripts/show.py
-python3 server.py
+flask --app hitch generate-all
+flask run
 ```
+
+### Linting
+
+We use Ruff for linting [https://docs.astral.sh/ruff/](https://docs.astral.sh/ruff/).
+
+The settings can be found in `ruff.toml`.
+
+To configure automatic linting for VS Code check out the extension [https://github.com/astral-sh/ruff-vscode](https://github.com/astral-sh/ruff-vscode).
 
 ## Contributing
 Join the conversation about a map for hitchhiking in our [Signal Chat](https://signal.group/#CjQKIDyYgIxcOUCEPYu8-JawC_tv1bcgkAhvbISRZkN45MMVEhCtydy3DOOCKEAE_tsR6g9s).

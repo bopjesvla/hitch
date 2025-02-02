@@ -97,6 +97,7 @@ var AddSpotButton = L.Control.extend({
                     window.location = '/'
                 return;
             }
+            clearParams()
             navigateHome()
             document.body.classList.add('adding-spot')
             bar('.topbar.spot.step1')
@@ -198,26 +199,11 @@ let geocoderInput = $$('.leaflet-control-geocoder input')
 geocoderInput.type = 'search'
 
 let oldMarkers = []
-let updateRadius = e => {
-    let search = geocoderInput.value.toLowerCase()
-    let markers = geocoderInput.value.length > 1 ? allMarkers.filter(x => x.options._row[3].toLowerCase().includes(search)) : []
-    console.log(markers)
-    for (let x of oldMarkers) {
-        x.setStyle({ radius: 5 })
-    }
-    for (let x of markers) {
-        x.setStyle({ radius: 10 })
-        x.bringToFront()
-    }
-    oldMarkers = markers
-}
 
-geocoderInput.addEventListener('input', updateRadius)
 geocoderController.on('markgeocode', function (e) {
     var zoom = geocoderOpts['zoom'] || map.getZoom();
     map.setView(e.geocode.center, zoom);
     $$('.leaflet-control-geocoder input').value = ''
-    updateRadius()
 })
 
 ////// Add interaction buttons to the map //////
@@ -270,7 +256,6 @@ var addSpotStep = function (e) {
         addSpotPoints.push({ lat: 'nan', lng: 'nan' })
     if (e.target.innerText.includes('Review')) {
         addSpotPoints.push(active[0].getLatLng())
-        document.body.classList.remove('directions')
         active = []
     }
 
@@ -395,7 +380,7 @@ function arrowLine(from, to, opts = {}) {
             },
         }),
         offset: 16,
-        endOffset: 16
+        endOffset: 0
     }
 ]})
 }
@@ -598,6 +583,7 @@ spreadInput.value = 70
 const knobToggle = document.getElementById('knob-toggle');
 const textFilter = document.getElementById('text-filter');
 const userFilter = document.getElementById('user-filter');
+const distanceFilter = document.getElementById('distance-filter');
 const clearFilters = document.getElementById('clear-filters');
 
 let isDragging = false, radAngle = 0;
@@ -654,6 +640,7 @@ spreadInput.addEventListener('input', updateConeSpread);
 knobToggle.addEventListener('input', () => setQueryParameter('mydirection', knobToggle.checked));
 userFilter.addEventListener('input', () => setQueryParameter('user', userFilter.value));
 textFilter.addEventListener('input', () => setQueryParameter('text', textFilter.value));
+distanceFilter.addEventListener('input', () => setQueryParameter('mindistance', distanceFilter.value));
 
 let filterPane = map.createPane('filtering')
 filterPane.style.zIndex = 450
@@ -705,12 +692,13 @@ function applyParams() {
     knobToggle.checked = getQueryParameter('mydirection') == 'true'
     textFilter.value = getQueryParameter('text')
     userFilter.value = getQueryParameter('user')
+    distanceFilter.value = getQueryParameter('mindistance')
 
-    if (knobToggle.checked || textFilter.value || userFilter.value) {
+    if (knobToggle.checked || textFilter.value || userFilter.value || distanceFilter.value) {
         if (filterMarkerGroup) filterMarkerGroup.remove()
         if (filterDestLineGroup) filterDestLineGroup.remove()
 
-        let filterMarkers = knobToggle.checked ? destinationMarkers : allMarkers;
+        let filterMarkers = knobToggle.checked || distanceFilter.value ? destinationMarkers : allMarkers;
         // display filters pane
         document.body.classList.add('filtering')
 
@@ -724,6 +712,22 @@ function applyParams() {
         if (textFilter.value) {
             filterMarkers = filterMarkers.filter(
                 x => x.options._row[3].toLowerCase().includes(textFilter.value.toLowerCase())
+            )
+        }
+        if (distanceFilter.value) {
+            filterMarkers = filterMarkers.filter(
+                x => {
+                    let from = x.getLatLng()
+                    let lats = x.options._row[7]
+                    let lons = x.options._row[8]
+
+                    for (let i in lats) {
+                        // Road distance is on average 25% longer than straight distance
+                        if (from.distanceTo([lats[i], lons[i]]) * 1.25 / 1000 > distanceFilter.value)
+                            return true
+                    }
+                    return false
+                }
             )
         }
         if (knobToggle.checked) {

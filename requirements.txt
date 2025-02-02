@@ -15,6 +15,7 @@ numpy==2.2.1
 pandas==2.2.3
 plotly==5.23.0
 pycountry==24.6.1
+requests-cache==0.6.4
+ruff==0.9.3
 shapely==2.0.6
 xyzservices==2024.9.0
-
