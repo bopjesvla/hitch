@@ -1,14 +1,16 @@
+import logging
+import os
 from string import Template
 
+import branca.colormap as cm
 import folium
-from heatchmap.gpmap import GPMap
-from heatchmap.map_based_model import BUCKETS, BOUNDARIES
 import matplotlib.colors as colors
 import numpy as np
 import xyzservices.providers as xyz
-import branca.colormap as cm
-import logging
-import os
+from heatchmap.gpmap import GPMap
+from heatchmap.map_based_model import BOUNDARIES, BUCKETS
+
+from hitch.helpers import get_dirs
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,13 +18,13 @@ logger = logging.getLogger(__name__)
 BUCKETS = BUCKETS[:-1]
 BOUNDARIES = BOUNDARIES[:-1]
 
-root_dir = os.path.join(os.path.dirname(__file__), "..")
-dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
-template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
-outname = os.path.join(dist_dir, "hitchhiking.html")
-template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
-template_path = os.path.join(template_dir, "index_template.html")
-template = open(template_path, encoding="utf-8").read()
+DIRS = get_dirs()
+
+
+outname = os.path.join(DIRS["dist"], "hitchhiking.html")
+template_path = os.path.join(DIRS["templates"], "index_template.html")
+with open(template_path, encoding="utf-8").read() as f:
+    template = f.read()
 
 tiles = xyz.CartoDB.Positron
 folium_map = folium.Map(
@@ -89,17 +91,25 @@ header = header.replace(
 body = folium_map.get_root().html.render()
 script = folium_map.get_root().script.render()
 
+with  open(os.path.join(DIRS["base"], "static", "map.js"), encoding="utf-8") as f:
+    hitch_script = f.read()
+
+with open(os.path.join(DIRS["base"], "static", "style.css"), encoding="utf-8") as f:
+    hitch_style = f.read()
+
+
 output = Template(template).substitute(
     {
         "folium_head": header,
         "folium_body": body,
         "folium_script": script,
-        "hitch_script":  open(os.path.join(root_dir, "static", "map.js"), encoding="utf-8").read(),
-        "hitch_style": open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8").read()
+        "hitch_script": hitch_script,
+        "hitch_style": hitch_style,
     }
 )
 
-open(outname, "w", encoding="utf-8").write(output)
-logger.info(f"Map saved to {outname}")
+with open(outname, "w", encoding="utf-8") as f:
+    f.write(output)
 
+logger.info(f"Map saved to {outname}")
 logger.info("Done.")
