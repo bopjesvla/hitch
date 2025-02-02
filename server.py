@@ -45,7 +45,6 @@ def experience():
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
     datetime_ride = data["datetime_ride"]
-    now = str(datetime.utcnow())
 
     ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
@@ -74,6 +73,15 @@ def experience():
     res = resp.json()
     country = "XZ" if "error" in res else res["address"]["country_code"].upper()
     pid = random.randint(0, 2**63)
+    now = str(datetime.utcnow())
+
+    # rate limiting
+    # this might cause race conditions if the server ever runs on more than one thread
+    last10seconds = pd.read_sql(
+        "select * from points where ip = ? and datetime > datetime(?, '-10 seconds')", db.engine, params=[ip, now]
+    )
+    if len(last10seconds) > 0:
+        return "Rate limited. If you didn't submit multiple reviews in the last 10 seconds, your browser probably accidentally submitted the same review twice, and it will show up shortly."
 
     df = pd.DataFrame(
         [
