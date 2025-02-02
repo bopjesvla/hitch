@@ -81,8 +81,10 @@ def experience():
         "select * from points where ip = ? and datetime > datetime(?, '-10 seconds')", db.engine, params=(ip, now)
     )
     if len(last10seconds) > 0:
-        return "Rate limited. If you didn't submit multiple reviews in the last 10 seconds, your browser probably"
-        +"accidentally submitted the same review twice, and it will show up shortly."
+        return (
+            "Rate limited. If you didn't submit multiple reviews in the last 10 seconds, your browser probably"
+            + "accidentally submitted the same review twice, and it will show up shortly."
+        )
 
     df = pd.DataFrame(
         [
