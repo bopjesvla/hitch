@@ -19,16 +19,22 @@ The software provided in this repository is licensed under AGPL 3.0. The Hitchma
 
 ## Installation (on Linux)
 
+### Setting up the python environment
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-curl https://hitchmap.com/dump.sqlite > db/points.sqlite
+```
 
-OR
-
-conda install folium==0.16.0 networkx==3.2.1
+### Fetching the database
+```
 curl https://hitchmap.com/dump.sqlite > db/points.sqlite
+```
+
+### Installing pre-commit to automatically run the linter
+```
+pre-commit install
 ```
 
 ## Getting started
