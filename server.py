@@ -8,7 +8,7 @@ import requests
 from flask import redirect, request, send_file, send_from_directory
 from flask_security import current_user
 
-from backend.shared import app, db, dist_dir, static_dir, EMAIL, logger
+from backend.shared import app, db, root_dir, dist_dir, static_dir, EMAIL, logger
 from backend.user import init_security, security
 
 
@@ -19,7 +19,7 @@ def index():
 
 @app.route("/.well-known/assetlinks.json", methods=["GET"])
 def assetlinks():
-    return send_file("android/assetlinks.json")
+    return send_file(os.path.join(root_dir, "android/assetlinks.json"))
 
 
 @app.route("/Hitchmap.apk", methods=["GET"])
