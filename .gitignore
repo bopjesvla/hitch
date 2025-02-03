@@ -64,6 +64,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+cache/
 env/
 build/
 develop-eggs/
@@ -463,20 +464,10 @@ __pycache__/
 OpenCover/
 junit/
 
-# Custom
-light.html
-recent.html
-index.html
-recent-dups.html
-lines.html
-dashboard.html
-hitchhiking.html
-
 *.ipynb
 *.kml
 *.gpx
 *_hidden.py
 
-cache/
 # Database
 *.sqlite*
