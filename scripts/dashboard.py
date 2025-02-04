@@ -139,7 +139,7 @@ for _, user in users.iterrows():
     if get_num_reviews(user.username) >= 1:
         user_accounts += (
             f'<a href="/account/{e(user.username)}">{e(user.username)}</a> - '
-            + '<a href="/?user={e(user.username)}#filters">Their spots</a>'
+            + f'<a href="/?user={e(user.username)}#filters">Their spots</a>'
         )
         user_accounts += "<br>"
     else:

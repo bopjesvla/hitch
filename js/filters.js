@@ -184,11 +184,8 @@ export function applyParams() {
 
         filterMarkerGroup = L.layerGroup(
             filterMarkers, {pane: 'filtering'}
-        ).addTo(map)
+        ).addTo(window.map)
     } else {
         document.body.classList.remove('filtering')
     }
 }
-
-// Initialize the cone spread and knob appearance
-applyParams();

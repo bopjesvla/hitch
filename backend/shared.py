@@ -37,7 +37,7 @@ def get_or_create_secret_key():
     return secret_key
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.path.join(root_dir, "templates"))
 app.config["DEBUG"] = DATABASE == "prod-points.sqlite"
 app.config["SECRET_KEY"] = get_or_create_secret_key()
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE}"
