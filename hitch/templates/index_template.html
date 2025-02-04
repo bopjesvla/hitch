@@ -114,6 +114,15 @@
         <p>Thanks for your contribution!</p>
         <p>Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.</p>
     </div>
+    <div class="sidebar heatmap-info">
+        <h3>Heatmap</h3>
+        <p>This map shows estimated waiting times for hitchhiking in any region of the world.</p>
+        <p>The variation in waiting times can be attributed to the density of traffic, settlements and the general hitchhiking culture in the region.</p>
+        <p>The more data points there are on the <a href="/">classic map</a> in a region, the more opaque the heatmap will be. That is why regions with no data are fully transparent.</p>
+        <hr>
+        <p>Read<a href="https://tillwenke.github.io/2024/05/06/hitchhiking-worldwide.html"> this blog post</a> for some background information about this heatmap.</p>
+        <p>There is <a href="https://tillwenke.github.io/2024/04/21/hitchmap-gp.html">another blog post</a> that describes the modelling process in more detail.</p>
+    </div>
     <div class="sidebar failed">
         <h3>Failed!</h3>
 
@@ -125,15 +134,24 @@
         <p>You're registered and logged in.</p>
     </div>
     <div class="sidebar menu">
+        <h4>Maps</h4>
+        <ul class="no-style">
+            <li><i class="fa fa-map"></i><a href="/">Classic Map</a></li>
+            <li><i class="fa fa-fire"></i><a href="/hitchhiking.html">Heatmap</a></li>
+        </ul>
+        <h4>Code</h4>
         <ul class="no-style">
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch">Contribute</a></li>
             <li><i class="fa fa-github"></i><a href="https://github.com/bopjesvla/hitch/issues/new">Report bugs</a></li>
-            <li><i class="fa fa-download"></i>Download spots</li>
-            <ul>
-                <li><a href="/dump.sqlite">As SQLite</a></li>
-                <li><a href="/dump.csv">As CSV</a></li>
-                <li><a href="javascript:exportAsGPX()">As GPX</a></li>
-            </ul>
+        </ul>
+        <h4>Data</h4>
+        <ul class="no-style">
+            <li><a href="/dump.sqlite">As SQLite</a></li>
+            <li><a href="/dump.csv">As CSV</a></li>
+            <li><a href="javascript:exportAsGPX()">As GPX</a></li>
+        </ul>
+        <h4>Activity</h4>
+        <ul>
             <li><i class="fa fa-map-pin"></i><a href="/recent.html">Recent reviews</a></li>
             <li><i class="fa fa-chart-simple"></i><a href="/dashboard.html">Charts & graphs</a></li>
         </ul>

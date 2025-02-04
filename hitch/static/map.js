@@ -120,14 +120,17 @@ var MenuButton = L.Control.extend({
         container.innerHTML = "☰";
 
         container.onclick = function (e) {
-            navigateHome()
-            if (document.body.classList.contains('menu'))
-                bar()
-            else
-                bar('.sidebar.menu')
-            document.body.classList.toggle('menu')
-            L.DomEvent.stopPropagation(e)
-        }
+          navigateHome();
+
+          if (document.body.classList.contains("menu")) {
+            bar();
+          } else {
+            bar(".sidebar.menu");
+          }
+
+          document.body.classList.toggle("menu");
+          L.DomEvent.stopPropagation(e);
+        };
 
         return controlDiv;
     }
@@ -161,6 +164,31 @@ var FilterButton = L.Control.extend({
     }
 });
 
+var HeatmapInfoButton = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button heatmap-info');
+        var container = L.DomUtil.create('a', '', controlDiv);
+        container.href = "javascript:void(0);";
+        container.innerHTML = "\u2139 What can I see here?";
+
+        container.onclick = function (e) {
+            navigateHome()
+            if (document.body.classList.contains('heatmap-info')) {
+                bar()
+            } else {
+                bar('.sidebar.heatmap-info')
+            }
+            document.body.classList.toggle('heatmap-info')
+            L.DomEvent.stopPropagation(e)
+        }
+
+        return controlDiv;
+    }
+});
+
 ////// Define the search bar for the map //////
 var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city, search comments", "zoom": 11 };
 
@@ -187,6 +215,11 @@ map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new AccountButton());
 map.addControl(new FilterButton());
+if (window.location.pathname === "/hitchhiking.html") {
+    map.addControl(new HeatmapInfoButton());
+    $$(".filter-button").remove()
+    $$(".add-spot").remove()
+}
 
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
@@ -274,7 +307,7 @@ var addSpotStep = function (e) {
             const datetime_ride = $$("#datetime_ride");
             let hasBeenOpen = details.open;
 
-            details.addEventListener("toggle", function() {
+            details.addEventListener("toggle", function () {
                 hasBeenOpen = true;
             })
 
@@ -337,23 +370,25 @@ map.on('zoom', e => {
 var oldActive = [];
 
 function arrowLine(from, to, opts = {}) {
-    return L.polylineDecorator([from, to], {patterns: [{
-        repeat: 10,
-        symbol: L.Symbol.arrowHead({
-            pixelSize: 7,
-            polygon: true,
-            pathOptions: {
-                stroke: false,
-                fill: true,
-                fillOpacity: 0.6,
-                fillColor: 'black',
-                pane: 'arrowlines'
-            },
-        }),
-        offset: 16,
-        endOffset: 0
-    }
-]})
+    return L.polylineDecorator([from, to], {
+        patterns: [{
+            repeat: 10,
+            symbol: L.Symbol.arrowHead({
+                pixelSize: 7,
+                polygon: true,
+                pathOptions: {
+                    stroke: false,
+                    fill: true,
+                    fillOpacity: 0.6,
+                    fillColor: 'black',
+                    pane: 'arrowlines'
+                },
+            }),
+            offset: 16,
+            endOffset: 0
+        }
+        ]
+    })
 }
 
 function renderPoints() {
@@ -376,7 +411,7 @@ function renderPoints() {
 
     destLineGroup = L.layerGroup()
 
-    let opts = document.body.classList.contains('filtering') ? {pane: 'filtering'} : {}
+    let opts = document.body.classList.contains('filtering') ? { pane: 'filtering' } : {}
 
     for (let a of active) {
         let lats = a.options._row[7]
@@ -516,9 +551,9 @@ function exportAsGPX() {
 // $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')
 
 // validate add spot form input
-document.getElementById('spot-form').addEventListener('submit', function(event) {
+document.getElementById('spot-form').addEventListener('submit', function (event) {
     const nicknameInput = document.getElementById('nickname-input');
-    if (nicknameInput.value != ""){
+    if (nicknameInput.value != "") {
         event.preventDefault();
         const errorMessage = document.getElementById('nickname-error-message');
         errorMessage.textContent = '';
@@ -533,7 +568,7 @@ document.getElementById('spot-form').addEventListener('submit', function(event) 
                 return response.json(); // Parse the JSON response
             })
             .then(data => {
-                if (data.used){
+                if (data.used) {
                     errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
                 } else {
                     this.submit();
@@ -726,14 +761,14 @@ function applyParams() {
         filterMarkers = filterMarkers.map(
             spot => {
                 let loc = spot.getLatLng()
-                let marker = new L.circleMarker(loc, Object.assign({}, spot.options, { pane: 'filtering'}))
+                let marker = new L.circleMarker(loc, Object.assign({}, spot.options, { pane: 'filtering' }))
                 marker.on('click', e => spot.fire('click', e))
                 return marker
             }
         )
 
         filterMarkerGroup = L.layerGroup(
-            filterMarkers, {pane: 'filtering'}
+            filterMarkers, { pane: 'filtering' }
         ).addTo(map)
     } else {
         document.body.classList.remove('filtering')

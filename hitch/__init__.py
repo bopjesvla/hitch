@@ -91,13 +91,7 @@ def register_commands(app):
         """
         Executes all scripts defined in array with given args
         """
-        scripts = [
-            ("show", ""),
-            ("show", "light"),
-            ("show", "new"),
-            ("dump", ""),
-            ("dashboard", ""),
-        ]
+        scripts = [("show", ""), ("show", "light"), ("show", "new"), ("dump", ""), ("dashboard", ""), ("heatchmap", "")]
         for script, args in scripts:
             ctx.invoke(generate, script=script, args=args)
 
