@@ -23,8 +23,6 @@ DIRS = get_dirs()
 
 outname = os.path.join(DIRS["dist"], "hitchhiking.html")
 template_path = os.path.join(DIRS["templates"], "index_template.html")
-with open(template_path, encoding="utf-8").read() as f:
-    template = f.read()
 
 tiles = xyz.CartoDB.Positron
 folium_map = folium.Map(
@@ -98,6 +96,9 @@ with open(os.path.join(DIRS["base"], "static", "style.css"), encoding="utf-8") a
     hitch_style = f.read()
 
 
+with open(template_path, encoding="utf-8") as f:
+    template = f.read()
+
 output = Template(template).substitute(
     {
         "folium_head": header,
@@ -108,7 +109,7 @@ output = Template(template).substitute(
     }
 )
 
-with open(outname, "w", encoding="utf-8") as f:
+with open(outname, "w", encoding="utf-8") as f:#
     f.write(output)
 
 logger.info(f"Map saved to {outname}")

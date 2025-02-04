@@ -121,10 +121,11 @@ var MenuButton = L.Control.extend({
 
         container.onclick = function (e) {
             navigateHome()
-            if (document.body.classList.contains('menu'))
+            if (document.body.classList.contains('menu')){
                 bar()
-            else
+            } else {
                 bar('.sidebar.menu')
+            }
             document.body.classList.toggle('menu')
             L.DomEvent.stopPropagation(e)
         }
@@ -173,10 +174,11 @@ var HeatmapInfoButton = L.Control.extend({
 
         container.onclick = function (e) {
             navigateHome()
-            if (document.body.classList.contains('heatmap-info'))
+            if (document.body.classList.contains('heatmap-info')) {
                 bar()
-            else
+            } else {
                 bar('.sidebar.heatmap-info')
+            }
             document.body.classList.toggle('heatmap-info')
             L.DomEvent.stopPropagation(e)
         }
