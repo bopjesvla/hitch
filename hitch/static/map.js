@@ -283,20 +283,6 @@ var addSpotStep = function (e) {
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
-            // nicknames wont be recorded if a user is logged in
-            fetch('/user')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP error! Status:');
-                    }
-                    return response.json(); // Parse the JSON response
-                })
-                .then(data => {
-                    $$("#nickname-container").classList.toggle("make-invisible", data.logged_in);
-                })
-                .catch(error => {
-                    console.error('Error fetching user info:', error);
-                });
             $$('#details-seen').classList.add("make-invisible")
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
@@ -546,39 +532,6 @@ function exportAsGPX() {
     }
     document.body.appendChild(script)
 }
-
-// $$('.report-button').onclick = _ => $$('.report-options').classList.toggle('.visible')
-// $$('.report-button').onblur = _ => $$('.report-options').classList.remove('.visible')
-
-// validate add spot form input
-document.getElementById('spot-form').addEventListener('submit', function (event) {
-    const nicknameInput = document.getElementById('nickname-input');
-    if (nicknameInput.value != "") {
-        event.preventDefault();
-        const errorMessage = document.getElementById('nickname-error-message');
-        errorMessage.textContent = '';
-
-        // nicknames that are used as usernames are not allowed
-        let url = '/is_username_used/' + nicknameInput.value;
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('HTTP error! Status:');
-                }
-                return response.json(); // Parse the JSON response
-            })
-            .then(data => {
-                if (data.used) {
-                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
-                } else {
-                    this.submit();
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching user info:', error);
-            });
-    };
-});
 
 const knob = document.getElementById('knob');
 const knobLine = document.getElementById('knobLine');

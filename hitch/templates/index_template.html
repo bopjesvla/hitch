@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <title>Hitchmap - Find hitchhiking spots on a map - Add new spots</title>
@@ -7,14 +8,16 @@
 
     $folium_head
     <script src=" https://cdn.jsdelivr.net/npm/leaflet-geometryutil@0.10.3/src/leaflet.geometryutil.min.js "></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.min.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
-     $hitch_style
+        $hitch_style
     </style>
 </head>
+
 <body>
     $folium_body
     <div class="sidebar spot spot-form-container">
@@ -41,16 +44,13 @@
             <input type="number" name="wait" min="0" max="9999" size="4"> minutes
             <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
-            <div id="nickname-container">
-                <label for="nickname">Public nickname (alphanumeric)</label>
-                <input id="nickname-input" name="nickname" maxlength="32" pattern="[a-zA-Z0-9]*">
-                <span id="nickname-error-message" class="error"></span>
-                <br>
-                <div><small>To keep track of your reviews, <a href="/login">log in</a> or <a href="/register">register</a>. This will reset the review above.</small></div>
+            <div>
+                <small>To keep track of your reviews, <a href="/login">log in</a> or <a href="/register">register</a>. This will reset the review above.</small>
             </div>
             <br>
             <details closed id="extended_info">
-                <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen" style='color: red;'> (check values, then submit again)</span></summary>
+                <summary id="details-summary" style="display:list-item">more optional fields<span id="details-seen"
+                        style='color: red;'> (check values, then submit again)</span></summary>
                 <label for="signal">How did you signal to drivers?</label>
                 <div>
                     <select id="signal" name="signal" class="driver-signal">
@@ -61,11 +61,12 @@
                         <option value="ask-sign" title="talk">Asked around with a sign in hand</option>
                     </select>
                 </div>
-                <label for="datetime_ride">When did you get the ride?<span id="no-ride"> If you didn't get a ride, when did you stop soliciting rides?</span></label>
+                <label for="datetime_ride">When did you get the ride?<span id="no-ride"> If you didn't get a ride, when
+                        did you stop soliciting rides?</span></label>
                 <input id="datetime_ride" type="datetime-local" name="datetime_ride">
                 <!-- maximum date is today -->
                 <script>
-                    document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0,11)) + "23:59";
+                    document.getElementById("datetime_ride").max = (new Date().toISOString().slice(0, 11)) + "23:59";
                 </script>
             </details>
 
@@ -88,8 +89,7 @@
         </div>
         <div class=report-options>
             <div class="report-dup">
-                <a href="javascript:;"
-                   title="Is there another spot close by that is a duplicate of this spot?">
+                <a href="javascript:;" title="Is there another spot close by that is a duplicate of this spot?">
                     <i class="fa-solid fa-left-right" style="color: red"></i>
                     Merge into nearby spot
                 </a>
@@ -112,7 +112,8 @@
         <h3>Success!</h3>
 
         <p>Thanks for your contribution!</p>
-        <p>Your duplicate report will be subject to a manual review, or it will be merged automatically within 10 minutes.</p>
+        <p>Your duplicate report will be subject to a manual review, or it will be merged automatically within 10
+            minutes.</p>
     </div>
     <div class="sidebar heatmap-info">
         <h3>Heatmap</h3>
@@ -168,19 +169,20 @@
         </p>
         <h4>License</h4>
         <p>
-            Hitchmap software is licensed under AGPL 3.0. The Hitchmap database is licensed under the ODBL, the license used by OpenStreetMap.
+            Hitchmap software is licensed under AGPL 3.0. The Hitchmap database is licensed under the ODBL, the license
+            used by OpenStreetMap.
         </p>
     </div>
     <div class="sidebar filters">
         <h3>Filters</h3>
         <label for="user-filter">Filter by user</label>
-        <input id="user-filter" type="text" value=""/>
+        <input id="user-filter" type="text" value="" />
         <label for="text-filter">Search comments</label>
-        <input id="text-filter" type="text" value=""/>
+        <input id="text-filter" type="text" value="" />
         <label for="distance-filter">Minimum distance (km)</label>
-        <input id="distance-filter" type="number" value=""/>
+        <input id="distance-filter" type="number" value="" />
         <div class="extra-container">
-            <input id="knob-toggle" type="checkbox" value=""/> <label for="knob-toggle">Directional filter</label>
+            <input id="knob-toggle" type="checkbox" value="" /> <label for="knob-toggle">Directional filter</label>
             <div class="knob-container">
                 <div class="knob" id="knob">
                     <div class="knob-line" id="knobLine"></div>
@@ -200,14 +202,8 @@
     </div>
     <a href="javascript:void(0);" id="sb-close">
         <svg width="14" height="14" version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <line x1="1" y1="13"
-                  x2="13" y2="1"
-                  stroke="black"
-                  stroke-width="2"/>
-            <line x1="1" y1="1"
-                  x2="13" y2="13"
-                  stroke="black"
-                  stroke-width="2"/>
+            <line x1="1" y1="13" x2="13" y2="1" stroke="black" stroke-width="2" />
+            <line x1="1" y1="1" x2="13" y2="13" stroke="black" stroke-width="2" />
         </svg>
     </a>
     <div class="topbar spot step1">
@@ -216,7 +212,10 @@
     </div>
     <div class="topbar spot step2">
         <span>
-            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a href="javascript:void(0);" title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews." class=step2-help>?</a></sup>
+            Where did your ride take you? Move the crosshairs near that location, then press done.<sup><a
+                    href="javascript:void(0);"
+                    title="If you were dropped off at multiple locations when using this spot, either choose something in the middle or leave multiple reviews."
+                    class=step2-help>?</a></sup>
         </span>
         <br><button>Skip</button><button>Done</button><button>Cancel</button>
     </div>
@@ -225,13 +224,13 @@
         <br><button>Cancel</button>
     </div>
     <script>
-     var allMarkers = [], destinationMarkers = []
+        var allMarkers = [], destinationMarkers = []
     </script>
     <script>
-     $folium_script
+        $folium_script
     </script>
     <script>
-     $hitch_script
+        $hitch_script
     </script>
     <script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
