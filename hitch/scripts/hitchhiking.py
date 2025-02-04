@@ -36,7 +36,7 @@ folium_map = folium.Map(
 cmap = colors.ListedColormap(BUCKETS)
 
 norm = colors.BoundaryNorm(BOUNDARIES, cmap.N, clip=True)
-cmap.set_bad(color="#000000", alpha=0.0) # opaque for NaN values (sea)
+cmap.set_bad(color="#000000", alpha=0.0)  # opaque for NaN values (sea)
 
 gpmap = GPMap()
 gpmap.get_map_grid()
@@ -50,13 +50,9 @@ colors = cmap(image)
 
 uncertainties = gpmap.uncertainties
 # no uncertainties for sea -> becomes fully transparent
-uncertainties = np.where(
-    gpmap.landmass_raster, uncertainties, uncertainties.max()
-)
+uncertainties = np.where(gpmap.landmass_raster, uncertainties, uncertainties.max())
 # Normalize uncertainties
-uncertainties = (uncertainties - uncertainties.min()) / (
-    uncertainties.max() - uncertainties.min()
-)
+uncertainties = (uncertainties - uncertainties.min()) / (uncertainties.max() - uncertainties.min())
 uncertainties = 1 - uncertainties
 
 # Combine RGB values with the opacity
@@ -89,28 +85,23 @@ header = header.replace(
 body = folium_map.get_root().html.render()
 script = folium_map.get_root().script.render()
 
-with  open(os.path.join(DIRS["base"], "static", "map.js"), encoding="utf-8") as f:
-    hitch_script = f.read()
+with (
+    open(template_path, encoding="utf-8") as template,
+    open(os.path.join(DIRS["base"], "static", "map.js"), encoding="utf-8") as js,
+    open(os.path.join(DIRS["base"], "static", "style.css"), encoding="utf-8") as css,
+    open(outname, "w", encoding="utf-8") as out,
+):
+    output = Template(template.read()).substitute(
+        {
+            "folium_head": header,
+            "folium_body": body,
+            "folium_script": script,
+            "hitch_script": js.read(),
+            "hitch_style": css.read(),
+        }
+    )
 
-with open(os.path.join(DIRS["base"], "static", "style.css"), encoding="utf-8") as f:
-    hitch_style = f.read()
-
-
-with open(template_path, encoding="utf-8") as f:
-    template = f.read()
-
-output = Template(template).substitute(
-    {
-        "folium_head": header,
-        "folium_body": body,
-        "folium_script": script,
-        "hitch_script": hitch_script,
-        "hitch_style": hitch_style,
-    }
-)
-
-with open(outname, "w", encoding="utf-8") as f:#
-    f.write(output)
+    out.write(output)
 
 logger.info(f"Map saved to {outname}")
 logger.info("Done.")
