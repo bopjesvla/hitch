@@ -33,7 +33,7 @@ Join the conversation about a map for hitchhiking in our [Signal Chat](https://s
 
 This repository, [`Hitchwiki/hitchmap`](https://github.com/Hitchwiki/hitchmap), is a fork of [`bobjesvla/hitch`](https://github.com/bobjesvla/hitch). While both projects share a common origin, they have since taken different development paths. At this stage, it remains uncertain which repository will emerge as the mainline project. However, we remain open to collaboration and potential reconciliation of efforts.
 
-For contributors and users, we recommend reviewing both repositories to determine which best fits your needs.
+For contributors and users, we recommend reviewing both repositories to determine which best fits your needs. In virtually all cases, user-facing contributions will eventually end up in both repositories.
 
 
 ## Getting Started
