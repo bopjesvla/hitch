@@ -1,118 +1,123 @@
-{# djlint:off H030,H031 #}
-{% block doc -%}
-<!DOCTYPE html>
-<html{% block html_attribs %}{% endblock html_attribs %}>
-    {%- block html %}
-    <head>
-        {%- block head %}
-        <title>{% block title %}{{ title|default }}{% endblock title %}</title>
+{% extends "base.html" %}
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block title %}{{ title|default }}{% endblock title %}
 
-        {%- block styles %}
-        <style>
-         .fs-error-msg {
-             color: darkred;
-         }
-         body {
-             font-family: Georgia, serif;
-             margin: 0;
-             padding: 0;
-             height: 100vh;
-             width: 100vw;
-             position: relative;
-             overflow: hidden; /* Prevents scrolling */
-             line-height: 1.5;
-             font-size: 19px;
-         }
+{% block head %}
+<style>
+    .fs-error-msg {
+        color: darkred;
+    }
 
-         .bg {
-             content: "";
-             position: absolute;
-             top: -15px;
-             left: -15px;
-             height: calc(100% + 10px);
-             width: calc(100% + 10px);
-             background: url("https://tile.openstreetmap.org/10/511/341.png") no-repeat center center;
-             background-size: cover; /* Maintains aspect ratio */
-             filter: blur(10px); /* Applies blur to the background */
-         }
-         form ~ hr, form ~ h2 {
-             display: none;
-         }
+    body {
+        font-family: Georgia, serif;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+        overflow: hidden;
+        /* Prevents scrolling */
+        line-height: 1.5;
+        font-size: 19px;
+    }
 
-         .overlay {
-             position: absolute;
-             top: 50%;
-             left: 50%;
-             transform: translate(-50%, -50%); /* Centers the overlay */
-             padding: 20px 40px; /* Adds some spacing inside the overlay */
-             max-width: 350px; /* Prevents the overlay from being too wide */
-             width: 90vw;
-             max-height: 90%; /* Prevents the overlay from being too tall */
-             background: #fff; /* Semi-transparent background */
-             border-radius: 8px; /* Adds rounded corners */
-             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Subtle shadow for better visibility */
-             overflow: auto; /* Enables scrolling if content exceeds max dimensions */
-         }
+    .bg {
+        content: "";
+        position: absolute;
+        top: -15px;
+        left: -15px;
+        height: calc(100% + 10px);
+        width: calc(100% + 10px);
+        background: url("https://tile.openstreetmap.org/10/511/341.png") no-repeat center center;
+        background-size: cover;
+        /* Maintains aspect ratio */
+        filter: blur(10px);
+        /* Applies blur to the background */
+    }
 
-         ul {
-             margin: 10px 0;
-             padding: 0;
-             list-style: none;
-         }
+    form~hr,
+    form~h2 {
+        display: none;
+    }
 
-         a {
-             color: #333; /* Default text color */
-             display: block; /* Ensures clickable area expands */
-         }
-         label {
-             display: block;
-             margin-top: 10px;
-             margin-bottom: 5px;
-             padding-left: 2px;
-         }
-         input[type=submit] {
-             margin-top: 10px;
-         }
-         input:not([type=checkbox]) {
-             display: block;
-             width: 100%;
-             font: inherit;
-         }
-         div#remember {
-             display: flex;
-         }
-         #remember input {
-             order: -1;
-             margin-top: 10px;
-             margin-left: 0px;
-         }
-        </style>
-      {%- endblock styles %}
-    {%- endblock head %}
-  </head>
-  <body{% block body_attribs %}{% endblock body_attribs %}>
-      <a class="bg" href="/"></a>
-      {% block body -%}
-      {% block navbar %}
-      {%- endblock navbar %}
-      <div class="overlay">
-          {% block content -%}
-          {%- endblock content %}
-      </div>
+    .overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /* Centers the overlay */
+        padding: 20px 40px;
+        /* Adds some spacing inside the overlay */
+        max-width: 350px;
+        /* Prevents the overlay from being too wide */
+        width: 90vw;
+        max-height: 90%;
+        /* Prevents the overlay from being too tall */
+        background: #fff;
+        /* Semi-transparent background */
+        border-radius: 8px;
+        /* Adds rounded corners */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        /* Subtle shadow for better visibility */
+        overflow: auto;
+        /* Enables scrolling if content exceeds max dimensions */
+    }
 
-      {% block scripts %}
-      {%- endblock scripts %}
-      <script>
-       document.querySelectorAll('a').forEach(link => {
-           if (link.href === window.location.href) {
-               link.style.display = 'none'; // Hide the link
-           }
-       });
-      </script>
-      {%- endblock body %}
-  </body>
-  {%- endblock html %}
-</html>
-{% endblock doc -%}
+    ul {
+        margin: 10px 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    a {
+        color: #333;
+        /* Default text color */
+        display: block;
+        /* Ensures clickable area expands */
+    }
+
+    label {
+        display: block;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        padding-left: 2px;
+    }
+
+    input[type=submit] {
+        margin-top: 10px;
+    }
+
+    input:not([type=checkbox]) {
+        display: block;
+        width: 100%;
+        font: inherit;
+    }
+
+    div#remember {
+        display: flex;
+    }
+
+    #remember input {
+        order: -1;
+        margin-top: 10px;
+        margin-left: 0px;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('a').forEach(link => {
+        if (link.href === window.location.href) {
+            link.style.display = 'none'; // Hide the link
+        }
+    });
+</script>
+{% endblock %}
+
+{% block main %}
+<a class="bg" href="/"></a>
+<div class="overlay">
+    {% block content %}{% endblock %}
+</div>
+{% endblock %}

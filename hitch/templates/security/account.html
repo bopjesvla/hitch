@@ -1,0 +1,35 @@
+{% extends "security/base.html" %}
+
+{% set escaped_hitchwiki_username = user.hitchwiki_username | escape %}
+{% set escaped_trustroots_username = user.trustroots_username | escape %}
+
+{% block content %}
+<h1>User</h1>
+
+Username: {{ user.username }}<br>
+Gender: {{ user.gender }}<br>
+
+{% if is_me %}
+<h2>Public Profile</h2>
+{% endif %}
+
+Gender: {{ user.gender or "-" }}<br>
+Year of Birth: {{ user.year_of_birth or "-" }}<br>
+Hitchhiking Since: {{ user.hitchhiking_since or "-" }}<br>
+Origin: {{ [user.origin_city, user.origin_country]|reject("none")|reject("equalto", "")|reject("undefined")|join(", ")
+or "-" }}<br>
+On Hitchwiki:
+{{ "<a href=\"https://hitchwiki.org/en/User:%s\">%s</a>"|format(escaped_hitchwiki_username,
+escaped_hitchwiki_username)|safe if escaped_hitchwiki_username else "-" }}<br>
+On Trustroots:
+{{ "<a href=\"https://www.trustroots.org/profile/%s\">%s</a>"|format(escaped_trustroots_username,
+escaped_trustroots_username)|safe if escaped_trustroots_username else "-" }}
+<br>
+<br>
+<a href="/?user={{ username }}#filters">{{ "See my spots" if is_me else "See their spots"}}</a><br>
+{% if is_me %}
+<a href="/edit-user">Edit your personal data</a><br>
+<a href="/logout">Logout</a><br>
+<a href="/delete-user" style="color: red;" onclick=" ">Delete my account</a>
+{% endif %}
+{% endblock %}

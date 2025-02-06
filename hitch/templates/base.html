@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" {% block html_attribs %}{% endblock html_attribs %}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>{% block title %}{% endblock %}</title>
 
     {% block head %}{% endblock %}
   </head>
-  <body>
-    {% block content %}{% endblock %}
+
+  <body {% block body_attribs %}{% endblock body_attribs %}>
+    {% block main %}{% endblock %} {% block scripts %}{% endblock %}
   </body>
 </html>

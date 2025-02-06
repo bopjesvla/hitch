@@ -108,7 +108,7 @@ def register_routes(app):
 
     @app.route("/copyright.html")
     def copyright():
-        return render_template("copyright.jinja2")
+        return render_template("copyright.html")
 
     @app.route("/favicon.ico")
     def favicon():

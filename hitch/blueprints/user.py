@@ -35,7 +35,7 @@ def form():
     form.hitchwiki_username.data = current_user.hitchwiki_username
     form.trustroots_username.data = current_user.trustroots_username
 
-    return render_template("edit_user.html", form=form)
+    return render_template("security/edit_user.html", form=form)
 
 
 @user_bp.route("/user", methods=["GET"])
@@ -56,39 +56,6 @@ def delete_user():
     return f"To delete your account please send an email to {current_app.config['EMAIL']} with the subject 'Delete my account'."
 
 
-def get_origin_string(user):
-    origin_string = (
-        (user.origin_city if user.origin_city is not None else "")
-        + (", " if (user.origin_city != "" and user.origin_city is not None) else " ")
-        + (user.origin_country if user.origin_country is not None else "")
-    )
-    return origin_string
-
-
-@user_bp.route("/me", methods=["GET"])
-def show_current_user():
-    if current_user.is_anonymous:
-        return redirect("/login")
-
-    user = current_user
-    origin_string = get_origin_string(user)
-
-    current_app.logger.info(user.hitchwiki_username is None)
-    print(user.hitchwiki_username, type(user.hitchwiki_username))
-
-    return render_template(
-        "me.html",
-        username=user.username,
-        email=user.email,
-        gender=user.gender,
-        origin_string=origin_string,
-        hitchwiki_username=user.hitchwiki_username,
-        trustroots_username=user.trustroots_username,
-        hitchhiking_since=user.hitchhiking_since,
-        year_of_birth=user.year_of_birth,
-    )
-
-
 @user_bp.route("/is_username_used/<username>", methods=["GET"])
 def is_username_used(username):
     """Endpoint to check if a username is already used."""
@@ -102,25 +69,28 @@ def is_username_used(username):
         return jsonify({"used": False})
 
 
+@user_bp.route("/me", methods=["GET"], defaults={"username": None, "is_me": True})
 @user_bp.route("/account/<username>", methods=["GET"])
-def show_account(username):
-    current_app.logger.info(f"Received request to show user {username}.")
+def show_account(username, is_me=False):
+    """Returns either the current account or the requested user
 
-    user = security.datastore.find_user(username=username)
-    if user:
-        origin_string = get_origin_string(user)
+    Args:
+        username: The user to show, None if current_user
+        is_me: Whether the current_user should be shown, True if current_user
+    """
+    if is_me and current_user.is_anonymous:
+        return redirect("/login")
 
-        return render_template(
-            "account.html",
-            username=user.username,
-            email=user.email,
-            gender=user.gender,
-            origin_string=origin_string,
-            hitchwiki_username=user.hitchwiki_username,
-            trustroots_username=user.trustroots_username,
-            hitchhiking_since=user.hitchhiking_since,
-            year_of_birth=user.year_of_birth,
-        )
-    else:
-        # TODO
+    user = current_user if is_me is True else security.datastore.find_user(username=username)
+
+    current_app.logger.info(
+        f"Received request to show user account for {current_user.username}"
+        if is_me
+        else f"Received request to show user {username}."
+    )
+
+    # TODO: Proper 404
+    if user is None:
         return "User not found."
+
+    return render_template("security/account.html", user=user, is_me=is_me)
