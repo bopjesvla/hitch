@@ -45,7 +45,8 @@ def register_blueprints(app):
 
 def register_commands(app):
     @app.cli.command()
-    def init():
+    @click.pass_context
+    def init(ctx):
         """Initialize the database."""
         # create necessary sql tables
         security.datastore.db.create_all()
@@ -59,6 +60,8 @@ def register_commands(app):
         security.datastore.find_or_create_role(name="user", permissions={"user-read", "user-write"})
         security.datastore.find_or_create_role(name="reader", permissions={"user-read"})
         security.datastore.db.session.commit()
+
+        ctx.invoke(generate_all)
 
     @app.cli.command()
     @click.argument("script", default="show")
