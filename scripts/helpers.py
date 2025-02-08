@@ -1,5 +1,5 @@
 import os
-
+import sqlite3
 import numpy as np
 
 
@@ -34,6 +34,14 @@ def get_bearing(lon1, lat1, lon2, lat2):
     brng = np.degrees(brng)
 
     return brng
+
+
+def get_db():
+    if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
+        DATABASE = os.path.join(db_dir, "prod-points.sqlite")
+    else:
+        DATABASE = os.path.join(db_dir, "points.sqlite")
+    return sqlite3.connect(DATABASE)
 
 
 scripts_dir = os.path.dirname(__file__)

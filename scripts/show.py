@@ -2,7 +2,6 @@ import html
 import os
 import sqlite3
 import sys
-import json
 from jinja2 import Environment, FileSystemLoader
 
 import subprocess
@@ -10,7 +9,9 @@ import subprocess
 import networkx
 import numpy as np
 import pandas as pd
-from helpers import get_bearing, haversine_np, scripts_dir, root_dir, db_dir
+import geopandas
+import geopandas as gpd
+from helpers import get_bearing, haversine_np, root_dir, get_db
 
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
@@ -34,27 +35,14 @@ else:
 outname_recent = os.path.join(dist_dir, "recent.html")
 outname_dups = os.path.join(dist_dir, "recent-dups.html")
 
-# TODO: Use dotenv?
-if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
-    DATABASE = os.path.join(db_dir, "prod-points.sqlite")
-else:
-    DATABASE = os.path.join(db_dir, "points.sqlite")
-
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
-    con=sqlite3.connect(DATABASE),
+    con=get_db(),
 )
 
 points["user_id"] = points["user_id"].astype(pd.Int64Dtype())
 
-duplicates = pd.read_sql("select * from duplicates where reviewed = accepted", sqlite3.connect(DATABASE))
-
-try:
-    users = pd.read_sql("select * from user", sqlite3.connect(DATABASE))
-except pd.errors.DatabaseError:
-    raise Exception("Run server.py to create the user table") from None
-
-print(f"{len(points)} points currently")
+duplicates = pd.read_sql("select * from duplicates where reviewed = accepted", get_db())
 
 # merging and transforming data
 dup_rads = duplicates[["from_lon", "from_lat", "to_lon", "to_lat"]].values.T
@@ -70,7 +58,7 @@ islands = networkx.connected_components(dups)
 
 replace_map = {}
 
-for island in islands:
+for component_id, island in enumerate(islands):
     parents = [node for node in island if node not in duplicates["from"].tolist()]
 
     if len(parents) == 1:
@@ -82,6 +70,39 @@ print("Currently recorded duplicate spots are represented by:", dups)
 
 points[["lat", "lon"]] = points[["lat", "lon"]].apply(lambda x: replace_map.get(tuple(x), x), axis=1, raw=True)
 
+points = geopandas.GeoDataFrame(points, geometry=geopandas.points_from_xy(points.lon, points.lat), crs="EPSG:4326")
+
+service_areas = pd.read_sql("select * from service_areas", get_db())
+service_area_geoms = gpd.GeoDataFrame(
+    service_areas[["geom_id"]], geometry=gpd.GeoSeries.from_wkt(service_areas.geometry_wkt), crs="EPSG:4326"
+)
+
+points["service_area_id"] = points.sjoin(service_area_geoms, how="left")["geom_id"]
+
+road_islands = pd.read_sql("select * from road_islands", get_db())
+road_island_geoms = gpd.GeoDataFrame(
+    road_islands[["id"]], geometry=gpd.GeoSeries.from_wkt(road_islands.geometry_wkt), crs="EPSG:4326"
+)
+
+points["road_island_id"] = points.sjoin(road_island_geoms, how="left").drop_duplicates("id_left")["id_right"]
+
+# pseudo-random cluster id based on lat/lon
+points["cluster_id"] = (points.lat * 1e10 + points.lon * 1e10).round()
+
+has_road_island = points.road_island_id.notna()
+points.loc[has_road_island, "cluster_id"] = points[has_road_island].road_island_id + 1e9
+
+has_service_area = points.service_area_id.notna()
+points.loc[has_service_area, "cluster_id"] = points[has_service_area].service_area_id + 5e9
+
+try:
+    users = pd.read_sql("select * from user", get_db())
+except pd.errors.DatabaseError:
+    raise Exception("Run server.py to create the user table") from None
+
+print(f"{len(points)} points currently")
+
+# fix hitchwiki comments
 points.loc[points.id.isin(range(1000000, 1040000)), "comment"] = (
     points.loc[points.id.isin(range(1000000, 1040000)), "comment"]
     .str.encode("cp1252", errors="ignore")
@@ -93,13 +114,13 @@ points["ride_datetime"] = pd.to_datetime(points.ride_datetime, errors="coerce") 
 
 rads = points[["lon", "lat", "dest_lon", "dest_lat"]].values.T
 
-points["distance"] = haversine_np(*rads)
+points["ride_distance"] = haversine_np(*rads)
 points["direction"] = get_bearing(*rads)
 
-points.loc[(points.distance < 1), "dest_lat"] = None
-points.loc[(points.distance < 1), "dest_lon"] = None
-points.loc[(points.distance < 1), "direction"] = None
-points.loc[(points.distance < 1), "distance"] = None
+points.loc[(points.ride_distance < 1), "dest_lat"] = None
+points.loc[(points.ride_distance < 1), "dest_lon"] = None
+points.loc[(points.ride_distance < 1), "direction"] = None
+points.loc[(points.ride_distance < 1), "ride_distance"] = None
 
 rounded_dir = 45 * np.round(points.direction / 45)
 points["arrows"] = rounded_dir.replace(
@@ -117,7 +138,9 @@ points["arrows"] = rounded_dir.replace(
 )
 
 rating_text = "rating: " + points.rating.astype(int).astype(str) + "/5"
-destination_text = ", ride: " + np.round(points.distance).astype(str).str.replace(".0", "", regex=False) + " km " + points.arrows
+destination_text = (
+    ", ride: " + np.round(points.ride_distance).astype(str).str.replace(".0", "", regex=False) + " km " + points.arrows
+)
 
 points["wait_text"] = None
 has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
@@ -174,25 +197,29 @@ points.loc[oldies, "text"] = (
 # has_text = ~points.text.isnull()
 # points.loc[has_text, 'text'] = points.loc[has_text, 'text'].map(lambda x: html.escape(x).replace('\n', '<br>'))
 
-groups = points.groupby(["lat", "lon"])
+groups = points.groupby("cluster_id")
+
+print("After clustering:", len(groups), "Before:", len(points.geometry.drop_duplicates()))
 
 places = groups[["country"]].first()
 places["rating"] = groups.rating.mean().round()
-places["wait"] = points[~points.wait.isnull()].groupby(["lat", "lon"]).wait.mean()
-places["distance"] = points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
+places["wait"] = points[~points.wait.isnull()].groupby("cluster_id").wait.mean()
+places["ride_distance"] = points[~points.ride_distance.isnull()].groupby("cluster_id").ride_distance.mean()
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
 places["review_count"] = groups.size()
 
 # to prevent confusion, only add a review user if their review is listed
-places["review_users"] = points.dropna(subset=["text", "hitchhiker"]).groupby(["lat", "lon"]).hitchhiker.unique().apply(list)
+places["review_users"] = points.dropna(subset=["text", "hitchhiker"]).groupby("cluster_id").hitchhiker.unique().apply(list)
 
-places["dest_lats"] = points.dropna(subset=["dest_lat", "dest_lon"]).groupby(["lat", "lon"]).dest_lat.apply(list)
-places["dest_lons"] = points.dropna(subset=["dest_lat", "dest_lon"]).groupby(["lat", "lon"]).dest_lon.apply(list)
+places["dest_lats"] = points.dropna(subset=["dest_lat", "dest_lon"]).groupby("cluster_id").dest_lat.apply(list)
+places["dest_lons"] = points.dropna(subset=["dest_lat", "dest_lon"]).groupby("cluster_id").dest_lon.apply(list)
+places["lat"] = groups.lat.mean()
+places["lon"] = groups.lon.mean()
 
 if LIGHT:
-    places = places[(places.text.str.len() > 0) | ~places.distance.isnull()]
+    places = places[(places.text.str.len() > 0) | ~places.ride_distance.isnull()]
 elif NEW:
-    places = places[~places.distance.isnull()]
+    places = places[~places.ride_distance.isnull()]
 
 # z-index is rating + 2 * no of reviews + 2 * no of reviews with destination
 places["z-index"] = places["rating"] + 2 * places["review_count"] + 2 * places["dest_lats"].str.len().fillna(0)
@@ -201,19 +228,9 @@ places.reset_index(inplace=True)
 # make sure high-rated are on top
 places.sort_values("z-index", inplace=True, ascending=True)
 
-marker_data = places[
-    [
-        "lat",
-        "lon",
-        "rating",
-        "text",
-        "wait",
-        "distance",
-        "review_users",
-        "dest_lats",
-        "dest_lons",
-    ]
-].to_json(orient="values")
+marker_data = places[["lat", "lon", "rating", "text", "wait", "ride_distance", "review_users", "dest_lats", "dest_lons"]].to_json(
+    orient="values"
+)
 
 try:
     subprocess.run(["npm", "run", "build"], check=True, text=True)
@@ -243,7 +260,7 @@ if not LIGHT:
     recent["url"] = "https://hitchmap.com/#" + recent.lat.astype(str) + "," + recent.lon.astype(str)
     recent["text"] = points.comment.fillna("") + " " + points.extra_text.fillna("")
     recent["hitchhiker"] = recent.hitchhiker.str.replace("://", "", regex=False)
-    recent["distance"] = recent["distance"].round(1)
+    recent["distance"] = recent["ride_distance"].round(1)
     recent["datetime"] = recent["datetime"].astype(str)
     recent["datetime"] += np.where(~recent.ride_datetime.isnull(), " 🕒", "")
 
