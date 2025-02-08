@@ -68,15 +68,54 @@ var handleMarkerNavigation = function (marker) {
 
         // Handle spot description and additional info
         $$('#spot-text').innerHTML = row[3];
-        if (!row[3] && Number.isNaN(row[5]))
+        if (!row[3] && row[5] == null)
             $$('#extra-text').innerHTML = 'No comments/ride info. To hide spots like this, check out the <a href=/light.html>lightweight map</a>.'
         else
             $$('#extra-text').innerHTML = ''
     }, 100)
 };
 
-// Take map from Folium, which was created in scripts/show.py
-var map = window[$$('.folium-map').id]
+var map = L.map(
+    "hitch-map",
+    {
+        center: [0.0, 0.0],
+        crs: L.CRS.EPSG3857,
+        zoom: 1,
+        zoomControl: true,
+        preferCanvas: true,
+        worldCopyJump: true,
+    }
+);
+
+let allCoords = window.markerData.map(m => [m[0], m[1]])
+
+let allMarkers = [], destinationMarkers = [];
+
+let allMarkersRenderer = map.getRenderer(map)
+let normalDrawFunction = allMarkersRenderer._redraw
+
+let heatLayer = L.heatLayer(allCoords, {radius: 5, blur: 1, maxZoom: 1, minOpacity: 1, max: 100, gradient: {0: 'black', 0.9: 'black', 1: 'lightgreen'}}).addTo(map)
+
+// Note: neither will be shown when a filter is active
+function showHeatmapOrDefaultPane() {
+    let {canvas} = allMarkersRenderer._ctx
+    if (map.getZoom() < 7) {
+        canvas.style.display = 'none';
+        allMarkersRenderer._ctx.clearRect(0, 0, canvas.width, canvas.height)
+        // performance hack: override redraw to stop (off-screen) draws without removing and adding all markers
+        allMarkersRenderer._redraw = function(){}
+        heatLayer.addTo(map)
+    }
+    else {
+        canvas.style.display = '';
+        allMarkersRenderer._redraw = normalDrawFunction
+        heatLayer.remove()
+    }
+}
+
+showHeatmapOrDefaultPane()
+
+L.control.scale().addTo(map);
 
 // Create custom map panes for layering
 let filterPane = map.createPane('filtering')
@@ -84,6 +123,32 @@ filterPane.style.zIndex = 450
 
 let arrowlinePane = map.createPane('arrowlines')
 filterPane.style.zIndex = 1450
+
+for (let row of window.markerData) {
+    let color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
+    let opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
+    let point = new L.LatLng(row[0], row[1])
+    let weight = row[6] && row[6].length > 2 ? 2 : 1
+    let marker = L.circleMarker(point, {radius: 5, weight, fillOpacity: opacity, color: 'black', fillColor: color, _row: row});
+
+    marker.on('click', function(e) {
+        handleMarkerClick(marker, point, e)
+    })
+
+    if (row[7] && row[7].length) destinationMarkers.push(marker)
+    allMarkers.push(marker)
+}
+
+let allMarkerGroup = L.layerGroup(allMarkers)
+allMarkerGroup.addTo(map)
+
+var tileLayer = L.tileLayer(
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 1, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+);
+
+
+tileLayer.addTo(map);
 
 // Add geocoding functionality
 addGeocoder(map)
@@ -281,6 +346,9 @@ bars.forEach(bar => {
 map.on('click', e => {
     var added = false;
 
+    if (document.body.classList.contains('zoomed-out'))
+        return
+
     if (window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
         let markers = document.body.classList.contains('filtering') ? filterMarkerGroup : allMarkers
@@ -297,9 +365,16 @@ map.on('click', e => {
     L.DomEvent.stopPropagation(e)
 })
 
-map.on('zoom', e => {
-    document.body.classList.toggle('zoomed-out', map.getZoom() < 9)
-})
+function updateZoomClasses() {
+    showHeatmapOrDefaultPane()
+    document.body.classList.toggle('zoomed-out', map.getZoom() < 7)
+    document.body.classList.toggle('mid-zoom', map.getZoom() < 9)
+}
+
+map.on('zoom', updateZoomClasses)
+updateZoomClasses()
+map.on('zoomstart', _ => document.body.classList.add('zooming')); // Hide the layer while pinch zooming
+map.on('zoomend', _ => document.body.classList.remove('zooming')); // Show the layer
 
 function renderPoints() {
     if (spotMarker) map.removeLayer(spotMarker)
@@ -352,7 +427,7 @@ if (!window.location.hash.includes(',')) // we'll center on coord
         map.fitBounds([[-35, -40], [60, 40]])
 if (map.getZoom() > 17 && window.location.hash != '#success-duplicate') map.setZoom(17);
 
-$$('.folium-map').focus()
+$$('.hitch-map').focus()
 
 // validate add spot form input
 document.getElementById('spot-form').addEventListener('submit', function(event) {
@@ -424,12 +499,17 @@ function navigateHome() {
 window.navigate = navigate
 window.navigateHome = navigateHome
 window.handleMarkerClick = handleMarkerClick
+window.map = map
+window.allMarkers = allMarkers;
+window.allMarkerGroup = allMarkerGroup;
+window.destinationMarkers = destinationMarkers;
 
 // Set up hash change listener
 window.onhashchange = navigate
 
 // Initial navigation
 navigate()
+applyParams()
 
 // Handle special hash states (success, duplicate, failed, registered)
 // Keep this after the initial navigation to prevent the messages from being cleared immediately

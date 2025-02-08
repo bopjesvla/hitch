@@ -188,12 +188,21 @@ body.adding-spot .horizontal-button {
     display: block;
     clear: both;
 }
-.leaflet-arrowlines-pane {
+.leaflet-arrowlines-pane, .leaflet-heatmap-layer {
     pointer-events: none;
 }
-body.zoomed-out .leaflet-overlay-pane {
+/* show the actual markers, but not at full opacity */
+body.mid-zoom .leaflet-overlay-pane canvas:not(.leaflet-heatmap-layer) {
     opacity: 0.3;
 }
+/* hide the heatmap when not zoomed out */
+body.zooming .leaflet-heatmap-layer, body:not(.zoomed-out) .leaflet-heatmap-layer {
+    display: none;
+}
+.leaflet-heatmap-layer {
+    opacity: 0.3;
+}
+/* make markers transparent when adding a spot */
 body.has-points .leaflet-overlay-pane {
     opacity: 0.3;
 }
@@ -459,6 +468,11 @@ ul.no-style {
     font-weight: normal;
     display: inline;
 }
-#distance-filter {
-    width: 100%;
+#hitch-map {
+    position: relative;
+    width: 100.0%;
+    height: 100.0%;
+    left: 0.0%;
+    top: 0.0%;
 }
+.leaflet-container { font-size: 1rem; }

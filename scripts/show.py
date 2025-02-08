@@ -2,19 +2,22 @@ import html
 import os
 import sqlite3
 import sys
-from string import Template
+import json
+from jinja2 import Environment, FileSystemLoader
+
 import subprocess
 
-import folium
-import folium.plugins
 import networkx
 import numpy as np
 import pandas as pd
-from helpers import get_bearing, get_dirs, haversine_np
+from helpers import get_bearing, haversine_np, scripts_dir, root_dir, db_dir
 
-scripts_dir, root_dir, db_dir = get_dirs()
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
+
+# Set up Jinja2 environment
+env = Environment(loader=FileSystemLoader(template_dir))  # Load templates from current directory
+template = env.get_template("index_template.html")  # Load template file
 
 os.makedirs(dist_dir, exist_ok=True)
 
@@ -30,12 +33,6 @@ else:
 
 outname_recent = os.path.join(dist_dir, "recent.html")
 outname_dups = os.path.join(dist_dir, "recent-dups.html")
-
-
-template_path = os.path.join(template_dir, "index_template.html")
-with open(template_path, encoding="utf-8") as f:
-    template = f.read()
-
 
 # TODO: Use dotenv?
 if os.path.exists(os.path.join(db_dir, "prod-points.sqlite")):
@@ -184,6 +181,7 @@ places["rating"] = groups.rating.mean().round()
 places["wait"] = points[~points.wait.isnull()].groupby(["lat", "lon"]).wait.mean()
 places["distance"] = points[~points.distance.isnull()].groupby(["lat", "lon"]).distance.mean()
 places["text"] = groups.text.apply(lambda t: "<hr>".join(t.dropna()))
+places["review_count"] = groups.size()
 
 # to prevent confusion, only add a review user if their review is listed
 places["review_users"] = points.dropna(subset=["text", "hitchhiker"]).groupby(["lat", "lon"]).hitchhiker.unique().apply(list)
@@ -196,73 +194,26 @@ if LIGHT:
 elif NEW:
     places = places[~places.distance.isnull()]
 
+# z-index is rating + 2 * no of reviews + 2 * no of reviews with destination
+places["z-index"] = places["rating"] + 2 * places["review_count"] + 2 * places["dest_lats"].str.len().fillna(0)
+
 places.reset_index(inplace=True)
 # make sure high-rated are on top
-places.sort_values("rating", inplace=True, ascending=False)
+places.sort_values("z-index", inplace=True, ascending=True)
 
-m = folium.Map(prefer_canvas=True, control_scale=True, world_copy_jump=True, min_zoom=1)
-
-callback = """\
-function (row) {
-    var marker;
-    var color = {1: 'red', 2: 'orange', 3: 'yellow', 4: 'lightgreen', 5: 'lightgreen'}[row[2]];
-    var opacity = {1: 0.3, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.8}[row[2]];
-    var point = new L.LatLng(row[0], row[1])
-    marker = L.circleMarker(point, {radius: 5, weight: 1 + (row[6].length > 2), fillOpacity: opacity, color: 'black', fillColor: color, _row: row});
-
-    marker.on('click', function(e) {
-       handleMarkerClick(marker, point, e)
-    })
-
-    // if 3+ reviews, whenever the marker is rendered, wait until other markers are rendered, then bring to front
-    if (row[6].length >= 3) {
-        marker.on('add', _ => setTimeout(_ => marker.bringToFront(), 0))
-    }
-
-    if (row[7].length) destinationMarkers.push(marker)
-    allMarkers.push(marker)
-
-    return marker;
-};
-"""  # noqa: E501
-
-# for country, group in places.groupby('country_group'):
-cluster = folium.plugins.FastMarkerCluster(
-    places[
-        [
-            "lat",
-            "lon",
-            "rating",
-            "text",
-            "wait",
-            "distance",
-            "review_users",
-            "dest_lats",
-            "dest_lons",
-        ]
-    ].values,
-    disableClusteringAtZoom=7,
-    spiderfyOnMaxZoom=False,
-    bubblingMouseEvents=False,
-    callback=callback,
-    animate=False,
-).add_to(m)
-
-# folium.plugins.Geocoder(position='topleft', add_marker=False, provider='photon').add_to(m)
-
-m.get_root().render()
-
-header = m.get_root().header.render()
-header = header.replace(
-    '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>',
-    '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">',
-)
-header = header.replace(
-    '<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>',
-    '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">',
-)
-body = m.get_root().html.render()
-script = m.get_root().script.render()
+marker_data = places[
+    [
+        "lat",
+        "lon",
+        "rating",
+        "text",
+        "wait",
+        "distance",
+        "review_users",
+        "dest_lats",
+        "dest_lons",
+    ]
+].to_json(orient="values")
 
 try:
     subprocess.run(["npm", "run", "build"], check=True, text=True)
@@ -282,15 +233,7 @@ with open(js_output_file, encoding="utf-8") as f:
 with open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8") as f:
     hitch_style = f.read()
 
-output = Template(template).substitute(
-    {
-        "folium_head": header,
-        "folium_body": body,
-        "folium_script": script,
-        "hitch_script": hitch_script,
-        "hitch_style": hitch_style,
-    }
-)
+output = template.render({"hitch_script": hitch_script, "hitch_style": hitch_style, "markers": marker_data})
 
 with open(outname, "w", encoding="utf-8") as f:
     f.write(output)

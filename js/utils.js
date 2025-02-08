@@ -81,6 +81,6 @@ export function storageAvailable(type) {
 
 export function summaryText(row) {
     return `Rating: ${row[2].toFixed(0)}/5
-    Waiting time: ${Number.isNaN(row[4]) ? '-' : row[4].toFixed(0) + ' min'}
-    Ride distance: ${Number.isNaN(row[5]) ? '-' : row[5].toFixed(0) + ' km'}`
+    Waiting time: ${row[4] == null ? '-' : row[4].toFixed(0) + ' min'}
+    Ride distance: ${row[5] == null ? '-' : row[5].toFixed(0) + ' km'}`
 }
