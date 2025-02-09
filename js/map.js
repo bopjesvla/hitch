@@ -17,33 +17,11 @@ var addSpotPoints = [], // Array to store points when adding new spots
     spotMarker, // Marker for hitchhiking spot
     destMarker // Marker for destination
 
-// Handle reporting of duplicate spots
-function maybeReportDuplicate(marker) {
-    if (document.body.classList.contains('reporting-duplicate')) {
-        var row = marker.options._row, point = marker.getLatLng()
-
-        let activePoint = active[0].getLatLng()
-
-        // Prevent self-reporting as duplicate
-        if (activePoint.equals(point)) {
-            alert("A marker cannot be a duplicate of itself.")
-            return
-        }
-
-        // Confirm and submit duplicate report
-        if (confirm(`Are you sure you want to report a duplicate?`)) {
-            document.body.innerHTML += `<form id=dupform method=POST action=report-duplicate><input name=report value=${[activePoint.lat, activePoint.lng, row[0], row[1]].join(',')}>`
-            document.querySelector('#dupform').submit()
-        }
-    }
-}
-
 // Handle marker click events
 function handleMarkerClick(marker, point, e) {
     // Prevent interaction if certain UI elements are visible
     if ($$('.topbar.visible') || $$('.sidebar.spot-form-container.visible')) return
 
-    maybeReportDuplicate(marker)
     window.location.hash = `${point.lat},${point.lng}`
 
     L.DomEvent.stopPropagation(e)
@@ -258,9 +236,6 @@ $$('#sb-close').onclick = function (e) {
 
 $$('a.step2-help').onclick = e => alert(e.target.title)
 
-$$('.report-dup').onclick = e => document.body.classList.add('reporting-duplicate')
-$$('.topbar.duplicate button').onclick = e => document.body.classList.remove('reporting-duplicate')
-
 // Update visual line connecting spots
 function updateAddSpotLine() {
     if (addSpotLine) {
@@ -367,7 +342,7 @@ map.on('click', e => {
             circles[0].fire('click', e)
         }
     }
-    if (!added && !document.body.classList.contains('reporting-duplicate') && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
+    if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
         navigateHome()
     }
 
@@ -424,7 +399,7 @@ function clear() {
     active = []
     renderPoints()
     updateAddSpotLine()
-    document.body.classList.remove('adding-spot', 'reporting-duplicate', 'menu')
+    document.body.classList.remove('adding-spot', 'menu')
 }
 
 $$('.leaflet-control-attribution').innerHTML = `

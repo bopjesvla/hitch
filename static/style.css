@@ -239,69 +239,9 @@ body.filtering .filter-button a::after {
 .leaflet-control-attribution {
     text-align: right;
 }
-body.reporting-duplicate .sidebar,
-body.reporting-duplicate .horizontal-button,
-body.reporting-duplicate .replacement-button {
-    display: none !important;
-}
-body.reporting-duplicate .topbar.duplicate {
-    display: block;
-}
-.topbar.duplicate::before {
-    content: none;
-}
 a:hover {
     background-color: none !important;
     text-decoration: none;
-}
-.report {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-}
-
-/* Checkbox input (hidden) */
-.toggle-checkbox {
-    display: none;
-}
-
-/* Label that acts as a triangle */
-.toggle-label {
-    display: none;
-    cursor: pointer;
-    padding: 13px 20px;
-}
-
-.triangle {
-    width: 10px;
-    height: 10px;
-}
-
-/* Triangle pointing down when checked */
-.toggle-checkbox:checked + div .toggle-label {
-    transform: rotate(90deg);
-}
-
-/* Show the hidden content when checkbox is checked */
-.toggle-checkbox:checked ~ .report-options {
-    display: block;
-}
-.report-options {
-    display: none;
-    background: #eee;
-    margin-top: -20px;
-    margin-bottom: 20px;
-}
-.report-dup {
-    text-align: center;
-    font-size: 0.8em;
-    font-weight: bold;
-}
-.report-dup a {
-    display: block;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    color: black;
 }
 #spot-header a {
     color: black;
