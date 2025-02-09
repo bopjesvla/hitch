@@ -267,7 +267,7 @@ a:hover {
 
 /* Label that acts as a triangle */
 .toggle-label {
-    display: inline-block;
+    display: none;
     cursor: pointer;
     padding: 13px 20px;
 }

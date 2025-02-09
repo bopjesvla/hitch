@@ -37,7 +37,7 @@ export function clearParams() {
     window.navigate();
 }
 
-clearFilters.onclick = (navigateHomeCallback) => {
+clearFilters.onclick = () => {
     clearParams()
     window.navigateHome()
 }

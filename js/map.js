@@ -75,6 +75,15 @@ var handleMarkerNavigation = function (marker) {
     }, 100)
 };
 
+$$(".sidebar.show-spot").addEventListener("click", function (event) {
+    const link = event.target.closest("a"); // Ensure it's an <a> tag
+    if (link && link.href) {
+        event.preventDefault(); // Prevent default navigation
+        history.pushState({}, "", link.href); // Update the URL without reloading
+        navigate();
+    }
+});
+
 var map = L.map(
     "hitch-map",
     {
@@ -506,6 +515,7 @@ window.destinationMarkers = destinationMarkers;
 
 // Set up hash change listener
 window.onhashchange = navigate
+window.onpopstate = navigate
 
 // Initial navigation
 navigate()

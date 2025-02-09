@@ -1,6 +1,5 @@
 import html
 import os
-import sqlite3
 import sys
 from jinja2 import Environment, FileSystemLoader
 
@@ -74,17 +73,22 @@ points = geopandas.GeoDataFrame(points, geometry=geopandas.points_from_xy(points
 
 service_areas = pd.read_sql("select * from service_areas", get_db())
 service_area_geoms = gpd.GeoDataFrame(
-    service_areas[["geom_id"]], geometry=gpd.GeoSeries.from_wkt(service_areas.geometry_wkt), crs="EPSG:4326"
+    service_areas[["geom_id"]],
+    geometry=gpd.GeoSeries.from_wkt(service_areas.geometry_wkt),
+    crs="EPSG:4326",
 )
 
 points["service_area_id"] = points.sjoin(service_area_geoms, how="left")["geom_id"]
 
 road_islands = pd.read_sql("select * from road_islands", get_db())
 road_island_geoms = gpd.GeoDataFrame(
-    road_islands[["id"]], geometry=gpd.GeoSeries.from_wkt(road_islands.geometry_wkt), crs="EPSG:4326"
+    road_islands[["id"]],
+    geometry=gpd.GeoSeries.from_wkt(road_islands.geometry_wkt),
+    crs="EPSG:4326",
 )
 
 points["road_island_id"] = points.sjoin(road_island_geoms, how="left").drop_duplicates("id_left")["id_right"]
+
 
 # pseudo-random cluster id based on lat/lon
 points["cluster_id"] = (points.lat * 1e10 + points.lon * 1e10).round()
@@ -137,10 +141,12 @@ points["arrows"] = rounded_dir.replace(
     }
 )
 
+
 rating_text = "rating: " + points.rating.astype(int).astype(str) + "/5"
 destination_text = (
     ", ride: " + np.round(points.ride_distance).astype(str).str.replace(".0", "", regex=False) + " km " + points.arrows
 )
+
 
 points["wait_text"] = None
 has_accurate_wait = ~points.wait.isnull() & ~points.datetime.isnull()
@@ -228,9 +234,19 @@ places.reset_index(inplace=True)
 # make sure high-rated are on top
 places.sort_values("z-index", inplace=True, ascending=True)
 
-marker_data = places[["lat", "lon", "rating", "text", "wait", "ride_distance", "review_users", "dest_lats", "dest_lons"]].to_json(
-    orient="values"
-)
+marker_data = places[
+    [
+        "lat",
+        "lon",
+        "rating",
+        "text",
+        "wait",
+        "ride_distance",
+        "review_users",
+        "dest_lats",
+        "dest_lons",
+    ]
+].to_json(orient="values")
 
 try:
     subprocess.run(["npm", "run", "build"], check=True, text=True)
