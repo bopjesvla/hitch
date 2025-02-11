@@ -1,8 +1,7 @@
 import pandas as pd
 import requests_cache
 import requests
-import sqlite3
-from shapely.geometry import MultiLineString, LineString, Point, Polygon
+from shapely.geometry import MultiLineString, LineString, Point
 import shapely
 from sklearn.cluster import DBSCAN
 import os
@@ -60,7 +59,7 @@ road_island_id = 0
 
 grouped = clusters.groupby("cluster")
 print(len(grouped))
-for cluster_id, group in grouped:
+for _cluster_id, group in grouped:
     lat, lon = group["lat"].mean(), group["lon"].mean()
     search_size_deg = 1.2 * (group["lat"].max() - group["lat"].min() + group["lon"].max() - group["lon"].min())
     search_size = search_size_deg * 111_000

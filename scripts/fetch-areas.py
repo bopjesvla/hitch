@@ -1,15 +1,10 @@
 import requests_cache
 import requests
 import pandas as pd
-from scipy.spatial import cKDTree
-from shapely.geometry import Point, LineString, Polygon, MultiLineString
-from shapely.ops import nearest_points
+from shapely.geometry import Point, Polygon
 import shapely
 import os
-import sqlite3
 import time
-import numpy as np
-import networkx
 from helpers import get_db, scripts_dir
 from sklearn.cluster import DBSCAN
 
@@ -70,7 +65,6 @@ def get_service_area(lat, lon):
         return None
 
     # Convert results into polygons and check size
-    point = Point(lon, lat)
     for element in data["elements"]:
         if "geometry" in element:
             coords = [(node["lon"], node["lat"]) for node in element["geometry"]]
@@ -102,7 +96,7 @@ def get_service_area(lat, lon):
 
 
 areas = []
-for lon, lat, cluster in clusters.values:
+for lon, lat, _cluster in clusters.values:
     geom_id, geom = get_service_area(lat, lon)
     if geom is not None:
         areas.append((geom_id, shapely.convex_hull(geom).wkt))

@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 import pandas as pd
 import requests
-from flask import redirect, request, send_file, send_from_directory
+from flask import redirect, request, send_file, send_from_directory, jsonify
 from flask_security import current_user
 
 from backend.shared import app, db, root_dir, dist_dir, static_dir, EMAIL, logger
@@ -38,13 +38,17 @@ def experience():
     assert comment is None or len(comment) < 10000
     nickname = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
 
-    if security.datastore.find_user(username=nickname):
-        return redirect("/#failed")
+    if security.datastore.find_user(case_insensitive=True, username=nickname):
+        return jsonify({"error": "This nickname is already used by a registered user. Please choose another nickname."}), 400
 
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
-    datetime_ride = data["datetime_ride"]
+    datetime_ride = None if data["comment"] == "" else data["datetime_ride"]
+
+    # this is the format used by the datetime input
+    date_format = "%Y-%m-%dT%H:%M"
+    assert datetime_ride is None or datetime.strptime(date_string, date_format)
 
     ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 
@@ -111,7 +115,7 @@ def experience():
     )
 
     df.to_sql("points", db.engine, index_label="id", if_exists="append")
-    return redirect("/#success")
+    return jsonify({"success": True})
 
 
 @app.route("/report-duplicate", methods=["POST"])

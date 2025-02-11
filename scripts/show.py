@@ -34,6 +34,9 @@ else:
 outname_recent = os.path.join(dist_dir, "recent.html")
 outname_dups = os.path.join(dist_dir, "recent-dups.html")
 
+# keep right before reading the points
+generation_date = pd.Timestamp.utcnow().isoformat()
+
 points = pd.read_sql(
     sql="select * from points where not banned order by datetime is not null desc, datetime desc",
     con=get_db(),
@@ -57,7 +60,7 @@ islands = networkx.connected_components(dups)
 
 replace_map = {}
 
-for component_id, island in enumerate(islands):
+for island in islands:
     parents = [node for node in island if node not in duplicates["from"].tolist()]
 
     if len(parents) == 1:
@@ -266,7 +269,9 @@ with open(js_output_file, encoding="utf-8") as f:
 with open(os.path.join(root_dir, "static", "style.css"), encoding="utf-8") as f:
     hitch_style = f.read()
 
-output = template.render({"hitch_script": hitch_script, "hitch_style": hitch_style, "markers": marker_data})
+output = template.render(
+    {"hitch_script": hitch_script, "hitch_style": hitch_style, "markers": marker_data, "generation_date": generation_date}
+)
 
 with open(outname, "w", encoding="utf-8") as f:
     f.write(output)
