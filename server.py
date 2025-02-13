@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 import pandas as pd
 import requests
-from flask import redirect, request, send_file, send_from_directory, jsonify
+from flask import redirect, request, send_file, send_from_directory, jsonify, render_template
 from flask_security import current_user
 
 from backend.shared import app, db, root_dir, dist_dir, static_dir, EMAIL, logger
@@ -118,32 +118,31 @@ def experience():
     return jsonify({"success": True})
 
 
-@app.route("/report-duplicate", methods=["POST"])
-def report_duplicate():
-    data = request.form
-    now = str(datetime.utcnow())
+@app.route("/experience/<int:pid>")
+def view_experience(pid):
+    # Query the specific experience by id
+    experience = pd.read_sql("SELECT * FROM points WHERE id = ? AND banned = False", db.engine, params=(pid,)).to_dict("records")
+    print(experience)
 
-    ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
+    if not experience:
+        return "Not found", 404
 
-    from_lat, from_lon, to_lat, to_lon = map(float, data["report"].split(","))
+    experience = experience[0]
 
-    df = pd.DataFrame(
-        [
-            {
-                "datetime": now,
-                "ip": ip,
-                "reviewed": False,
-                "accepted": False,
-                "from_lat": from_lat,
-                "to_lat": to_lat,
-                "from_lon": from_lon,
-                "to_lon": to_lon,
-            }
-        ]
-    )
+    # Convert datetime string to datetime object for formatting
+    if experience["datetime"]:
+        experience["datetime"] = datetime.strptime(experience["datetime"], "%Y-%m-%d %H:%M:%S.%f")
+    if experience["ride_datetime"]:
+        experience["ride_datetime"] = datetime.strptime(experience["ride_datetime"], "%Y-%m-%dT%H:%M")
+    experience["rating"] = int(experience["rating"])
+    experience["wait"] = int(experience["wait"]) if experience["wait"] else None
 
-    df.to_sql("duplicates", db.engine, index=None, if_exists="append")
-    return redirect("/#success-duplicate")
+    # Get user info if there's a user_id
+    user = None
+    if experience["user_id"]:
+        user = security.datastore.get_user(experience["user_id"])
+
+    return render_template("experience.html", experience=experience, user=user)
 
 
 @app.route("/<path:path>")
