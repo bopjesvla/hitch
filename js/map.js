@@ -2,7 +2,9 @@ import {addGeocoder} from './geocoder'
 import {exportAsGPX} from './export-gpx';
 import {$$, bar, bars, arrowLine} from './utils';
 import {clearParams, applyParams, filterMarkerGroup} from './filters';
-import {restoreView, storageAvailable, summaryText} from './utils';
+import {restoreView, storageAvailable, summaryText, closestMarker} from './utils';
+import {currentUser, firstUserPromise, userMarkerGroup, createUserMarkers} from './user';
+import {pendingGroup, updatePendingMarkers, addPending} from './pending';
 
 // Register service worker for offline functionality
 if ("serviceWorker" in navigator) {
@@ -13,7 +15,7 @@ if ("serviceWorker" in navigator) {
 var addSpotPoints = [], // Array to store points when adding new spots
     addSpotLine = null, // Line connecting spots
     active = [], // Currently active/selected markers
-    destLineGroup = null, // Group for destination lines
+    destLineGroup = L.layerGroup(), // Group for destination lines
     spotMarker, // Marker for hitchhiking spot
     destMarker // Marker for destination
 
@@ -83,6 +85,7 @@ let normalDrawFunction = allMarkersRenderer._redraw
 
 let heatLayer = L.heatLayer(allCoords, {radius: 5, blur: 1, maxZoom: 1, minOpacity: 1, max: 100, gradient: {0: 'black', 0.9: 'black', 1: 'lightgreen'}}).addTo(map)
 
+// Usage:
 // Note: neither will be shown when a filter is active
 function showHeatmapOrDefaultPane() {
     let {canvas} = allMarkersRenderer._ctx
@@ -126,8 +129,14 @@ for (let row of window.markerData) {
     allMarkers.push(marker)
 }
 
+firstUserPromise.then(_ => createUserMarkers(allMarkers))
+
 let allMarkerGroup = L.layerGroup(allMarkers)
 allMarkerGroup.addTo(map)
+userMarkerGroup.addTo(map)
+
+updatePendingMarkers()
+pendingGroup.addTo(map)
 
 var tileLayer = L.tileLayer(
     "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -249,6 +258,8 @@ function updateAddSpotLine() {
 
 map.on('move', updateAddSpotLine)
 
+const errorMessage = document.getElementById('nickname-error-message');
+
 // Handle multi-step spot addition process
 var addSpotStep = function (e) {
     if (e.target.tagName != 'BUTTON') return
@@ -283,33 +294,22 @@ var addSpotStep = function (e) {
             }
             map.setZoom(map.getZoom() - 1)
             bar('.sidebar.spot-form-container')
+
             let points = addSpotPoints
             const destinationGiven = points[1].lat !== 'nan'
             var dest = destinationGiven ? `${points[1].lat.toFixed(4)}, ${points[1].lng.toFixed(4)}` : 'unknown destination'
             $$('.sidebar.spot-form-container p.greyed').innerText = `${points[0].lat.toFixed(4)}, ${points[0].lng.toFixed(4)} → ${dest}`
             $$("#no-ride").classList.toggle("make-invisible", destinationGiven);
+
             // nicknames wont be recorded if a user is logged in
-            fetch('/user')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('HTTP error! Status:');
-                    }
-                    return response.json(); // Parse the JSON response
-                })
-                .then(data => {
-                    $$("#nickname-container").classList.toggle("make-invisible", data.logged_in);
-                })
-                .catch(error => {
-                    console.error('Error fetching user info:', error);
-                });
+            $$("#nickname-container").classList.toggle("make-invisible", !!currentUser);
             $$('#spot-form input[name=coords]').value = `${points[0].lat},${points[0].lng},${points[1].lat},${points[1].lng}`
 
-            // logic to prevent submitting hidden detailed info
             const form = $$("#spot-form");
             form.reset();
 
             if (storageAvailable('localStorage')) {
-                var uname = $$('input[name=username]')
+                var uname = $$('input[name=nickname]')
                 uname.value = localStorage.getItem('nick')
                 uname.onchange = e => localStorage.setItem('nick', uname.value)
             }
@@ -336,10 +336,10 @@ map.on('click', e => {
     if (window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
         let markers = document.body.classList.contains('filtering') ? filterMarkerGroup : allMarkers
-        var circles = markers.sort((a, b) => a.getLatLng().distanceTo(e.latlng) - b.getLatLng().distanceTo(e.latlng))
-        if (circles[0] && map.latLngToLayerPoint(circles[0].getLatLng()).distanceTo(layerPoint) < 20) {
+        var closest = closestMarker(markers, e.latlng.lat, e.latlng.lng)
+        if (closest && map.latLngToLayerPoint(closest.getLatLng()).distanceTo(layerPoint) < 20) {
             added = true
-            circles[0].fire('click', e)
+            closest.fire('click', e)
         }
     }
     if (!added && $$('.sidebar.visible') && !$$('.sidebar.spot-form-container.visible')) {
@@ -365,7 +365,7 @@ function renderPoints() {
     if (destMarker) map.removeLayer(destMarker)
 
     if (destLineGroup)
-        destLineGroup.remove()
+        destLineGroup.clearLayers()
 
     spotMarker = destMarker = null
     if (addSpotPoints[0]) {
@@ -378,7 +378,7 @@ function renderPoints() {
     }
     document.body.classList.toggle('has-points', addSpotPoints.length)
 
-    destLineGroup = L.layerGroup()
+    // destLineGroup = L.layerGroup()
 
     for (let a of active) {
         let lats = a.options._row[7]
@@ -414,33 +414,31 @@ if (map.getZoom() > 17 && window.location.hash != '#success-duplicate') map.setZ
 $$('.hitch-map').focus()
 
 // validate add spot form input
-document.getElementById('spot-form').addEventListener('submit', function(event) {
-    const nicknameInput = document.getElementById('nickname-input');
-    if (nicknameInput.value != ""){
-        event.preventDefault();
-        const errorMessage = document.getElementById('nickname-error-message');
-        errorMessage.textContent = '';
+$$('#spot-form').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Prevents the default page reload
 
-        // nicknames that are used as usernames are not allowed
-        let url = '/is_username_used/' + nicknameInput.value;
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('HTTP error! Status:');
-                }
-                return response.json(); // Parse the JSON response
-            })
-            .then(data => {
-                if (data.used){
-                    errorMessage.textContent = 'This nickname is already used by a registered user. Please choose another nickname.';
-                } else {
-                    this.submit();
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching user info:', error);
-            });
-    };
+    let pendingLoc = addSpotPoints[0]
+
+    let submitButton = this.querySelector("button");
+    submitButton.disabled = true;
+
+    let formData = new FormData(this);
+    let resp = await fetch(this.action, {
+        method: "POST",
+        body: formData
+    })
+
+    let result = await resp.json();
+    if (resp.ok) {
+        location.hash = '#success';
+        addPending(pendingLoc.lat, pendingLoc.lng)
+        updatePendingMarkers()
+    }
+    else {
+        errorMessage.textContent = result.error
+        setTimeout(_ => errorMessage.textContent = '', 10000)
+    }
+    submitButton.disabled = false;
 });
 
 function navigate() {
@@ -458,14 +456,15 @@ function navigate() {
     else if (args.length == 2 && !isNaN(args[0])) {
         clear()
         let lat = +args[0], lon = +args[1]
-        for (let m of allMarkers) {
-            if (m._latlng.lat === lat && m._latlng.lng === lon) {
-                handleMarkerNavigation(m)
-                if (map.getZoom() < 3)
-                    map.setView(m.getLatLng(), 16)
-                return
-            }
-        }
+        let m = closestMarker(allMarkers, lat, lon)
+        handleMarkerNavigation(m)
+        if (map.getZoom() < 3)
+            map.setView(m.getLatLng(), 16)
+        return
+    }
+    else if (args[0] == 'success') {
+        clear()
+        bar('.sidebar.success')
     }
     else {
         clear()
@@ -496,22 +495,8 @@ window.onpopstate = navigate
 navigate()
 applyParams()
 
-// Handle special hash states (success, duplicate, failed, registered)
+// Handle special hash states (registered)
 // Keep this after the initial navigation to prevent the messages from being cleared immediately
-if (window.location.hash == '#success') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.success')
-}
-
-if (window.location.hash == '#success-duplicate') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.success-duplicate')
-}
-
-if (window.location.hash == '#failed') {
-    history.replaceState(null, null, ' ')
-    bar('.sidebar.failed')
-}
 
 if (window.location.hash == '#registered') {
     history.replaceState(null, null, ' ')

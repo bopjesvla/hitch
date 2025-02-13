@@ -84,3 +84,9 @@ export function summaryText(row) {
     Waiting time: ${row[4] == null ? '-' : row[4].toFixed(0) + ' min'}
     Ride distance: ${row[5] == null ? '-' : row[5].toFixed(0) + ' km'}`
 }
+
+export function closestMarker(markers, lat, lon) {
+    let latlng = L.latLng(lat, lon)
+    if (markers.length)
+        return markers.sort((a, b) => a.getLatLng().distanceTo(latlng) - b.getLatLng().distanceTo(latlng))[0]
+}
