@@ -118,33 +118,6 @@ def experience():
     return jsonify({"success": True})
 
 
-@app.route("/experience/<int:pid>")
-def view_experience(pid):
-    # Query the specific experience by id
-    experience = pd.read_sql("SELECT * FROM points WHERE id = ? AND banned = False", db.engine, params=(pid,)).to_dict("records")
-    print(experience)
-
-    if not experience:
-        return "Not found", 404
-
-    experience = experience[0]
-
-    # Convert datetime string to datetime object for formatting
-    if experience["datetime"]:
-        experience["datetime"] = datetime.strptime(experience["datetime"], "%Y-%m-%d %H:%M:%S.%f")
-    if experience["ride_datetime"]:
-        experience["ride_datetime"] = datetime.strptime(experience["ride_datetime"], "%Y-%m-%dT%H:%M")
-    experience["rating"] = int(experience["rating"])
-    experience["wait"] = int(experience["wait"]) if experience["wait"] else None
-
-    # Get user info if there's a user_id
-    user = None
-    if experience["user_id"]:
-        user = security.datastore.get_user(experience["user_id"])
-
-    return render_template("experience.html", experience=experience, user=user)
-
-
 @app.route("/<path:path>")
 def serve_static(path):
     dist_path = os.path.join(dist_dir, path)
