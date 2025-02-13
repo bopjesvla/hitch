@@ -1,20 +1,29 @@
 {% extends "security/base.html" %}
 
 {% block title %}
-{{title}} - Hitchhike from Gas Stations, Service Areas, Parkings
+{{title}} - hitchhikking tips
 {% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-lg p-6">
-        <a href="/#{{place.lat}},{{place.lon}}" id="static-map"></a>
-
-        <p><a href="index.html" id="back">&lt; All service areas</a></p>
-        {% if place.text %}
+        <p><a href="/city/index.html" id="back">&lt; All cities</a></p>
         <article class="mt-6">
-            <h1 class="text-xl font-semibold mb-4">{{place.service_area_name}}</h1>
-            {{ place.text | safe }}
+            <h2>Hitchhiking from {{city.city}}</h2>
+
+            <a class="map-link" href="/#location,{{city.lat}},{{city.lon}},12"><div id="static-map"></div><span class="map-overlay">{{city.city}} on Hitchmap</span> </a>
+
+            <h2>Hitchhiking to {{city.city}}</h2>
+
+            <a class="map-link" href="/?text={{city.city}}#location,{{city.lat}},{{city.lon}},8"><div id="static-map-zoomed-out"></div><span class="map-overlay">View all spots mentioning {{city.city}}</span> </a>
+
+            <h3>Recent reviews mentioning {{city.city}}</h3>
+
+            {% for review in reviews.itertuples() %}
+            <h4><a href="/#{{ review.lat }},{{review.lon}}">{{ review.lat | round(5) }}, {{review.lon | round(5) }}</a></h4>
+            {{ review.text | safe }}
+            <hr/>
+            {% endfor %}
         </article>
-        {% endif %}
     </div>
     <br>
     <small>&copy; <a id="copyright" href="/copyright.html">Hitchmap</a> contributors</small>
@@ -45,13 +54,37 @@
      border-top-color: currentcolor;
      border-top: 1px solid #eee;
  }
+ .map-link {
+     position: relative;
+     display: inline-block;
+     text-decoration: none;
+ }
+
+ .map-overlay {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0, 0, 0, 0.5);
+     color: white;
+     font-size: 1.2em;
+     font-weight: bold;
+     text-align: center;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-family: sans-serif;
+ }
 </style>
 <script>
- document.querySelector('.bg').href = '/#{{place.lat}},{{place.lon}}'
+ document.querySelector('.bg').href = '/#{{city.lat}},{{city.lon}}'
 
  async function createStaticMap(mapContainer, lat, lon, zoom, width, height) {const TILE_SIZE = 256; const centerX = ((lon + 180) / 360) * Math.pow(2, zoom) * TILE_SIZE; const centerY = ((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2) * Math.pow(2, zoom) * TILE_SIZE; const topLeftX = centerX - width / 2, topLeftY = centerY - height / 2; const startTileX = Math.floor(topLeftX / TILE_SIZE), startTileY = Math.floor(topLeftY / TILE_SIZE); const xOffset = -(topLeftX % TILE_SIZE), yOffset = -(topLeftY % TILE_SIZE); const xTiles = Math.ceil(width / TILE_SIZE) + 1, yTiles = Math.ceil(height / TILE_SIZE) + 1; mapContainer.style.cssText = `width:${width}px;height:${height}px;position:relative;overflow:hidden`; for (let x = 0; x < xTiles; x++) {for (let y = 0; y < yTiles; y++) {const img = document.createElement("img"); img.src = `https://tile.openstreetmap.org/${zoom}/${startTileX + x}/${startTileY + y}.png`; img.style.cssText = `position:absolute;width:${TILE_SIZE}px;height:${TILE_SIZE}px;left:${(x * TILE_SIZE) + xOffset}px;top:${(y * TILE_SIZE) + yOffset}px`; mapContainer.appendChild(img);}}}
 
  let container = document.querySelector('#static-map')
- createStaticMap(container, {{place.lat}}, {{place.lon}}, 13, Math.min(600, window.innerWidth - 40), 300);
+ createStaticMap(container, {{city.lat}}, {{city.lon}}, 12, Math.min(600, window.innerWidth - 40), 300);
+ let containerZoomedOut = document.querySelector('#static-map-zoomed-out')
+ createStaticMap(containerZoomedOut, {{city.lat}}, {{city.lon}}, 8, Math.min(600, window.innerWidth - 40), 300);
 </script>
 {% endblock %}
