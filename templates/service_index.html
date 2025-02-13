@@ -1,0 +1,15 @@
+{% extends "security/base.html" %}
+{% block title %}
+Gas Stations, Service Areas, Parkings by Country
+{% endblock %}
+{% block content %}
+<h1>Gas Stations by Country</h1>
+{% for country, places in grouped_places %}
+<h2>{{ country }}</h2>
+<ul>
+    {% for place in places.itertuples() %}
+    <li><a href="{{ place.slug }}.html">{{ place.service_area_name }}</a></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+{% endblock %}
