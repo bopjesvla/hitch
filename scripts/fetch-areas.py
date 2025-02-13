@@ -59,7 +59,7 @@ def get_service_area(lat, lon):
             print(e)
             pass
     max_size = -1
-    largest_geom = largest_geom_id = None
+    largest_geom_name = largest_geom = largest_geom_id = None
 
     if "elements" not in data:
         return None
@@ -89,17 +89,23 @@ def get_service_area(lat, lon):
             max_size = size
             largest_geom_id = element["id"]
             largest_geom = polygon
+            tags = element.get("tags", {})
+            largest_geom_name = (
+                tags["official_name"] + " - " + tags["branch"]
+                if "official_name" in tags and "branch" in tags
+                else tags.get("name")
+            )
 
     if largest_geom:
         print("SERVICE", largest_geom_id)
-    return largest_geom_id, largest_geom
+    return largest_geom_id, largest_geom, largest_geom_name
 
 
 areas = []
 for lon, lat, _cluster in clusters.values:
-    geom_id, geom = get_service_area(lat, lon)
+    geom_id, geom, name = get_service_area(lat, lon)
     if geom is not None:
-        areas.append((geom_id, shapely.convex_hull(geom).wkt))
+        areas.append((geom_id, shapely.convex_hull(geom).wkt, name))
 
-areas_df = pd.DataFrame(areas, columns=["geom_id", "geometry_wkt"]).drop_duplicates("geometry_wkt")
+areas_df = pd.DataFrame(areas, columns=["geom_id", "geometry_wkt", "name"]).drop_duplicates("geometry_wkt")
 areas_df.to_sql("service_areas", get_db(), if_exists="replace", index=False)

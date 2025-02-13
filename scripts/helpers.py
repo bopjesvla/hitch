@@ -1,6 +1,8 @@
 import os
 import sqlite3
 import numpy as np
+import unicodedata
+import re
 
 
 def haversine_np(lon1, lat1, lon2, lat2, factor=1.25):
@@ -42,6 +44,22 @@ def get_db():
     else:
         DATABASE = os.path.join(db_dir, "points.sqlite")
     return sqlite3.connect(DATABASE)
+
+
+def slugify(value, allow_unicode=False):
+    """
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize("NFKC", value)
+    else:
+        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    value = re.sub(r"[^\w\s-]", "", value.lower())
+    return re.sub(r"[-\s]+", "-", value).strip("-_")
 
 
 scripts_dir = os.path.dirname(__file__)

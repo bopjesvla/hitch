@@ -10,7 +10,8 @@ import numpy as np
 import pandas as pd
 import geopandas
 import geopandas as gpd
-from helpers import get_bearing, haversine_np, root_dir, get_db
+import urllib
+from helpers import get_bearing, haversine_np, root_dir, get_db, slugify
 
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
 template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
@@ -18,16 +19,16 @@ template_dir = os.path.abspath(os.path.join(root_dir, "templates"))
 # Set up Jinja2 environment
 env = Environment(loader=FileSystemLoader(template_dir))  # Load templates from current directory
 template = env.get_template("index_template.html")  # Load template file
+service_template = env.get_template("service_template.html")  # Load template file
+service_index = env.get_template("service_index.html")  # Load template file
 
 os.makedirs(dist_dir, exist_ok=True)
 
 LIGHT = "light" in sys.argv
-NEW = "new" in sys.argv
+SERVICE_AREAS = "service" in sys.argv
 
 if LIGHT:
     outname = os.path.join(dist_dir, "light.html")
-elif NEW:
-    outname = os.path.join(dist_dir, "new.html")
 else:
     outname = os.path.join(dist_dir, "index.html")
 
@@ -76,12 +77,14 @@ points = geopandas.GeoDataFrame(points, geometry=geopandas.points_from_xy(points
 
 service_areas = pd.read_sql("select * from service_areas", get_db())
 service_area_geoms = gpd.GeoDataFrame(
-    service_areas[["geom_id"]],
+    service_areas[["geom_id", "name"]],
     geometry=gpd.GeoSeries.from_wkt(service_areas.geometry_wkt),
     crs="EPSG:4326",
 )
 
-points["service_area_id"] = points.sjoin(service_area_geoms, how="left")["geom_id"]
+points_service_area = points.sjoin(service_area_geoms, how="left")
+points["service_area_id"] = points_service_area["geom_id"]
+points["service_area_name"] = points_service_area["name"]
 
 road_islands = pd.read_sql("select * from road_islands", get_db())
 road_island_geoms = gpd.GeoDataFrame(
@@ -210,7 +213,7 @@ groups = points.groupby("cluster_id")
 
 print("After clustering:", len(groups), "Before:", len(points.geometry.drop_duplicates()))
 
-places = groups[["country"]].first()
+places = groups[["country", "service_area_name"]].first()
 places["rating"] = groups.rating.mean().round()
 places["wait"] = points[~points.wait.isnull()].groupby("cluster_id").wait.mean()
 places["ride_distance"] = points[~points.ride_distance.isnull()].groupby("cluster_id").ride_distance.mean()
@@ -227,8 +230,21 @@ places["lon"] = groups.lon.mean()
 
 if LIGHT:
     places = places[(places.text.str.len() > 0) | ~places.ride_distance.isnull()]
-elif NEW:
-    places = places[~places.ride_distance.isnull()]
+elif SERVICE_AREAS:
+    service_area_folder = os.path.join(dist_dir, "service-area")
+    os.makedirs(service_area_folder, exist_ok=True)
+    service_places = places.loc[places.service_area_name.notna()].copy()
+    service_places["text_len"] = service_places.text.str.len()
+    service_places["slug"] = service_places.service_area_name.apply(slugify)
+    service_places = service_places.sort_values("text_len", ascending=False).drop_duplicates("slug")
+    for _i, place in service_places.iterrows():
+        rendered = service_template.render(place=place, title=place["service_area_name"])
+        with open(os.path.join(service_area_folder, f"{place['slug']}.html"), "w") as f:
+            f.write(rendered)
+    index_rendered = service_index.render(grouped_places=service_places.groupby("country"))
+    with open(os.path.join(service_area_folder, "index.html"), "w") as f:
+        f.write(index_rendered)
+
 
 # z-index is rating + 2 * no of reviews + 2 * no of reviews with destination
 places["z-index"] = places["rating"] + 2 * places["review_count"] + 2 * places["dest_lats"].str.len().fillna(0)
