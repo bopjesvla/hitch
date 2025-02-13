@@ -5,7 +5,7 @@
     {%- block html %}
     <head>
         {%- block head %}
-        <title>{% block title %}{{ title|default }}{% endblock title %}</title>
+        <title>{% block title %}{% if title %}{{ title }} - {% endif %}Hitchmap - Find hitchhiking spots on a map - Add new spots{% endblock title %}</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -21,14 +21,13 @@
              height: 100vh;
              width: 100vw;
              position: relative;
-             overflow: hidden; /* Prevents scrolling */
              line-height: 1.5;
              font-size: 19px;
          }
 
          .bg {
              content: "";
-             position: absolute;
+             position: fixed;
              top: -15px;
              left: -15px;
              height: calc(100% + 10px);
@@ -45,15 +44,14 @@
              position: absolute;
              top: 50%;
              left: 50%;
-             transform: translate(-50%, -50%); /* Centers the overlay */
+             transform: translate(-50%, max(-50%, -40vh)); /* Centers the overlay */
              padding: 20px 40px; /* Adds some spacing inside the overlay */
              max-width: 350px; /* Prevents the overlay from being too wide */
              width: 90vw;
-             max-height: 90%; /* Prevents the overlay from being too tall */
              background: #fff; /* Semi-transparent background */
              border-radius: 8px; /* Adds rounded corners */
              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Subtle shadow for better visibility */
-             overflow: auto; /* Enables scrolling if content exceeds max dimensions */
+             padding-bottom: 50px;
          }
 
          ul {

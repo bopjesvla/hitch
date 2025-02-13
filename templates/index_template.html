@@ -1,7 +1,7 @@
 {% extends "index_root.html" %}
 <!DOCTYPE html>
 {% block content %}
-    <div class="sidebar spot spot-form-container">
+    <div class="sidebar spot-form-container">
         <h3>New Review</h3>
         <p class=greyed></p>
         <form id=spot-form action=experience method=post>
@@ -26,7 +26,7 @@
             <label>Comment (optional)</label>
             <div><textarea name=comment></textarea></div>
             <div id="nickname-container">
-                <label for="nickname">Public nickname (alphanumeric)</label>
+                <label for="nickname-input">Public nickname (alphanumeric)</label>
                 <input id="nickname-input" name="nickname" maxlength="32" pattern="[a-zA-Z0-9]*">
                 <span id="nickname-error-message" class="error"></span>
                 <br>
@@ -68,7 +68,7 @@
         <h3>Success!</h3>
 
         <p>Thank you for your contribution!</p>
-        <p>Your review will appear on the map within 10 minutes. Refreshing may be needed.</p>
+        <p>Your review will appear on the map within 10 minutes. Refreshing will be needed.</p>
     </div>
     <div class="sidebar failed">
         <h3>Failed!</h3>
@@ -87,6 +87,7 @@
             <li><i class="fa fa-download"></i><a href="/dump.sqlite">Download spots as SQLite</a>
             </li>
             <li><i class="fa fa-download"></i><a id="export-gpx" href="javascript:;">Download spots as GPX</a></li>
+            <li><i class="fa fa-map-pin"></i><a href="/service-area/index.html">Service areas</a></li>
             <li><i class="fa fa-map-pin"></i><a href="/recent.html">Recent reviews</a></li>
             <li><i class="fa fa-chart-simple"></i><a href="/dashboard.html">Charts & graphs</a></li>
         </ul>
