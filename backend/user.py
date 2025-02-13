@@ -121,7 +121,7 @@ def form():
     form = UserEditForm()
 
     if form.validate_on_submit():
-        updated_user = security.datastore.find_user(username=current_user.username)
+        updated_user = security.datastore.find_user(case_insensitive=True, username=current_user.username)
         updated_user.gender = form.gender.data
         updated_user.year_of_birth = form.year_of_birth.data
         updated_user.hitchhiking_since = form.hitchhiking_since.data
@@ -181,14 +181,14 @@ def show_current_user():
 @app.route("/is_username_used/<username>", methods=["GET"])
 def is_username_used(username):
     logger.info(f"Received request to check if username {username} is used.")
-    user = security.datastore.find_user(username=username)
+    user = security.datastore.find_user(case_insensitive=True, username=username)
     return jsonify({"used": bool(user)})
 
 
 @app.route("/account/<username>", methods=["GET"])
 def show_account(username):
     logger.info(f"Received request to show user {username}.")
-    user = security.datastore.find_user(username=username)
+    user = security.datastore.find_user(case_insensitive=True, username=username)
     if user:
         origin_string = get_origin_string(user)
         return render_template(
