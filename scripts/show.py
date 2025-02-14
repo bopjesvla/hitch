@@ -21,6 +21,7 @@ env = Environment(loader=FileSystemLoader(template_dir))  # Load templates from 
 template = env.get_template("index_template.html")  # Load template file
 service_template = env.get_template("service_template.html")  # Load template file
 service_index = env.get_template("service_index.html")  # Load template file
+city_index = env.get_template("city_index.html")  # Load template file
 city_template = env.get_template("city_template.html")  # Load template file
 
 os.makedirs(dist_dir, exist_ok=True)
@@ -245,19 +246,24 @@ elif SERVICE_AREAS:
             f.write(rendered)
     index_rendered = service_index.render(grouped_places=service_places.groupby("country"))
     with open(os.path.join(service_area_folder, "index.html"), "w") as f:
-        points.sort_values("datetime", inplace=True, ascending=False)
         f.write(index_rendered)
 elif CITIES:
+    points.sort_values("datetime", inplace=True, ascending=False)
     cities = pd.read_csv(os.path.join(db_dir, "cities.csv"))
 
     for city in cities.itertuples():
         country_folder = os.path.join(dist_dir, "city", city.country)
         os.makedirs(country_folder, exist_ok=True)
         pattern = rf"\b{city.city}\b"
-        city_reviews = points[points.text.str.contains(pattern, case=False, regex=True).astype(bool)].iloc[:20]
+        city_reviews = (
+            points[points.text.str.contains(pattern, case=False, regex=True).astype(bool)].dropna(subset="comment").iloc[:20]
+        )
         rendered = city_template.render(city=city, title=city.city, reviews=city_reviews)
         with open(os.path.join(country_folder, f"{city.city}.html"), "w") as f:
             f.write(rendered)
+    index_rendered = city_index.render(grouped_cities=cities.groupby("country"))
+    with open(os.path.join(os.path.join(dist_dir, "city"), "index.html"), "w") as f:
+        f.write(index_rendered)
 
 
 # z-index is rating + 2 * no of reviews + 2 * no of reviews with destination

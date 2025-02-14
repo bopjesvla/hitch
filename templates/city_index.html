@@ -1,0 +1,15 @@
+{% extends "security/base.html" %}
+{% block title %}
+Hitchhiking tops for European cities
+{% endblock %}
+{% block content %}
+<h1>Cities</h1>
+{% for country, places in grouped_cities %}
+<h2>{{ country }}</h2>
+<ul>
+    {% for place in places.itertuples() %}
+    <li><a href="{{country}}/{{ place.city }}.html">{{ place.city }}</a></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+{% endblock %}
