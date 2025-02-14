@@ -150,20 +150,14 @@ body.adding-spot .horizontal-button {
     height: 46px;
 }
 .rate:not(:checked) > input {
-    position:absolute;
-    top:-9999px;
+    display: none;
 }
 .rate:not(:checked) > label {
     float:right;
-    width:1em;
-    overflow:hidden;
     white-space:nowrap;
     cursor:pointer;
     font-size:30px;
     color:#ccc;
-}
-.rate:not(:checked) > label:before {
-    content: '★ ';
 }
 .rate > input:checked ~ label {
     color: #ffc700;    
