@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 import pandas as pd
 import requests
-from flask import redirect, request, send_file, send_from_directory, jsonify, render_template
+from flask import request, send_file, send_from_directory, jsonify
 from flask_security import current_user
 
 from backend.shared import app, db, root_dir, dist_dir, static_dir, EMAIL, logger
@@ -36,7 +36,7 @@ def experience():
     assert rating in range(1, 6)
     comment = None if data["comment"] == "" else data["comment"]
     assert comment is None or len(comment) < 10000
-    nickname = data["nickname"] if re.match(r"^\w{1,32}$", data["nickname"]) else None
+    nickname = data["nickname"] if current_user.is_anonymous and re.match(r"^\w{1,32}$", data["nickname"]) else None
 
     if security.datastore.find_user(case_insensitive=True, username=nickname):
         return jsonify({"error": "This nickname is already used by a registered user. Please choose another nickname."}), 400
@@ -48,7 +48,7 @@ def experience():
 
     # this is the format used by the datetime input
     date_format = "%Y-%m-%dT%H:%M"
-    assert datetime_ride is None or datetime.strptime(date_string, date_format)
+    assert datetime_ride is None or datetime.strptime(datetime_ride, date_format)
 
     ip = request.headers.getlist("X-Real-IP")[-1] if request.headers.getlist("X-Real-IP") else request.remote_addr
 

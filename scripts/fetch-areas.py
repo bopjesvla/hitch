@@ -1,7 +1,7 @@
 import requests_cache
 import requests
 import pandas as pd
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 import shapely
 import os
 import time

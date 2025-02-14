@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import geopandas
 import geopandas as gpd
-import urllib
 from helpers import get_bearing, haversine_np, root_dir, get_db, slugify, db_dir
 
 dist_dir = os.path.abspath(os.path.join(root_dir, "dist"))
@@ -30,10 +29,7 @@ LIGHT = "light" in sys.argv
 SERVICE_AREAS = "service" in sys.argv
 CITIES = "city" in sys.argv
 
-if LIGHT:
-    outname = os.path.join(dist_dir, "light.html")
-else:
-    outname = os.path.join(dist_dir, "index.html")
+outname = os.path.join(dist_dir, "light.html") if LIGHT else os.path.join(dist_dir, "index.html")
 
 outname_recent = os.path.join(dist_dir, "recent.html")
 outname_dups = os.path.join(dist_dir, "recent-dups.html")
