@@ -245,7 +245,8 @@ elif SERVICE_AREAS:
         f.write(index_rendered)
 elif CITIES:
     points.sort_values("datetime", inplace=True, ascending=False)
-    cities = pd.read_csv(os.path.join(db_dir, "cities.csv"))
+    cities = pd.read_csv(os.path.join(db_dir, "cities.csv")).drop_duplicates().sort_values("city")
+    rendered_cities = []
 
     for city in cities.itertuples():
         country_folder = os.path.join(dist_dir, "city", city.country)
@@ -254,10 +255,15 @@ elif CITIES:
         city_reviews = (
             points[points.text.str.contains(pattern, case=False, regex=True).astype(bool)].dropna(subset="comment").iloc[:20]
         )
-        rendered = city_template.render(city=city, title=city.city, reviews=city_reviews)
-        with open(os.path.join(country_folder, f"{city.city}.html"), "w") as f:
-            f.write(rendered)
-    index_rendered = city_index.render(grouped_cities=cities.groupby("country"))
+        rendered_cities.append(len(city_reviews) >= 3)
+        if rendered_cities[-1]:
+            rendered = city_template.render(city=city, title=city.city, reviews=city_reviews)
+            with open(os.path.join(country_folder, f"{city.city}.html"), "w") as f:
+                f.write(rendered)
+
+    print(rendered_cities)
+
+    index_rendered = city_index.render(grouped_cities=cities[rendered_cities].groupby("country"))
     with open(os.path.join(os.path.join(dist_dir, "city"), "index.html"), "w") as f:
         f.write(index_rendered)
 

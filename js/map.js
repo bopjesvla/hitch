@@ -330,10 +330,7 @@ bars.forEach(bar => {
 map.on('click', e => {
     var added = false;
 
-    if (document.body.classList.contains('zoomed-out'))
-        return
-
-    if (window.innerWidth < 780) {
+    if (!document.body.classList.contains('zoomed-out') && window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
         let markers = document.body.classList.contains('filtering') ? filterMarkerGroup : allMarkers
         var closest = closestMarker(markers, e.latlng.lat, e.latlng.lng)

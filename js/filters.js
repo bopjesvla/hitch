@@ -17,7 +17,7 @@ export let filterDestLineGroup = null,
 
 function setQueryParameter(key, value) {
     const url = new URL(window.location.href); // Get the current URL
-    if (value)
+    if (value || value === 0)
         url.searchParams.set(key, value); // Set or update the query parameter
     else
         url.searchParams.delete(key);
