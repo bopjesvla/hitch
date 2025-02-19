@@ -1,6 +1,7 @@
 import os
 import sqlite3
-
+import zipfile
+from io import BytesIO
 import pandas as pd
 
 root_dir = os.path.join(os.path.dirname(__file__), "..")
@@ -29,3 +30,19 @@ service_areas.to_sql("service_areas", sqlite3.connect(DATABASE_DUMP), index=Fals
 
 road_islands = pd.read_sql("select * from road_islands", sqlite3.connect(DATABASE))
 road_islands.to_sql("road_islands", sqlite3.connect(DATABASE_DUMP), index=False, if_exists="replace")
+
+# Dictionary of DataFrames with filenames
+dfs = {
+    "road_islands.csv": road_islands,
+    "service_areas.csv": service_areas,
+    "points.csv": all_points,
+    "duplicates.csv": duplicates,
+}
+
+# Writing to a ZIP file
+zip_filename = os.path.join(dist_dir, "csv-dump.zip")
+with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
+    for file_name, df in dfs.items():
+        with BytesIO() as buff:
+            df.to_csv(buff, index=False)
+            zipf.writestr(file_name, buff.getvalue())
