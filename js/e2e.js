@@ -106,7 +106,6 @@ Promise.all([async browser => {
 
     console.log('User test successful!')
 
-    await page.waitForSelector('.sidebar.success.visible')
 }, async browser => {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -146,6 +145,8 @@ Promise.all([async browser => {
 
     // Click on <button> "Submit"
     await page.click('button:nth-child(11)');
+
+    await page.waitForSelector('.sidebar.success.visible')
 
     console.log('Anonymous test successful!')
 }].map(async fn => {
