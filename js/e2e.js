@@ -1,11 +1,13 @@
 const playwright = require('playwright');
 const USER1 = 'Test' + Math.random().toString().slice(2);
 
-(async () => {
-    const browser = await playwright['chromium'].launch({
-        // headless: false, slowMo: 100, // Uncomment to visualize test
-    });
-    const page = await browser.newPage();
+const browserPromise = playwright['chromium'].launch({
+    // headless: false, slowMo: 100, // Uncomment to visualize test
+});
+
+Promise.all([async browser => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
     // Load "http://localhost:5000/"
     await page.goto('http://localhost:5000/');
@@ -100,7 +102,52 @@ const USER1 = 'Test' + Math.random().toString().slice(2);
     // Click on <button> "Submit"
     await page.click('#spot-form > button');
 
-    await browser.close();
+    await page.waitForSelector('.sidebar.success.visible')
 
-    console.log('Test successful!')
-})();
+    console.log('User test successful!')
+
+    await page.waitForSelector('.sidebar.success.visible')
+}, async browser => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    // Load "http://localhost:5000/"
+    await page.goto('http://localhost:5000/');
+
+    // Resize window to 1854 x 963
+    await page.setViewportSize({ width: 1854, height: 963 });
+
+    // Click on <a> "📍 Add spot"
+    await Promise.all([
+        page.click('.add-spot > [href="javascript:void(0);"]'),
+        page.waitForNavigation()
+    ]);
+
+    // Click on <button> "Done"
+    await page.click('.step1 > button:nth-child(3)');
+
+    // Click on <button> "Skip"
+    await page.click('.step2 > button:nth-child(3)');
+
+    // Click on <label> "★"
+    await page.click('[title="4 stars"]');
+
+    // Click on <input> [name="wait"]
+    await page.click('[name="wait"]');
+
+    // Fill "10" on <input> [name="wait"]
+    await page.fill('[name="wait"]', '10');
+
+    // Press Tab on input
+    await page.press('[name="wait"]', 'Tab');
+
+    // Fill "a" on <textarea> [name="comment"]
+    await page.fill('[name="comment"]', 'a');
+
+    // Click on <button> "Submit"
+    await page.click('button:nth-child(11)');
+
+    console.log('Anonymous test successful!')
+}].map(async fn => {
+    return fn(await browserPromise)
+})).then(async _ => (await browserPromise).close())
