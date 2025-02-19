@@ -44,7 +44,7 @@ def experience():
     signal = data["signal"] if data["signal"] != "null" else None
     assert signal in ["thumb", "sign", "ask", "ask-sign", None]
 
-    datetime_ride = None if data["comment"] == "" else data["datetime_ride"]
+    datetime_ride = None if data["datetime_ride"] == "" else data["datetime_ride"]
 
     # this is the format used by the datetime input
     date_format = "%Y-%m-%dT%H:%M"
