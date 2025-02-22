@@ -81,7 +81,6 @@ body.adding-spot .horizontal-button {
 }
 .horizontal-button {
     padding: 5px 10px;
-    background: #fff !important;
     white-space: nowrap;
     padding: 0 !important;
 }
@@ -206,7 +205,7 @@ body.filtering .leaflet-overlay-pane, body.filtering .leaflet-marker-pane {
 body:not(.filtering) .leaflet-filtering-pane {
     display: none;
 }
-body.filtering .filter-button {
+body.filtering .remove-filter {
     border-color: rgba(255, 0, 0, .5);
 }
 body.filtering .filter-button a::after {
@@ -243,6 +242,13 @@ a:hover {
 }
 .leaflet-control-geocoder-form:not(:has(:focus)) ~ .leaflet-control-geocoder-alternatives {
     display: none;
+}
+.leaflet-top.leaflet-left {
+    display: flex;
+    flex-wrap: wrap;
+}
+.leaflet-control-geocoder-icon {
+    background: none !important;
 }
 
 /* 
@@ -410,3 +416,15 @@ ul.no-style {
     top: 0.0%;
 }
 .leaflet-container { font-size: 1rem; }
+
+.flex-break {
+    flex-basis: 100%;
+    height: 0;
+    margin: 0px !important;
+}
+.remove-filter-group {
+    display: none;
+}
+body.filtering .remove-filter-group {
+    display: block;
+}

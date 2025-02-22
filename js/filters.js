@@ -15,6 +15,22 @@ let isDragging = false, radAngle = 0;
 export let filterDestLineGroup = null,
     filterMarkerGroup = null;
 
+
+const RemoveFilterButtons = L.Control.extend({
+    options: {
+        position: 'topleft'
+    },
+    onAdd: function (map) {
+        this.filterButtons = L.DomUtil.create('div', 'remove-filter-group');
+        // TODO: add a leaflet-bar with an a for every active filter
+        // var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button remove-filter', this.filterButtons);
+        // var container = L.DomUtil.create('a', '', controlDiv);
+        return this.filterButtons
+    }
+});
+
+export const removeFilterButtons = new RemoveFilterButtons()
+
 function setQueryParameter(key, value) {
     const url = new URL(window.location.href); // Get the current URL
     if (value || value === 0)
@@ -115,6 +131,8 @@ export function applyParams() {
     userFilter.value = getQueryParameter('user')
     distanceFilter.value = getQueryParameter('mindistance')
 
+    updateRemoveFilterButtons()
+
     if (knobToggle.checked || textFilter.value || userFilter.value || distanceFilter.value) {
         if (filterMarkerGroup) filterMarkerGroup.remove()
         if (filterDestLineGroup) filterDestLineGroup.remove()
@@ -188,4 +206,36 @@ export function applyParams() {
     } else {
         document.body.classList.remove('filtering')
     }
+}
+
+function updateRemoveFilterButtons() {
+    // Clear existing buttons
+    const filterButtons = document.querySelector('.remove-filter-group');
+    if (!filterButtons) return;
+    filterButtons.innerHTML = '';
+
+    // Check each filter and create remove buttons for active ones
+    const activeFilters = [
+        { key: 'mydirection', label: 'Directional filter', value: getQueryParameter('mydirection') },
+        { key: 'text', label: 'Text', value: getQueryParameter('text') },
+        { key: 'user', label: 'User', value: getQueryParameter('user') },
+        { key: 'mindistance', label: 'Min Distance', value: getQueryParameter('mindistance') }
+    ].filter(filter => filter.value !== null);
+
+    // Create buttons for active filters
+    activeFilters.forEach(filter => {
+        const controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button remove-filter', filterButtons);
+        const container = L.DomUtil.create('a', '', controlDiv);
+        container.innerText = filter.key === 'mydirection' ? filter.label : `${filter.label} | ${filter.value}`;
+        const CLOSE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="21" height="18" viewBox="-3 0 24 24" style="vertical-align: middle;"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+        container.innerHTML += CLOSE_ICON;
+        container.href = 'javascript:;';
+
+        // Add click handler to remove the filter
+        container.onclick = (e) => {
+            e.preventDefault();
+            setQueryParameter(filter.key, null);
+            applyParams();
+        };
+    });
 }

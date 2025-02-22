@@ -2,7 +2,7 @@ import {$$} from './utils';
 
 ////// Define the search bar for the map //////
 export function addGeocoder(map) {
-    var geocoderOpts = { "collapsed": false, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city", "zoom": 11 };
+    var geocoderOpts = { "collapsed": true, "defaultMarkGeocode": false, "position": "topleft", "provider": "photon", placeholder: "Jump to city", "zoom": 11 };
 
     var customGeocoder = L.Control.Geocoder.photon();
     geocoderOpts["geocoder"] = customGeocoder;
@@ -13,6 +13,8 @@ export function addGeocoder(map) {
 
     let geocoderInput = $$('.leaflet-control-geocoder input')
     geocoderInput.type = 'search'
+    let geocoderIcon = $$('.leaflet-control-geocoder-icon')
+    geocoderIcon.innerText = '↖️'
 
     geocoderController.on('markgeocode', function (e) {
         var zoom = geocoderOpts['zoom'] || map.getZoom();

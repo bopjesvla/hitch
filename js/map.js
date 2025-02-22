@@ -1,7 +1,7 @@
 import {addGeocoder} from './geocoder'
 import {exportAsGPX} from './export-gpx';
 import {$$, bar, bars, arrowLine} from './utils';
-import {clearParams, applyParams, filterMarkerGroup} from './filters';
+import {clearParams, applyParams, filterMarkerGroup, removeFilterButtons} from './filters';
 import {restoreView, storageAvailable, summaryText, closestMarker} from './utils';
 import {currentUser, firstUserPromise, userMarkerGroup, createUserMarkers} from './user';
 import {pendingGroup, updatePendingMarkers, addPending} from './pending';
@@ -146,9 +146,6 @@ var tileLayer = L.tileLayer(
 
 tileLayer.addTo(map);
 
-// Add geocoding functionality
-addGeocoder(map)
-
 var AddSpotButton = L.Control.extend({
     options: {
         position: 'topleft'
@@ -209,7 +206,7 @@ var AccountButton = L.Control.extend({
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button your-account');
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "/me";
-        container.innerHTML = "👤 Your account";
+        container.innerHTML = "👤 Account";
 
         return controlDiv;
     }
@@ -223,8 +220,17 @@ var FilterButton = L.Control.extend({
         var controlDiv = L.DomUtil.create('div', 'leaflet-bar horizontal-button filter-button');
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "#filters";
-        container.innerHTML = "🧮 Filters";
+        container.innerHTML = "🔍 Filters";
 
+        return controlDiv;
+    }
+});
+
+// newline in leaflet control land
+var FlexBreak = L.Control.extend({
+    options: {position: 'topleft'},
+    onAdd: function (map) {
+        var controlDiv = L.DomUtil.create('div', 'flex-break');
         return controlDiv;
     }
 });
@@ -234,10 +240,19 @@ map.addControl(new MenuButton());
 map.addControl(new AddSpotButton());
 map.addControl(new AccountButton());
 map.addControl(new FilterButton());
+map.addControl(new FlexBreak());
+// Add GPS
+L.control.locate().addTo(map);
+// Add geocoding functionality
+addGeocoder(map);
+map.addControl(new FlexBreak());
 
-// Put zoom control last
+// Move zoom control to bottom
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
+
+map.addControl(new FlexBreak());
+map.addControl(removeFilterButtons);
 
 $$('#sb-close').onclick = function (e) {
     navigateHome()
