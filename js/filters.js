@@ -233,7 +233,7 @@ function updateRemoveFilterButtons() {
 
         // Add click handler to remove the filter
         container.onclick = (e) => {
-            e.preventDefault();
+            L.DomEvent.stopPropagation(e);
             setQueryParameter(filter.key, null);
             applyParams();
         };

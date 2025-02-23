@@ -207,6 +207,7 @@ var AccountButton = L.Control.extend({
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "/me";
         container.innerHTML = "👤 Account";
+        container.onclick = L.DomEvent.stopPropagation
 
         return controlDiv;
     }
@@ -221,6 +222,7 @@ var FilterButton = L.Control.extend({
         var container = L.DomUtil.create('a', '', controlDiv);
         container.href = "#filters";
         container.innerHTML = "🔍 Filters";
+        container.onclick = L.DomEvent.stopPropagation
 
         return controlDiv;
     }
