@@ -243,6 +243,8 @@ map.addControl(new AddSpotButton());
 map.addControl(new AccountButton());
 map.addControl(new FilterButton());
 map.addControl(new FlexBreak());
+map.addControl(removeFilterButtons);
+map.addControl(new FlexBreak());
 // Add GPS
 L.control.locate().addTo(map);
 // Add geocoding functionality
@@ -252,9 +254,6 @@ map.addControl(new FlexBreak());
 // Move zoom control to bottom
 var zoom = $$('.leaflet-control-zoom')
 zoom.parentNode.appendChild(zoom)
-
-map.addControl(new FlexBreak());
-map.addControl(removeFilterButtons);
 
 $$('#sb-close').onclick = function (e) {
     navigateHome()
