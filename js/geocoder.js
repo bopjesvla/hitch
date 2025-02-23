@@ -14,7 +14,8 @@ export function addGeocoder(map) {
     let geocoderInput = $$('.leaflet-control-geocoder input')
     geocoderInput.type = 'search'
     let geocoderIcon = $$('.leaflet-control-geocoder-icon')
-    geocoderIcon.innerText = '🦘️'
+    geocoderIcon.innerText = ''
+    geocoderIcon.classList.add('fa-solid', 'fa-frog')
 
     geocoderController.on('markgeocode', function (e) {
         var zoom = geocoderOpts['zoom'] || map.getZoom();

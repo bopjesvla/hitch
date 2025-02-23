@@ -249,6 +249,8 @@ a:hover {
 }
 .leaflet-control-geocoder-icon {
     background: none !important;
+    padding: 0px;
+    font-size: 1.2em;
 }
 
 /* 
