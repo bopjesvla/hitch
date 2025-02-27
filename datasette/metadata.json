@@ -1,0 +1,25 @@
+{
+    "title": "Hitchmap Datasette",
+    "allow_sql": false,
+    "allow": {
+        "permissions": ["write-points"]
+    },
+    "plugins": {
+        "datasette-auth-existing-cookies": {
+            "api_url": "http://localhost:5000/user",
+            "headers": ["host"],
+            "ttl": 10
+        }
+    },
+    "databases": {
+        "prod-points": {
+            "tables": {
+                "points": {
+                    "allow": {
+                        "permissions": ["write-points"]
+                    }
+                }
+            }
+        }
+    }
+}
