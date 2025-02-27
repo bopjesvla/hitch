@@ -441,14 +441,21 @@ $$('#spot-form').addEventListener('submit', async function(event) {
         body: formData
     })
 
-    let result = await resp.json();
+    let result;
+    try {
+        result = await resp.json();
+    } catch (error) {
+        console.error("Response is not valid JSON:", error);
+        result = {}; // Default to an empty object if parsing fails
+    }
+
     if (resp.ok) {
         location.hash = '#success';
         addPending(pendingLoc.lat, pendingLoc.lng)
         updatePendingMarkers()
     }
     else {
-        errorMessage.textContent = result.error
+        errorMessage.textContent = result.error || "An unknown error occurred.";
         setTimeout(_ => errorMessage.textContent = '', 10000)
     }
     submitButton.disabled = false;

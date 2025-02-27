@@ -55,7 +55,6 @@ export function clearParams() {
 
 clearFilters.onclick = () => {
     clearParams()
-    window.navigateHome()
 }
 
 knob.addEventListener('mousedown', (e) => {

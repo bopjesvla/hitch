@@ -5,11 +5,19 @@ The map to hitchhiking the world. Read more [here](https://hitchwiki.org/en/Hitc
 
 ## Description
 
+Hitchmap is a [static site generator](https://en.wikipedia.org/wiki/Static_site_generator) that runs every few minutes.
+
 - `server.py` runs the server
 - `scripts/show.py` builds the main HTML page (`index.html`). This is where the magic happens.
 - `scripts/dump.py` runs the monthly dump
 - `cron.sh` is the crontab running above files
 - `hitchmap.conf` is the NGINX configuration
+- `js/map.js` is the entry point of the homepage's JavaScript
+- `js/pending.js` is responsible for adding temporary markers
+
+A few developers have taken it upon themselves to rewrite Hitchmap to a more traditional MVC structure.
+
+For contributors and users, we recommend reviewing both repositories to determine which best fits your needs. In virtually all cases, user-facing contributions will eventually end up in both repositories.
 
 ## License
 
