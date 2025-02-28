@@ -57,7 +57,9 @@ var handleMarkerNavigation = function (marker) {
 
 $$(".sidebar.show-spot").addEventListener("click", function (event) {
     const link = event.target.closest("a"); // Ensure it's an <a> tag
-    if (link && link.href) {
+    const linkUrl = new URL(link.href, window.location.origin);
+
+    if (linkUrl.origin === window.location.origin) {
         event.preventDefault(); // Prevent default navigation
         history.pushState({}, "", link.href); // Update the URL without reloading
         navigate();
