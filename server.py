@@ -128,6 +128,7 @@ def serve_static(path):
         return send_from_directory(static_dir, path)
 
 
+init_security()
+
 if __name__ == "__main__":
-    init_security()
     app.run(host="0.0.0.0", debug=True)

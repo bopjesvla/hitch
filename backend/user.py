@@ -149,11 +149,11 @@ def form():
 def get_user():
     print(current_user.roles)
     if current_user.is_anonymous:
-        return jsonify({"logged_in": False})
+        return jsonify({"logged_in": False, "_permissions": []})
     else:
         permissions = list(set(perm for role in current_user.roles for perm in role.permissions))
 
-        return jsonify({"logged_in": True, "username": current_user.username, "permissions": permissions})
+        return jsonify({"logged_in": True, "username": current_user.username, "_permissions": permissions})
 
 
 @app.route("/delete-user", methods=["GET"])

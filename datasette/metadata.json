@@ -1,23 +1,71 @@
 {
     "title": "Hitchmap Datasette",
-    "allow_sql": false,
     "allow": {
-        "permissions": ["write-points"]
+        "_permissions": ["write-points"]
+    },
+    "permissions": {
+        "permissions-debug": true
     },
     "plugins": {
         "datasette-auth-existing-cookies": {
-            "api_url": "http://localhost:5000/user",
-            "headers": ["host"],
-            "ttl": 10
+            "api_url": "http://localhost:8080/user",
+            "headers": ["host"]
+        },
+        "datasette-permissions-sql": [
+            {
+                "action": "view-table",
+                "sql": "select 1 where :resource_1 = 'prod-points' and :resource_2 in ('points', 'duplicates') and 'read-points' in (select value from json_each(:actor__permissions))"
+            },
+            {
+                "action": "view-database",
+                "sql": "select 1 where :resource_1 = 'prod-points' and 'read-points' in (select value from json_each(:actor__permissions))"
+            },
+            {
+                "action": "view-query",
+                "sql": "select 1 where :resource_1 = 'prod-points' and 'write-points' in (select value from json_each(:actor__permissions))"
+            },
+            {
+                "action": "insert-row",
+                "sql": "select 1 where :resource_1 = 'prod-points' and :resource_2 in ('points', 'duplicates') and 'write-points' in (select value from json_each(:actor__permissions))"
+            },
+            {
+                "action": "update-row",
+                "sql": "select 1 where :resource_1 = 'prod-points' and :resource_2 in ('points', 'duplicates') and 'write-points' in (select value from json_each(:actor__permissions))"
+            },
+            {
+                "action": "delete-row",
+                "sql": "select 1 where :resource_1 = 'prod-points' and :resource_2 in ('points', 'duplicates') and 'write-points' in (select value from json_each(:actor__permissions))"
+            },
+            {
+                "action": "view-database-download",
+                "sql": "select 0 limit 0"
+            }
+        ],
+        "datasette-events-db": {
+            "database": "prod-points"
         }
     },
     "databases": {
         "prod-points": {
+            "permissions": {
+                "view-database-download": false,
+            },
             "tables": {
-                "points": {
-                    "allow": {
-                        "permissions": ["write-points"]
-                    }
+                "user": {
+                    "allow": false,
+                    "hidden": true
+                },
+                "sqlite_sequence": {
+                    "allow": false,
+                    "hidden": true
+                },
+                "roles_users": {
+                    "allow": false,
+                    "hidden": true
+                },
+                "role": {
+                    "allow": false,
+                    "hidden": true
                 }
             }
         }
