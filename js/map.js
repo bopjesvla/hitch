@@ -57,6 +57,7 @@ var handleMarkerNavigation = function (marker) {
 
 $$(".sidebar.show-spot").addEventListener("click", function (event) {
     const link = event.target.closest("a"); // Ensure it's an <a> tag
+    if (!link) return
     const linkUrl = new URL(link.href, window.location.origin);
 
     if (linkUrl.origin === window.location.origin) {
@@ -350,7 +351,7 @@ map.on('click', e => {
 
     if (!document.body.classList.contains('zoomed-out') && window.innerWidth < 780) {
         var layerPoint = map.latLngToLayerPoint(e.latlng)
-        let markers = document.body.classList.contains('filtering') ? filterMarkerGroup : allMarkers
+        let markers = document.body.classList.contains('filtering') ? filterMarkerGroup.getLayers() : allMarkers
         var closest = closestMarker(markers, e.latlng.lat, e.latlng.lng)
         if (closest && map.latLngToLayerPoint(closest.getLatLng()).distanceTo(layerPoint) < 20) {
             added = true
@@ -424,7 +425,7 @@ $$('.leaflet-control-attribution').innerHTML = `
 if (!window.location.hash.includes(',')) // we'll center on coord
     if (!restoreView.apply(map))
         map.fitBounds([[-35, -40], [60, 40]])
-if (map.getZoom() > 17 && window.location.hash != '#success-duplicate') map.setZoom(17);
+if (map.getZoom() > 17) map.setZoom(17);
 
 $$('.hitch-map').focus()
 
